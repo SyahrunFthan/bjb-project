@@ -6,6 +6,7 @@ import { RouteParamList } from '@/types/navigation';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useEffect, useRef } from 'react';
 import { Animated, Image, StatusBar, StyleSheet, View } from 'react-native';
+import { getData } from '@/lib/storage';
 
 const SplashScreen = ({ navigation }: NativeStackScreenProps<RouteParamList, 'Splash'>) => {
   const progress = useRef(new Animated.Value(0)).current;
@@ -15,9 +16,27 @@ const SplashScreen = ({ navigation }: NativeStackScreenProps<RouteParamList, 'Sp
       toValue: 1,
       duration: 3000,
       useNativeDriver: false,
-    }).start(({ finished }) => {
+    }).start(async ({ finished }) => {
       if (finished) {
-        navigation.replace('Start');
+        try {
+          const storeAuth = await getData('auth');
+          console.log(storeAuth);
+
+          if (storeAuth) {
+            const role = storeAuth.role_level ?? storeAuth.user?.role_level;
+            if (role === 3) {
+              navigation.replace('Courier' as any);
+            } else if (role === 4) {
+              navigation.replace('Customer');
+            } else {
+              navigation.replace('Start');
+            }
+          } else {
+            navigation.replace('Start');
+          }
+        } catch (error) {
+          navigation.replace('Start');
+        }
       }
     });
   }, [progress, navigation]);

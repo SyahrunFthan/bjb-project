@@ -10,4 +10,5 @@ export const color = {
   blue: '#2563EB',
   light: '#EEEFFF',
   success: 'green',
+  yellow: '#f3ca44',
 };

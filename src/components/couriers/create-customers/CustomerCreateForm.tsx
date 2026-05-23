@@ -1,0 +1,325 @@
+import { fetchBranchesOptions } from '@/api/branch';
+import { customerStore } from '@/api/customer';
+import { color } from '@/assets/color';
+import SectionCard from '@/components/ui/SectionCard';
+import { genderOptions } from '@/constants/gender';
+import { maritalStatusOptions } from '@/constants/maritalStatus';
+import { religionOptions } from '@/constants/religion';
+import { Rules, useFormContext } from '@/contexts/FormContext';
+import { useModal } from '@/hooks/useModal';
+import { RouteParamList } from '@/types/navigation';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useEffect, useState } from 'react';
+import { ScrollView, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { AppText } from '../../AppText';
+import Button from '../../Button';
+import DatePicker from '../../DatePicker';
+import DebounceSelect from '../../DebounceSelect';
+import AppIcon from '../../Icon';
+import Input from '../../Input';
+import Select from '../../Select';
+
+const CustomerCreateForm = () => {
+  const navigation = useNavigation<NativeStackNavigationProp<RouteParamList>>();
+  const form = useFormContext();
+  const { values, errors, register, setValue, validateForm, resetForm } = form;
+  const modal = useModal();
+
+  const [processing, setProcessing] = useState(false);
+  const nikLength = ((values.national_id as string) || '').length;
+
+  useEffect(() => {
+    register('national_id', [
+      Rules.required('NIK wajib diisi'),
+      Rules.pattern(/^[0-9]+$/, 'NIK hanya boleh berisi angka'),
+      Rules.minLength(16, 'NIK harus tepat 16 digit'),
+    ]);
+    register('branch_id', [Rules.required('Kantor cabang wajib dipilih')]);
+    register('full_name', [Rules.required('Nama lengkap wajib diisi')]);
+    register('email', [Rules.required('Email wajib diisi'), Rules.email('Format email tidak valid')]);
+    register('phone_number', [
+      Rules.required('Nomor telepon wajib diisi'),
+      Rules.pattern(/^[0-9]+$/, 'Nomor telepon hanya boleh berisi angka'),
+      Rules.minLength(8, 'Nomor telepon minimal 8 digit'),
+    ]);
+    register('place_of_birth', [Rules.required('Tempat lahir wajib diisi')]);
+    register('date_of_birth', [Rules.required('Tanggal lahir wajib diisi')]);
+    register('gender', [Rules.required('Jenis kelamin wajib dipilih')]);
+    register('religion', [Rules.required('Agama wajib dipilih')]);
+    register('marital_status', [Rules.required('Status pernikahan wajib dipilih')]);
+  }, [register]);
+
+  const handleSave = () => {
+    if (validateForm()) {
+      customerStore({
+        modal,
+        form,
+        setProcessing,
+        goBack: () => navigation.goBack(),
+      });
+    }
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <StatusBar backgroundColor={color.white} barStyle="dark-content" />
+
+      <View style={styles.header}>
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()} activeOpacity={0.7}>
+          <AppIcon name="arrow-back" size={20} color={color.black} />
+        </TouchableOpacity>
+        <AppText style={styles.headerTitle}>Tambah Nasabah</AppText>
+      </View>
+
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <SectionCard icon="card-membership" iconBg="#DBEAFE" iconColor="#1D4ED8" title="Identitas Diri">
+          <View style={styles.fieldWrap}>
+            <Input
+              label="Nomor NIK (KTP)"
+              placeholder="Masukkan 16 digit NIK"
+              value={(values.national_id as string) || ''}
+              onChangeText={val => setValue('national_id', val)}
+              error={errors.national_id}
+              keyboardType="numeric"
+              maxLength={16}
+              rightIcon={<AppText style={[styles.counterText, nikLength === 16 && styles.counterDone]}>{nikLength}/16</AppText>}
+            />
+          </View>
+
+          <DebounceSelect
+            label="Kantor Cabang"
+            placeholder="Cari kantor cabang..."
+            value={(values.branch_id as string) || ''}
+            onValueChange={val => setValue('branch_id', val)}
+            fetchOptions={fetchBranchesOptions}
+            error={errors.branch_id}
+          />
+        </SectionCard>
+
+        <SectionCard icon="person" iconBg="#DCFCE7" iconColor="#15803D" title="Data Pribadi">
+          <Input
+            label="Nama Lengkap"
+            placeholder="Sesuai KTP"
+            value={(values.full_name as string) || ''}
+            onChangeText={val => setValue('full_name', val)}
+            error={errors.full_name}
+            autoCapitalize="words"
+          />
+
+          <View style={styles.twoCol}>
+            <View style={styles.colLeft}>
+              <Input
+                label="Tempat Lahir"
+                placeholder="Kota"
+                value={(values.place_of_birth as string) || ''}
+                onChangeText={val => setValue('place_of_birth', val)}
+                error={errors.place_of_birth}
+                autoCapitalize="words"
+              />
+            </View>
+            <View style={styles.colRight}>
+              <DatePicker
+                label="Tanggal Lahir"
+                placeholder="Pilih"
+                value={values.date_of_birth ? new Date(values.date_of_birth as string | number | Date) : undefined}
+                onDateChange={val => setValue('date_of_birth', val)}
+                error={errors.date_of_birth}
+              />
+            </View>
+          </View>
+
+          <View style={styles.twoCol}>
+            <View style={styles.colLeft}>
+              <Select
+                label="Jenis Kelamin"
+                placeholder="Pilih"
+                value={(values.gender as string) || ''}
+                onValueChange={val => setValue('gender', val)}
+                options={genderOptions}
+                error={errors.gender}
+              />
+            </View>
+            <View style={styles.colRight}>
+              <Select
+                label="Status Nikah"
+                placeholder="Pilih"
+                value={(values.marital_status as string) || ''}
+                onValueChange={val => setValue('marital_status', val)}
+                options={maritalStatusOptions}
+                error={errors.marital_status}
+              />
+            </View>
+          </View>
+
+          <Select
+            label="Agama"
+            placeholder="Pilih agama"
+            value={(values.religion as string) || ''}
+            onValueChange={val => setValue('religion', val)}
+            options={religionOptions}
+            error={errors.religion}
+          />
+        </SectionCard>
+
+        <SectionCard icon="phone" iconBg="#FEF9C3" iconColor="#A16207" title="Kontak">
+          <Input
+            label="Email"
+            placeholder="nama@email.com"
+            value={(values.email as string) || ''}
+            onChangeText={val => setValue('email', val.toLowerCase())}
+            error={errors.email}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+
+          <View style={styles.phoneRow}>
+            <View style={{ flex: 1 }}>
+              <Input
+                label="Nomor Telepon"
+                placeholder="08xxxxxxxxxx"
+                value={(values.phone_number as string) || ''}
+                onChangeText={val => setValue('phone_number', val)}
+                error={errors.phone_number}
+                keyboardType="phone-pad"
+                maxLength={15}
+              />
+            </View>
+          </View>
+        </SectionCard>
+      </ScrollView>
+
+      <View style={styles.footer}>
+        <Button title="Reset" type="outline" size="medium" onPress={resetForm} disabled={processing} style={styles.btnReset} />
+        <Button title="Simpan Nasabah" type="default" size="medium" onPress={handleSave} loading={processing} style={styles.btnSave} />
+      </View>
+    </SafeAreaView>
+  );
+};
+
+export default CustomerCreateForm;
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F0F4FA',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: color.white,
+    height: 56,
+    borderBottomWidth: 0.5,
+    borderBottomColor: color.border,
+    paddingHorizontal: 16,
+    gap: 12,
+  },
+  backButton: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: '#F0F4FA',
+    borderWidth: 0.5,
+    borderColor: color.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitle: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: '600',
+    color: color.black,
+  },
+  headerBadge: {
+    backgroundColor: '#DBEAFE',
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 20,
+  },
+  headerBadgeText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#1D4ED8',
+  },
+  scrollContent: {
+    padding: 16,
+    paddingBottom: 24,
+  },
+  fieldWrap: {
+    marginBottom: 0,
+  },
+  twoCol: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  colLeft: {
+    flex: 1,
+  },
+  colRight: {
+    flex: 1,
+  },
+  counterText: {
+    fontSize: 11,
+    color: color.neutral,
+    fontWeight: '500',
+  },
+  counterDone: {
+    color: '#15803D',
+  },
+  phoneRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: 8,
+  },
+  waBadgeWrap: {
+    paddingBottom: 12,
+  },
+  waBadge: {
+    backgroundColor: '#DCFCE7',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  waBadgeText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#15803D',
+  },
+  stepDots: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 5,
+    paddingVertical: 8,
+  },
+  dot: {
+    width: 5,
+    height: 5,
+    borderRadius: 3,
+    backgroundColor: color.border,
+  },
+  dotActive: {
+    width: 14,
+    backgroundColor: '#2563EB',
+    borderRadius: 4,
+  },
+  footer: {
+    flexDirection: 'row',
+    gap: 10,
+    padding: 12,
+    paddingBottom: 16,
+    backgroundColor: color.white,
+    borderTopWidth: 0.5,
+    borderTopColor: color.border,
+  },
+  btnReset: {
+    flex: 1,
+  },
+  btnSave: {
+    flex: 2,
+  },
+});

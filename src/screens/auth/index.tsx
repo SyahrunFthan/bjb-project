@@ -1,3 +1,5 @@
+import { authLogin } from '@/api/auth';
+import { AuthFormValues } from '@/model/auth';
 import { color } from '@/assets/color';
 import { AppLogo } from '@/assets/images';
 import AuthBackground from '@/components/AuthBackground';
@@ -5,13 +7,17 @@ import Button from '@/components/Button';
 import AppIcon from '@/components/Icon';
 import Input from '@/components/Input';
 import { Rules, useFormContext } from '@/contexts/FormContext';
+import { useModal } from '@/hooks/useModal';
 import { RouteParamList } from '@/types/navigation';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const AuthScreen = ({ navigation }: { navigation: NativeStackNavigationProp<RouteParamList, 'Auth'> }) => {
-  const { values, errors, register, setValue, validateForm } = useFormContext();
+  const [processing, setProcessing] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const { values, errors, register, setValue, validateForm, resetForm, setErrors } = useFormContext();
+  const { process, result } = useModal();
 
   useEffect(() => {
     register('email', [Rules.required('Email wajib diisi'), Rules.email('Format email tidak valid')]);
@@ -20,7 +26,7 @@ const AuthScreen = ({ navigation }: { navigation: NativeStackNavigationProp<Rout
 
   const handleLogin = () => {
     if (validateForm()) {
-      navigation.replace('Customer');
+      authLogin({ navigation, process, resetForm, result, setErrors, setProcessing, values: values as unknown as AuthFormValues });
     }
   };
 
@@ -48,14 +54,18 @@ const AuthScreen = ({ navigation }: { navigation: NativeStackNavigationProp<Rout
           <Input
             label="PASSWORD"
             placeholder="••••••••"
-            secureTextEntry
+            secureTextEntry={!showPassword}
             value={values.password as string}
             onChangeText={val => setValue('password', val)}
             error={errors.password}
             leftIcon={<AppIcon name="lock" size={20} color={color.neutral} />}
             rightIcon={
-              <TouchableOpacity>
-                <AppIcon name="visibility" size={20} color={color.neutral} />
+              <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                {showPassword ? (
+                  <AppIcon name="visibility-off" size={20} color={color.neutral} />
+                ) : (
+                  <AppIcon name="visibility" size={20} color={color.neutral} />
+                )}
               </TouchableOpacity>
             }
             autoCapitalize="none"

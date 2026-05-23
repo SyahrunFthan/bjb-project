@@ -72,7 +72,7 @@ const StartScreen = ({ navigation }: NativeStackScreenProps<RouteParamList, 'Sta
 
         <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
           <AppText variant="bold" style={styles.nextButtonText}>
-            {currentIndex === ONBOARDING_DATA.length - 1 ? 'Mulai Sekarang' : 'Lanjut'}
+            {currentIndex === ONBOARDING_DATA.length - 1 ? 'Mulai' : 'Lanjut'}
           </AppText>
           <AppIcon name="arrow-forward" size={20} color={color.white} />
         </TouchableOpacity>

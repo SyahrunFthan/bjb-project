@@ -4,9 +4,10 @@ export type CustomerRouteParamList = {
   Profile: undefined;
 };
 
-export type EmployeeRouteParamList = {
+export type CourierRouteParamList = {
   Dashboard: undefined;
-  History: undefined;
+  Request: undefined;
+  CustomerCourier: undefined;
   Profile: undefined;
 };
 
@@ -15,7 +16,8 @@ export type RouteParamList = {
   Start: undefined;
   Auth: undefined;
   Customer: undefined;
-  Employee: undefined;
+  Courier: undefined;
+  CustomerCreate: undefined;
 };
 
 declare global {

@@ -259,7 +259,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   transactionTitle: {
-    maxWidth: 150,
   },
   transactionDate: {
     fontSize: 12,

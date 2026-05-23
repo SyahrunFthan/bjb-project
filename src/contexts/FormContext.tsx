@@ -8,14 +8,57 @@ interface FormState {
   rules: Record<string, ValidationRule[]>;
 }
 
-interface FormContextProps {
+export function deepGet(obj: any, path: string): any {
+  const parts = path.split('.');
+  let current = obj;
+  for (const part of parts) {
+    if (current === null || current === undefined) return undefined;
+    const index = parseInt(part, 10);
+    if (!isNaN(index) && Array.isArray(current)) {
+      current = current[index];
+    } else {
+      current = current[part];
+    }
+  }
+  return current;
+}
+
+export function deepSet(obj: any, path: string, value: any): any {
+  const res = JSON.parse(JSON.stringify(obj));
+  const parts = path.split('.');
+  let current = res;
+  
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i];
+    const nextPart = parts[i + 1];
+    
+    const isNextArray = nextPart !== undefined && !isNaN(parseInt(nextPart, 10));
+    const index = parseInt(part, 10);
+    const key = !isNaN(index) ? index : part;
+    
+    if (i === parts.length - 1) {
+      current[key] = value;
+    } else {
+      if (current[key] === undefined || current[key] === null) {
+        current[key] = isNextArray ? [] : {};
+      }
+      current = current[key];
+    }
+  }
+  return res;
+}
+
+export interface FormContextProps {
   values: Record<string, unknown>;
   errors: Record<string, string>;
   register: (name: string, rules?: ValidationRule[]) => void;
   setValue: (name: string, value: unknown) => void;
+  getValue: (name: string) => unknown;
   validateField: (name: string, value: unknown) => boolean;
   validateForm: () => boolean;
   resetForm: () => void;
+  setError: (name: string, error: string) => void;
+  setErrors: (errors: Record<string, string>) => void;
 }
 
 const FormContext = createContext<FormContextProps | undefined>(undefined);
@@ -61,11 +104,18 @@ export const FormProvider: React.FC<{ children: React.ReactNode }> = ({ children
     (name: string, value: unknown) => {
       setFormState(prev => ({
         ...prev,
-        values: { ...prev.values, [name]: value },
+        values: deepSet(prev.values, name, value),
       }));
       validateField(name, value);
     },
     [validateField],
+  );
+
+  const getValue = useCallback(
+    (name: string) => {
+      return deepGet(formState.values, name);
+    },
+    [formState.values],
   );
 
   const validateForm = useCallback(() => {
@@ -73,7 +123,7 @@ export const FormProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const newErrors: Record<string, string> = {};
 
     Object.keys(formState.rules).forEach(name => {
-      const value = formState.values[name];
+      const value = deepGet(formState.values, name);
       const fieldRules = formState.rules[name];
 
       for (const rule of fieldRules) {
@@ -94,7 +144,37 @@ export const FormProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setFormState(prev => ({ ...prev, values: {}, errors: {} }));
   }, []);
 
-  return <FormContext.Provider value={{ ...formState, register, setValue, validateField, validateForm, resetForm }}>{children}</FormContext.Provider>;
+  const setError = useCallback((name: string, error: string) => {
+    setFormState(prev => ({
+      ...prev,
+      errors: { ...prev.errors, [name]: error },
+    }));
+  }, []);
+
+  const setErrors = useCallback((errors: Record<string, string>) => {
+    setFormState(prev => ({
+      ...prev,
+      errors: { ...prev.errors, ...errors },
+    }));
+  }, []);
+
+  return (
+    <FormContext.Provider
+      value={{
+        ...formState,
+        register,
+        setValue,
+        getValue,
+        validateField,
+        validateForm,
+        resetForm,
+        setError,
+        setErrors,
+      }}
+    >
+      {children}
+    </FormContext.Provider>
+  );
 };
 
 export const useFormContext = () => {

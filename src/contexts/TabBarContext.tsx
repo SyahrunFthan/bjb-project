@@ -33,7 +33,7 @@ export const TabBarProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const onScroll = (event: any) => {
     const currentScrollY = event.nativeEvent.contentOffset.y;
 
-    if (currentScrollY > lastScrollY.current && currentScrollY > 10) {
+    if (currentScrollY > lastScrollY.current && currentScrollY > 5) {
       hideTabBar();
     } else if (currentScrollY < lastScrollY.current) {
       showTabBar();

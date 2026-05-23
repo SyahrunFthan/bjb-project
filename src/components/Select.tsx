@@ -13,9 +13,10 @@ interface Props {
   options: Option[];
   error?: string;
   containerStyle?: ViewStyle;
+  disabled?: boolean;
 }
 
-const Select = ({ label, placeholder = 'Pilih salah satu', value, onValueChange, options, error, containerStyle }: Props) => {
+const Select = ({ label, placeholder = 'Pilih salah satu', value, onValueChange, options, error, containerStyle, disabled = false }: Props) => {
   const [modalVisible, setModalVisible] = useState(false);
 
   const selectedOption = options.find(opt => opt.value === value);
@@ -31,8 +32,9 @@ const Select = ({ label, placeholder = 'Pilih salah satu', value, onValueChange,
 
       <TouchableOpacity
         activeOpacity={0.7}
+        disabled={disabled}
         onPress={() => setModalVisible(true)}
-        style={[styles.selectorContainer, error ? styles.inputError : null]}>
+        style={[styles.selectorContainer, error ? styles.inputError : null, disabled ? styles.disabledSelector : null]}>
         <Text style={[styles.valueText, !selectedOption && styles.placeholderText]}>{selectedOption ? selectedOption.label : placeholder}</Text>
         <AppIcon name="keyboard-arrow-down" size={24} color={color.neutral} />
       </TouchableOpacity>
@@ -93,6 +95,11 @@ const styles = StyleSheet.create({
   },
   inputError: {
     borderColor: color.tertiary,
+  },
+  disabledSelector: {
+    backgroundColor: '#F5F5F5',
+    borderColor: '#E5E5E5',
+    opacity: 0.7,
   },
   valueText: {
     fontSize: 16,

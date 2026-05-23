@@ -12,6 +12,8 @@ export interface CustomerModel {
   address: string;
   phone_number: string;
   email: string;
+  marital_status: string;
+  member_number: string;
   status: string;
   created_by: string;
   updated_by: string;

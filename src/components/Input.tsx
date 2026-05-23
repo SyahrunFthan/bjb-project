@@ -30,7 +30,7 @@ const Input = ({ label, error, leftIcon, rightIcon, containerStyle, onFocus, onB
       <View style={[styles.inputContainer, isFocused && styles.inputFocused, error ? styles.inputError : null]}>
         {leftIcon && <View style={styles.iconLeft}>{leftIcon}</View>}
 
-        <TextInput style={[styles.input, style]} placeholderTextColor={color.neutral} onFocus={handleFocus} onBlur={handleBlur} {...rest} />
+        <TextInput style={[styles.input, style]} placeholderTextColor={color.border} onFocus={handleFocus} onBlur={handleBlur} {...rest} />
 
         {rightIcon && <View style={styles.iconRight}>{rightIcon}</View>}
       </View>

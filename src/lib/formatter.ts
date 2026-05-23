@@ -1,0 +1,18 @@
+export const formatCurrency = (value: number) => {
+  if (value === undefined || value === null) return 'Rp 0';
+  return 'Rp ' + value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+};
+
+export const formatActivityDate = (dateStr: string) => {
+  if (!dateStr) return '';
+  try {
+    const date = new Date(dateStr);
+    const time = `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+    const day = date.getDate();
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+    const month = months[date.getMonth()];
+    return `${time} | ${day} ${month}`;
+  } catch (e) {
+    return dateStr;
+  }
+};
