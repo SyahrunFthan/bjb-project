@@ -1,5 +1,5 @@
-import type { ModalProps } from '@/contexts/ModalContext';
 import type { FormContextProps } from '@/contexts/FormContext';
+import type { ModalProps } from '@/contexts/ModalContext';
 import type { AxiosError } from 'axios';
 
 export function isStrictStringNumber(value: string): boolean {
@@ -18,8 +18,9 @@ export function processFail(modal: ModalProps, title: string, message: string, o
   modal.result.error(title, message, onClose);
 }
 
-export function processFinish(modal: ModalProps) {
+export function processFinish(modal: ModalProps, onFinish?: () => void) {
   modal.process.hide();
+  onFinish?.();
 }
 
 export function processError(modal: ModalProps, form: FormContextProps, errs: AxiosError) {

@@ -1,36 +1,69 @@
 import { color } from '@/assets/color';
 import { AppText } from '@/components/AppText';
 import AppIcon from '@/components/Icon';
+import { SkeletonCircle, SkeletonText } from '@/components/ui/Skeleton';
+import { customerStatusColor, customerStatusMap } from '@/constants/customerStatus';
 import { formatActivityDate } from '@/lib/formatter';
 import { getInitials } from '@/lib/utils';
-import { CustomerModel } from '@/model/customer';
+import { Customer } from '@/model/customer';
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
 
-const CustomerList = ({ item, index }: { item: CustomerModel; index: number }) => {
+interface Props {
+  item: Customer;
+  index: number;
+  loading: boolean;
+  onEdit?: (item: Customer) => void;
+}
+
+const CustomerList = ({ item, index, loading, onEdit }: Props) => {
+  if (loading) {
+    return (
+      <View style={styles.card}>
+        <SkeletonCircle size={42} />
+
+        <View style={styles.cardBody}>
+          <SkeletonText lines={2} />
+          <View style={styles.cardMeta}>
+            <SkeletonText lines={2} />
+          </View>
+        </View>
+
+        <View style={styles.cardRight}>
+          <AppText style={styles.cardDate}>{formatActivityDate(item.createdAt)}</AppText>
+          <AppIcon name="chevron-right" size={14} color={color.border} />
+        </View>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.card}>
-      <View style={[styles.avatar, { backgroundColor: color.primary + 15, borderColor: color.border }]}>
-        <AppText style={[styles.avatarText, { color: color.primary }]}>{getInitials(item.full_name)}</AppText>
+      <View style={{ gap: 5 }}>
+        <View style={[styles.avatar, { backgroundColor: customerStatusColor[item.status] + 15, borderColor: color.border }]}>
+          <AppText style={[styles.avatarText, { color: customerStatusColor[item.status] }]}>{getInitials(item.full_name)}</AppText>
+        </View>
+        <View style={[styles.badge, { backgroundColor: customerStatusColor[item.status] + 15 }]}>
+          <AppText style={[styles.badgeText, { color: customerStatusColor[item.status] }]}>{customerStatusMap[item.status]}</AppText>
+        </View>
       </View>
 
       <View style={styles.cardBody}>
-        <AppText style={styles.cardName} numberOfLines={1}>
+        <AppText style={[styles.cardName, { color: customerStatusColor[item.status] }]} numberOfLines={1}>
           {item.full_name}
         </AppText>
         <AppText style={styles.cardMember}>No. Anggota · {item.member_number}</AppText>
         <View style={styles.cardMeta}>
           <AppIcon name="call" size={11} color={color.neutral} />
           <AppText style={styles.cardPhone}>{item.phone_number}</AppText>
-          <View style={[styles.badge, { backgroundColor: color.secondary + 15 }]}>
-            <AppText style={[styles.badgeText, { color: color.secondary }]}>{item.status}</AppText>
-          </View>
         </View>
       </View>
 
       <View style={styles.cardRight}>
-        <AppText style={styles.cardDate}>{formatActivityDate(item.createdAt)}</AppText>
-        <AppIcon name="chevron-right" size={14} color={color.border} />
+        <TouchableOpacity style={styles.editButton} onPress={() => onEdit?.(item)} activeOpacity={0.7}>
+          <AppIcon name="create" size={12} color={color.primary} />
+          <AppText style={styles.editText}>Edit</AppText>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -98,10 +131,26 @@ const styles = StyleSheet.create({
   },
   cardRight: {
     alignItems: 'flex-end',
-    gap: 4,
+    gap: 6,
   },
   cardDate: {
     fontSize: 10,
     color: color.neutral,
+  },
+  editButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    borderWidth: 0.5,
+    borderColor: color.primary,
+    backgroundColor: color.primary + '10',
+  },
+  editText: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: color.primary,
   },
 });

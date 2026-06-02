@@ -1,6 +1,7 @@
 import { color } from '@/assets/color';
+import { AppLogo } from '@/assets/images';
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import AppIcon from './Icon';
 
 interface HomeHeaderProps {
@@ -17,12 +18,12 @@ const HomeHeader: React.FC<HomeHeaderProps> = ({ name, onNotificationPress }) =>
     <View style={styles.container}>
       <View style={styles.leftSection}>
         <View style={styles.avatar}>
-          <Text style={styles.avatarText}>{getInitials(name)}</Text>
+          <Image source={AppLogo} style={{ width: 30, height: 30 }} />
         </View>
 
         <View style={styles.textContainer}>
-          <Text style={styles.greeting}>Selamat Datang,</Text>
           <Text style={styles.name}>{name}</Text>
+          <Text style={styles.greeting}>Hallo, Selamat Datang!</Text>
         </View>
       </View>
 
@@ -51,10 +52,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   avatar: {
-    width: 45,
-    height: 45,
+    width: 35,
+    height: 35,
     borderRadius: 22.5,
-    backgroundColor: color.primary,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -68,12 +68,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   greeting: {
-    fontSize: 12,
+    fontSize: 11,
     color: color.neutral,
     marginBottom: 2,
   },
   name: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700',
     color: color.black,
   },

@@ -1,6 +1,6 @@
 export const formatCurrency = (value: number) => {
   if (value === undefined || value === null) return 'Rp 0';
-  return 'Rp ' + value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 };
 
 export const formatActivityDate = (dateStr: string) => {

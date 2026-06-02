@@ -1,11 +1,11 @@
+import { AuthProvider } from '@/contexts/AuthContext';
 import { FormProvider } from '@/contexts/FormContext';
-import Routes from '@/routers';
+import { ModalProvider } from '@/contexts/ModalContext';
 import { navigationRef } from '@/lib/navigate';
+import Routes from '@/routers';
 import { NavigationContainer } from '@react-navigation/native';
 import React from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { AuthProvider } from '@/contexts/AuthContext';
-import { ModalProvider } from '@/contexts/ModalContext';
 
 const App = () => {
   return (

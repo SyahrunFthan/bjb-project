@@ -1,6 +1,12 @@
 import { fetchBranchesOptions } from '@/api/branch';
 import { customerStore } from '@/api/customer';
 import { color } from '@/assets/color';
+import { AppText } from '@/components/AppText';
+import Button from '@/components/Button';
+import DatePicker from '@/components/DatePicker';
+import DebounceSelect from '@/components/DebounceSelect';
+import Input from '@/components/Input';
+import Select from '@/components/Select';
 import SectionCard from '@/components/ui/SectionCard';
 import { genderOptions } from '@/constants/gender';
 import { maritalStatusOptions } from '@/constants/maritalStatus';
@@ -11,15 +17,7 @@ import { RouteParamList } from '@/types/navigation';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useEffect, useState } from 'react';
-import { ScrollView, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { AppText } from '../../AppText';
-import Button from '../../Button';
-import DatePicker from '../../DatePicker';
-import DebounceSelect from '../../DebounceSelect';
-import AppIcon from '../../Icon';
-import Input from '../../Input';
-import Select from '../../Select';
+import { ScrollView, StyleSheet, View } from 'react-native';
 
 const CustomerCreateForm = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RouteParamList>>();
@@ -63,16 +61,7 @@ const CustomerCreateForm = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar backgroundColor={color.white} barStyle="dark-content" />
-
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()} activeOpacity={0.7}>
-          <AppIcon name="arrow-back" size={20} color={color.black} />
-        </TouchableOpacity>
-        <AppText style={styles.headerTitle}>Tambah Nasabah</AppText>
-      </View>
-
+    <>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <SectionCard icon="card-membership" iconBg="#DBEAFE" iconColor="#1D4ED8" title="Identitas Diri">
           <View style={styles.fieldWrap}>
@@ -108,50 +97,38 @@ const CustomerCreateForm = () => {
             autoCapitalize="words"
           />
 
-          <View style={styles.twoCol}>
-            <View style={styles.colLeft}>
-              <Input
-                label="Tempat Lahir"
-                placeholder="Kota"
-                value={(values.place_of_birth as string) || ''}
-                onChangeText={val => setValue('place_of_birth', val)}
-                error={errors.place_of_birth}
-                autoCapitalize="words"
-              />
-            </View>
-            <View style={styles.colRight}>
-              <DatePicker
-                label="Tanggal Lahir"
-                placeholder="Pilih"
-                value={values.date_of_birth ? new Date(values.date_of_birth as string | number | Date) : undefined}
-                onDateChange={val => setValue('date_of_birth', val)}
-                error={errors.date_of_birth}
-              />
-            </View>
-          </View>
+          <Input
+            label="Tempat Lahir"
+            placeholder="Kota"
+            value={(values.place_of_birth as string) || ''}
+            onChangeText={val => setValue('place_of_birth', val)}
+            error={errors.place_of_birth}
+            autoCapitalize="words"
+          />
+          <DatePicker
+            label="Tanggal Lahir"
+            placeholder="Pilih"
+            value={values.date_of_birth ? new Date(values.date_of_birth as string | number | Date) : undefined}
+            onDateChange={val => setValue('date_of_birth', val)}
+            error={errors.date_of_birth}
+          />
 
-          <View style={styles.twoCol}>
-            <View style={styles.colLeft}>
-              <Select
-                label="Jenis Kelamin"
-                placeholder="Pilih"
-                value={(values.gender as string) || ''}
-                onValueChange={val => setValue('gender', val)}
-                options={genderOptions}
-                error={errors.gender}
-              />
-            </View>
-            <View style={styles.colRight}>
-              <Select
-                label="Status Nikah"
-                placeholder="Pilih"
-                value={(values.marital_status as string) || ''}
-                onValueChange={val => setValue('marital_status', val)}
-                options={maritalStatusOptions}
-                error={errors.marital_status}
-              />
-            </View>
-          </View>
+          <Select
+            label="Jenis Kelamin"
+            placeholder="Pilih"
+            value={(values.gender as string) || ''}
+            onValueChange={val => setValue('gender', val)}
+            options={genderOptions}
+            error={errors.gender}
+          />
+          <Select
+            label="Status Nikah"
+            placeholder="Pilih"
+            value={(values.marital_status as string) || ''}
+            onValueChange={val => setValue('marital_status', val)}
+            options={maritalStatusOptions}
+            error={errors.marital_status}
+          />
 
           <Select
             label="Agama"
@@ -191,46 +168,16 @@ const CustomerCreateForm = () => {
       </ScrollView>
 
       <View style={styles.footer}>
-        <Button title="Reset" type="outline" size="medium" onPress={resetForm} disabled={processing} style={styles.btnReset} />
-        <Button title="Simpan Nasabah" type="default" size="medium" onPress={handleSave} loading={processing} style={styles.btnSave} />
+        <Button title="Reset" type="outline" size="medium" onPress={() => resetForm()} disabled={processing} style={styles.btnReset} />
+        <Button title="Simpan" type="default" size="medium" onPress={handleSave} loading={processing} style={styles.btnSave} />
       </View>
-    </SafeAreaView>
+    </>
   );
 };
 
 export default CustomerCreateForm;
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F0F4FA',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: color.white,
-    height: 56,
-    borderBottomWidth: 0.5,
-    borderBottomColor: color.border,
-    paddingHorizontal: 16,
-    gap: 12,
-  },
-  backButton: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: '#F0F4FA',
-    borderWidth: 0.5,
-    borderColor: color.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerTitle: {
-    flex: 1,
-    fontSize: 16,
-    fontWeight: '600',
-    color: color.black,
-  },
   headerBadge: {
     backgroundColor: '#DBEAFE',
     paddingHorizontal: 10,

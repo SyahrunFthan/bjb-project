@@ -5,3 +5,7 @@ export const getInitials = (name: string) =>
     .map(w => w[0])
     .join('')
     .toUpperCase();
+
+export const skeletonData = Array.from({ length: 5 }).map((_, i) => ({
+  id: `skeleton-${i}`,
+}));

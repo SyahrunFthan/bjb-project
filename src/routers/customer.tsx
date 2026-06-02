@@ -2,7 +2,7 @@ import TabBar from '@/components/TabBar';
 import { TabBarProvider } from '@/contexts/TabBarContext';
 import DashboardScreen from '@/screens/customers/dashboard';
 import HistoryScreen from '@/screens/customers/history';
-import ProfileScreen from '@/screens/customers/profile';
+import ProfileScreen from '@/screens/profiles';
 import { CustomerRouteParamList } from '@/types/navigation';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import React from 'react';

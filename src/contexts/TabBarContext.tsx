@@ -8,7 +8,7 @@ interface TabBarContextProps {
   onScroll: (event: any) => void;
 }
 
-const TabBarContext = createContext<TabBarContextProps | undefined>(undefined);
+export const TabBarContext = createContext<TabBarContextProps | undefined>(undefined);
 
 export const TabBarProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const translateY = useRef(new Animated.Value(0)).current;

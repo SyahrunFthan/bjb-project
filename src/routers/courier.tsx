@@ -2,8 +2,8 @@ import TabBar from '@/components/TabBar';
 import { TabBarProvider } from '@/contexts/TabBarContext';
 import CustomerScreen from '@/screens/couriers/customers';
 import DashboardScreen from '@/screens/couriers/dashboard';
-import RequestScreen from '@/screens/couriers/requests';
-import ProfileScreen from '@/screens/customers/profile';
+import CourierLoanScreen from '@/screens/couriers/loans';
+import ProfileScreen from '@/screens/profiles';
 import { CourierRouteParamList } from '@/types/navigation';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import React from 'react';
@@ -18,7 +18,7 @@ const CourierRouter = () => {
           headerShown: false,
         }}>
         <Tab.Screen name="Dashboard" component={DashboardScreen} />
-        <Tab.Screen name="Request" component={RequestScreen} />
+        <Tab.Screen name="CourierLoan" component={CourierLoanScreen} />
         <Tab.Screen name="CustomerCourier" component={CustomerScreen} />
         <Tab.Screen name="Profile" component={ProfileScreen} />
       </Tab.Navigator>

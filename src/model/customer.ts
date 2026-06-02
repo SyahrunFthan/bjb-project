@@ -1,3 +1,6 @@
+import { Branch } from './branch';
+import { CustomerAddress } from './customerAddress';
+import { CustomerJob } from './customerJob';
 import { UserModel } from './user';
 
 export interface CustomerModel {
@@ -9,7 +12,6 @@ export interface CustomerModel {
   date_of_birth: string;
   gender: string;
   religion: string;
-  address: string;
   phone_number: string;
   email: string;
   marital_status: string;
@@ -23,4 +25,7 @@ export interface CustomerModel {
 
 export interface Customer extends CustomerModel {
   user?: UserModel;
+  branches?: Branch[];
+  address?: CustomerAddress | null;
+  job?: CustomerJob | null;
 }

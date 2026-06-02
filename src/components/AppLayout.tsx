@@ -1,11 +1,9 @@
 import { color } from '@/assets/color';
-import { useTabBar } from '@/contexts/TabBarContext';
-import React, { ReactNode, useEffect, useState } from 'react';
+import { TabBarContext } from '@/contexts/TabBarContext';
+import React, { ReactNode, useContext } from 'react';
 import { ScrollView, StatusBar, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import HomeHeader from './HomeHeader';
-import { User } from '@/model/user';
-import { getData } from '@/lib/storage';
 
 interface Props {
   children: ReactNode;
@@ -14,30 +12,13 @@ interface Props {
 }
 
 const AppLayout = ({ children, scrollable = false, refreshControl }: Props) => {
-  const { onScroll } = useTabBar();
-  const [profile, setProfile] = useState<User | null>(null);
-
-  useEffect(() => {
-    const loadProfile = async () => {
-      const auth = await getData('auth');
-      if (auth) {
-        setProfile(auth);
-      }
-    };
-
-    loadProfile();
-  }, []);
-
-  const content = (
-    <>
-      <HomeHeader name={profile?.full_name ?? 'Loading...'} />
-      <View style={[styles.content, !scrollable && styles.contentFlex, scrollable && styles.contentScrollable]}>{children}</View>
-    </>
-  );
+  const tabBar = useContext(TabBarContext);
+  const onScroll = tabBar?.onScroll ?? (() => {});
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar backgroundColor={color.white} barStyle={'dark-content'} />
+      <HomeHeader name="PT. Bare Jaya Berdikari" />
       {scrollable ? (
         <ScrollView
           style={styles.container}
@@ -45,10 +26,10 @@ const AppLayout = ({ children, scrollable = false, refreshControl }: Props) => {
           scrollEventThrottle={16}
           showsVerticalScrollIndicator={false}
           refreshControl={refreshControl}>
-          {content}
+          <View style={[styles.content, styles.contentScrollable]}>{children}</View>
         </ScrollView>
       ) : (
-        <View style={styles.container}>{content}</View>
+        <View style={[styles.container, styles.content, styles.contentFlex]}>{children}</View>
       )}
     </SafeAreaView>
   );

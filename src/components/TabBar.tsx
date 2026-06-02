@@ -52,8 +52,8 @@ const TabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigation })
                 return 'history';
               case 'Profile':
                 return 'person';
-              case 'Request':
-                return 'local-shipping';
+              case 'CourierLoan':
+                return '3p';
               case 'CustomerCourier':
                 return 'group';
               default:

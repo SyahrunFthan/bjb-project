@@ -1,4 +1,5 @@
 import { color } from '@/assets/color';
+import { verticalScale } from '@/lib/responsive';
 import { useState } from 'react';
 import { StyleSheet, Text, TextInput, TextInputProps, View, ViewStyle } from 'react-native';
 
@@ -62,7 +63,7 @@ const styles = StyleSheet.create({
     borderColor: color.border,
     borderRadius: 12,
     paddingHorizontal: 12,
-    height: 52,
+    height: verticalScale(45),
   },
   inputFocused: {
     borderColor: color.primary,

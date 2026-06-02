@@ -65,7 +65,6 @@ const Skeleton: React.FC<SkeletonProps> = ({
   );
 };
 
-// Komponen preset untuk kasus umum
 interface SkeletonTextProps {
   lines?: number;
   gap?: number;

@@ -1,3 +1,6 @@
+import { Customer } from '@/model/customer';
+import { Loan } from '@/model/loan';
+
 export type CustomerRouteParamList = {
   Dashboard: undefined;
   History: undefined;
@@ -6,7 +9,7 @@ export type CustomerRouteParamList = {
 
 export type CourierRouteParamList = {
   Dashboard: undefined;
-  Request: undefined;
+  CourierLoan: undefined;
   CustomerCourier: undefined;
   Profile: undefined;
 };
@@ -18,6 +21,17 @@ export type RouteParamList = {
   Customer: undefined;
   Courier: undefined;
   CustomerCreate: undefined;
+  CustomerEdit: {
+    customer: Customer;
+  };
+  CourierLoanCreate: undefined;
+  CourierLoanEdit: {
+    loan: Loan;
+  };
+  CourierCollection: undefined;
+  CourierCollectionDetail: {
+    loanId: string;
+  };
 };
 
 declare global {

@@ -1,7 +1,7 @@
-import React from 'react';
-import { StyleProp, ViewStyle } from 'react-native';
 import Icon from '@react-native-vector-icons/material-icons';
 import { MaterialIconsIconName } from '@react-native-vector-icons/material-icons/static';
+import React from 'react';
+import { StyleProp, ViewStyle } from 'react-native';
 
 interface Props {
   name?: MaterialIconsIconName;

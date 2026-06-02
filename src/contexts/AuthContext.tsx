@@ -1,7 +1,7 @@
 import api from '@/lib/api';
 import { getData } from '@/lib/storage';
 import { User } from '@/model/user';
-import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from 'react';
 
 interface AuthContextProps {
   auth: User | null;
@@ -22,7 +22,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     loadAuth();
   }, []);
 
-  return <AuthContext.Provider value={{ auth, setAuth }}>{children}</AuthContext.Provider>;
+  const value = useMemo(() => ({ auth, setAuth }), [auth]);
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => useContext(AuthContext);

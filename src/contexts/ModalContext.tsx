@@ -62,7 +62,15 @@ export const ModalProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setResultVisible(true);
   }, []);
 
-  const value: ModalProps = {
+  const showSuccess = useCallback((title: string, message: string, onClose?: () => void) => {
+    showResult('success', title, message, onClose);
+  }, [showResult]);
+
+  const showError = useCallback((title: string, message: string, onClose?: () => void) => {
+    showResult('error', title, message, onClose);
+  }, [showResult]);
+
+  const value = React.useMemo<ModalProps>(() => ({
     process: {
       show: showProcess,
       hide: hideProcess,
@@ -71,10 +79,10 @@ export const ModalProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       show: showConfirm,
     },
     result: {
-      success: (title, message, onClose) => showResult('success', title, message, onClose),
-      error: (title, message, onClose) => showResult('error', title, message, onClose),
+      success: showSuccess,
+      error: showError,
     },
-  };
+  }), [showProcess, hideProcess, showConfirm, showSuccess, showError]);
 
   return (
     <ModalContext.Provider value={value}>

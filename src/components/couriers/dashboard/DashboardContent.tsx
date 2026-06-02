@@ -1,15 +1,14 @@
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import React from 'react';
-import Card from '@/components/Card';
-import { SkeletonCircle, SkeletonText } from '@/components/ui/Skeleton';
-import { AppText } from '@/components/AppText';
 import { color } from '@/assets/color';
-import EmptyData from '@/components/ui/EmptyData';
+import { AppText } from '@/components/AppText';
+import Card from '@/components/Card';
 import AppIcon from '@/components/Icon';
-import { formatActivityDate, formatCurrency } from '@/lib/formatter';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RouteParamList } from '@/types/navigation';
 import EmptyState from '@/components/ui/EmptyState';
+import { SkeletonCircle, SkeletonText } from '@/components/ui/Skeleton';
+import { formatActivityDate, formatCurrency } from '@/lib/formatter';
+import { RouteParamList } from '@/types/navigation';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import React from 'react';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
 
 interface Props {
   loading: boolean;
@@ -41,16 +40,28 @@ const DashboardContent = ({ dashboardData, loading, navigation }: Props) => {
             <Card style={styles.quickCard}>
               <View style={styles.quickContent}>
                 <SkeletonCircle size={20} />
-
-                <SkeletonText lines={2} />
+                <View style={{ flex: 1, gap: 4 }}>
+                  <SkeletonText lines={2} />
+                </View>
+                <AppIcon name="chevron-right" size={20} color={color.border} />
               </View>
             </Card>
-
             <Card style={styles.quickCard}>
               <View style={styles.quickContent}>
                 <SkeletonCircle size={20} />
-
-                <SkeletonText lines={2} />
+                <View style={{ flex: 1, gap: 4 }}>
+                  <SkeletonText lines={2} />
+                </View>
+                <AppIcon name="chevron-right" size={20} color={color.border} />
+              </View>
+            </Card>
+            <Card style={styles.quickCard}>
+              <View style={styles.quickContent}>
+                <SkeletonCircle size={20} />
+                <View style={{ flex: 1, gap: 4 }}>
+                  <SkeletonText lines={2} />
+                </View>
+                <AppIcon name="chevron-right" size={20} color={color.border} />
               </View>
             </Card>
           </View>
@@ -117,28 +128,43 @@ const DashboardContent = ({ dashboardData, loading, navigation }: Props) => {
               <View style={styles.quickIconContainer}>
                 <AppIcon name="add-reaction" size={20} color={color.primary} />
               </View>
-
               <View style={styles.quickTextContainer}>
                 <AppText variant="medium" style={styles.quickTitle}>
                   Tambah Nasabah
                 </AppText>
                 <AppText style={styles.quickSubtitle}>Registrasi Baru</AppText>
               </View>
+              <AppIcon name="chevron-right" size={20} color={color.neutral} />
             </View>
           </Card>
 
-          <Card style={styles.quickCard}>
+          <Card style={styles.quickCard} onPress={() => navigation.navigate('CourierLoanCreate')}>
             <View style={styles.quickContent}>
               <View style={styles.quickIconContainer}>
                 <AppIcon name="currency-exchange" size={20} color={color.primary} />
               </View>
-
               <View style={styles.quickTextContainer}>
                 <AppText variant="medium" style={styles.quickTitle}>
                   Ajukan Pinjaman
                 </AppText>
                 <AppText style={styles.quickSubtitle}>Input Pengajuan</AppText>
               </View>
+              <AppIcon name="chevron-right" size={20} color={color.neutral} />
+            </View>
+          </Card>
+
+          <Card style={styles.quickCard} onPress={() => navigation.navigate('CourierCollection')}>
+            <View style={styles.quickContent}>
+              <View style={styles.quickIconContainer}>
+                <AppIcon name="receipt-long" size={20} color={color.primary} />
+              </View>
+              <View style={styles.quickTextContainer}>
+                <AppText variant="medium" style={styles.quickTitle}>
+                  Penagihan Angsuran
+                </AppText>
+                <AppText style={styles.quickSubtitle}>Bayar Cicilan Nasabah</AppText>
+              </View>
+              <AppIcon name="chevron-right" size={20} color={color.neutral} />
             </View>
           </Card>
         </View>
@@ -210,13 +236,11 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   quickAccessContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: 'column',
     gap: 8,
   },
   quickCard: {
-    flex: 1,
+    width: '100%',
   },
   quickContent: {
     flexDirection: 'row',

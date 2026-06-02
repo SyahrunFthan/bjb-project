@@ -1,3 +1,4 @@
+import { customerFetched } from '@/api/customer';
 import { color } from '@/assets/color';
 import AppLayout from '@/components/AppLayout';
 import { AppText } from '@/components/AppText';
@@ -5,127 +6,70 @@ import CustomerList from '@/components/couriers/customers/CustomerList';
 import AppIcon from '@/components/Icon';
 import Input from '@/components/Input';
 import EmptyData from '@/components/ui/EmptyData';
-import { CustomerModel } from '@/model/customer';
-import React, { useMemo, useState } from 'react';
-import { FlatList, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
-
-// ─── Mock data (ganti dengan API call) ───────────────────────────────────────
-const MOCK_CUSTOMERS: CustomerModel[] = [
-  {
-    id: '1',
-    user_id: 'u1',
-    national_id: '3201010101010001',
-    full_name: 'Ahmad Wahyudi',
-    place_of_birth: 'Jakarta',
-    date_of_birth: '1990-01-01',
-    gender: 'Laki-laki',
-    religion: 'Islam',
-    address: 'Jl. Merdeka No. 1',
-    phone_number: '081234567890',
-    email: 'ahmad@email.com',
-    marital_status: 'Menikah',
-    member_number: 'ANS-001234',
-    status: 'active',
-    created_by: 'admin',
-    updated_by: 'admin',
-    createdAt: '2025-01-12T00:00:00Z',
-    updatedAt: '2025-01-12T00:00:00Z',
-  },
-  {
-    id: '2',
-    user_id: 'u2',
-    national_id: '3201010101010002',
-    full_name: 'Siti Rahayu',
-    place_of_birth: 'Bandung',
-    date_of_birth: '1995-05-20',
-    gender: 'Perempuan',
-    religion: 'Islam',
-    address: 'Jl. Sudirman No. 5',
-    phone_number: '085698741230',
-    email: 'siti@email.com',
-    marital_status: 'Belum Menikah',
-    member_number: 'ANS-001235',
-    status: 'pending',
-    created_by: 'admin',
-    updated_by: 'admin',
-    createdAt: '2025-02-03T00:00:00Z',
-    updatedAt: '2025-02-03T00:00:00Z',
-  },
-  {
-    id: '3',
-    user_id: 'u3',
-    national_id: '3201010101010003',
-    full_name: 'Budi Prasetyo',
-    place_of_birth: 'Surabaya',
-    date_of_birth: '1988-11-15',
-    gender: 'Laki-laki',
-    religion: 'Kristen',
-    address: 'Jl. Pahlawan No. 3',
-    phone_number: '087712345678',
-    email: 'budi@email.com',
-    marital_status: 'Menikah',
-    member_number: 'ANS-001236',
-    status: 'inactive',
-    created_by: 'admin',
-    updated_by: 'admin',
-    createdAt: '2025-02-18T00:00:00Z',
-    updatedAt: '2025-02-18T00:00:00Z',
-  },
-  {
-    id: '4',
-    user_id: 'u4',
-    national_id: '3201010101010004',
-    full_name: 'Dewi Lestari',
-    place_of_birth: 'Yogyakarta',
-    date_of_birth: '1993-07-08',
-    gender: 'Perempuan',
-    religion: 'Islam',
-    address: 'Jl. Malioboro No. 10',
-    phone_number: '082345678901',
-    email: 'dewi@email.com',
-    marital_status: 'Menikah',
-    member_number: 'ANS-001237',
-    status: 'active',
-    created_by: 'admin',
-    updated_by: 'admin',
-    createdAt: '2025-03-05T00:00:00Z',
-    updatedAt: '2025-03-05T00:00:00Z',
-  },
-];
+import { useDebounce } from '@/hooks/useDebounce';
+import { useModal } from '@/hooks/useModal';
+import { skeletonData } from '@/lib/utils';
+import { Customer } from '@/model/customer';
+import { RouteParamList } from '@/types/navigation';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import React, { useCallback, useEffect, useState } from 'react';
+import { FlatList, RefreshControl, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 const FILTER_OPTIONS = [
   { key: 'all', label: 'Semua' },
-  { key: 'active', label: 'Aktif' },
-  { key: 'inactive', label: 'Nonaktif' },
-  { key: 'pending', label: 'Pending' },
+  { key: 'priority', label: 'Prioritas' },
+  { key: 'normal', label: 'Biasa' },
+  { key: 'blocked', label: 'Blokir' },
 ];
 
-const CustomerScreen = () => {
+const CustomerScreen = ({ navigation }: { navigation: NativeStackNavigationProp<RouteParamList, 'Customer'> }) => {
   const [search, setSearch] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
+  const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const debounceSearch = useDebounce(search);
+  const modal = useModal();
 
-  const customers = MOCK_CUSTOMERS;
+  const fetchData = useCallback(
+    (isRefresh = false) => {
+      if (isRefresh) {
+        setRefreshing(true);
+      }
 
-  const filtered = useMemo(() => {
-    let list = customers;
-    if (activeFilter !== 'all') list = list.filter(c => c.status === activeFilter);
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      list = list.filter(c => c.full_name.toLowerCase().includes(q) || c.national_id.includes(q) || c.member_number.toLowerCase().includes(q));
-    }
-    return list;
-  }, [customers, activeFilter, search]);
+      const queries: Record<string, string> = {
+        search: debounceSearch,
+        status: activeFilter,
+      };
+
+      customerFetched({ modal, queries, setCustomers, setLoading, setRefreshing });
+    },
+    [activeFilter, debounceSearch],
+  );
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      fetchData();
+    });
+    return unsubscribe;
+  }, [navigation, fetchData]);
 
   return (
-    <AppLayout scrollable={true}>
+    <AppLayout>
       <StatusBar backgroundColor={color.primary} barStyle="light-content" />
-      <Input leftIcon={<AppIcon name="search" size={20} color={color.border} />} placeholder="Cari Nama" />
+      <Input
+        leftIcon={<AppIcon name="search" size={20} color={color.border} />}
+        placeholder="Cari Nama"
+        value={search}
+        onChangeText={value => setSearch(value)}
+      />
 
       <FlatList
-        data={filtered}
+        data={loading ? skeletonData : customers}
         keyExtractor={item => item.id}
         showsVerticalScrollIndicator={false}
-        scrollEnabled={false}
+        scrollEnabled={true}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchData(true)} />}
         contentContainerStyle={styles.listContent}
         ListHeaderComponent={
           <>
@@ -134,7 +78,7 @@ const CustomerScreen = () => {
               data={FILTER_OPTIONS}
               keyExtractor={f => f.key}
               showsHorizontalScrollIndicator={false}
-              scrollEnabled={false}
+              scrollEnabled={true}
               contentContainerStyle={styles.filterRow}
               renderItem={({ item: f }) => (
                 <TouchableOpacity
@@ -149,7 +93,14 @@ const CustomerScreen = () => {
             <AppText style={styles.sectionLabel}>Nasabah terdaftar</AppText>
           </>
         }
-        renderItem={({ item, index }) => <CustomerList item={item} index={index} />}
+        renderItem={({ item, index }) => (
+          <CustomerList
+            onEdit={() => navigation.navigate('CustomerEdit', { customer: item as Customer })}
+            loading={loading}
+            item={item as Customer}
+            index={index}
+          />
+        )}
         ListEmptyComponent={<EmptyData />}
         ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
       />
@@ -159,10 +110,7 @@ const CustomerScreen = () => {
 
 export default CustomerScreen;
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
-
 const styles = StyleSheet.create({
-  // Stats
   statsRow: {
     flexDirection: 'row',
     gap: 8,
@@ -230,6 +178,5 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingBottom: 24,
-    backgroundColor: '#F0F4FF',
   },
 });

@@ -1,5 +1,4 @@
 import { authLogin } from '@/api/auth';
-import { AuthFormValues } from '@/model/auth';
 import { color } from '@/assets/color';
 import { AppLogo } from '@/assets/images';
 import AuthBackground from '@/components/AuthBackground';
@@ -8,6 +7,7 @@ import AppIcon from '@/components/Icon';
 import Input from '@/components/Input';
 import { Rules, useFormContext } from '@/contexts/FormContext';
 import { useModal } from '@/hooks/useModal';
+import { AuthFormValues } from '@/model/auth';
 import { RouteParamList } from '@/types/navigation';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useEffect, useState } from 'react';
@@ -75,7 +75,7 @@ const AuthScreen = ({ navigation }: { navigation: NativeStackNavigationProp<Rout
             <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
           </TouchableOpacity>
 
-          <Button title="Login" size="large" style={styles.loginButton} onPress={handleLogin} />
+          <Button title="Login" disabled={processing} size="large" style={styles.loginButton} onPress={handleLogin} />
 
           <View style={styles.dividerContainer}>
             <View style={styles.divider} />
