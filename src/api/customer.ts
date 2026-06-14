@@ -3,6 +3,8 @@ import { ModalProps } from '@/contexts/ModalContext';
 import api from '@/lib/api';
 import { processError, processFail, processFinish, processStart, processSuccess } from '@/lib/process';
 import { Customer } from '@/model/customer';
+import { CustomerDashboardData, CustomerDashboardResponse } from '@/model/dashboard';
+import { CustomerLoanHistory, CustomerLoansResponse, CustomerPaymentHistory, CustomerPaymentsResponse } from '@/model/history';
 import { AxiosError } from 'axios';
 import { Dispatch, SetStateAction } from 'react';
 
@@ -140,6 +142,87 @@ export const customerUpdate = async ({ modal, form, setProcessing, goBack, recor
   } finally {
     processFinish(modal, () => {
       setProcessing(false);
+    });
+  }
+};
+
+interface DashboardProps {
+  modal: ModalProps;
+  setLoading: Dispatch<SetStateAction<boolean>>;
+  setData: Dispatch<SetStateAction<CustomerDashboardData | null>>;
+  setRefreshing?: Dispatch<SetStateAction<boolean>>;
+}
+
+export const customerDashboardFetched = async ({ setData, setLoading, modal, setRefreshing }: DashboardProps) => {
+  try {
+    setLoading(true);
+    const response = await api.get<CustomerDashboardResponse>('/mobile/customers/dashboard');
+    if (response.data?.success) {
+      setData(response.data.data);
+    } else {
+      processFail(modal, 'Error', response.data?.message || 'Gagal memuat data dashboard');
+    }
+  } catch (error) {
+    const axiosError = error as AxiosError<{ message?: string }>;
+    processFail(modal, 'Error', axiosError.response?.data?.message || 'Gagal menghubungkan ke server');
+  } finally {
+    processFinish(modal, () => {
+      setLoading(false);
+      if (setRefreshing) setRefreshing(false);
+    });
+  }
+};
+
+interface LoansHistoryProps {
+  modal: ModalProps;
+  setLoading: Dispatch<SetStateAction<boolean>>;
+  setData: Dispatch<SetStateAction<CustomerLoanHistory[]>>;
+  setRefreshing?: Dispatch<SetStateAction<boolean>>;
+}
+
+export const customerLoansFetched = async ({ setData, setLoading, modal, setRefreshing }: LoansHistoryProps) => {
+  try {
+    setLoading(true);
+    const response = await api.get<CustomerLoansResponse>('/mobile/customers/loans');
+    if (response.data?.success) {
+      setData(response.data.data);
+    } else {
+      processFail(modal, 'Error', response.data?.message || 'Gagal memuat data riwayat pinjaman');
+    }
+  } catch (error) {
+    const axiosError = error as AxiosError<{ message?: string }>;
+    processFail(modal, 'Error', axiosError.response?.data?.message || 'Gagal menghubungkan ke server');
+  } finally {
+    processFinish(modal, () => {
+      setLoading(false);
+      if (setRefreshing) setRefreshing(false);
+    });
+  }
+};
+
+interface PaymentsHistoryProps {
+  modal: ModalProps;
+  setLoading: Dispatch<SetStateAction<boolean>>;
+  setData: Dispatch<SetStateAction<CustomerPaymentHistory[]>>;
+  setRefreshing?: Dispatch<SetStateAction<boolean>>;
+}
+
+export const customerPaymentsFetched = async ({ setData, setLoading, modal, setRefreshing }: PaymentsHistoryProps) => {
+  try {
+    setLoading(true);
+    const response = await api.get<CustomerPaymentsResponse>('/mobile/customers/payments');
+    if (response.data?.success) {
+      setData(response.data.data);
+    } else {
+      processFail(modal, 'Error', response.data?.message || 'Gagal memuat data riwayat pembayaran');
+    }
+  } catch (error) {
+    const axiosError = error as AxiosError<{ message?: string }>;
+    processFail(modal, 'Error', axiosError.response?.data?.message || 'Gagal menghubungkan ke server');
+  } finally {
+    processFinish(modal, () => {
+      setLoading(false);
+      if (setRefreshing) setRefreshing(false);
     });
   }
 };

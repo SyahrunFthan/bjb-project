@@ -1,13 +1,110 @@
+import { customerDashboardFetched } from '@/api/customer';
 import { color } from '@/assets/color';
 import AppLayout from '@/components/AppLayout';
 import { AppText } from '@/components/AppText';
 import AppIcon from '@/components/Icon';
-import React from 'react';
-import { FlatList, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { SkeletonCard } from '@/components/ui/Skeleton';
+import { useModal } from '@/hooks/useModal';
+import { formatCurrency } from '@/lib/formatter';
+import { skeletonData } from '@/lib/utils';
+import { CustomerDashboardData } from '@/model/dashboard';
+import { CustomerRouteParamList } from '@/types/navigation';
+import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import React, { useCallback, useEffect, useState } from 'react';
+import { FlatList, RefreshControl, StyleSheet, TouchableOpacity, View } from 'react-native';
 
-const DashboardScreen = () => {
+const formatTransactionDate = (dateStr: string) => {
+  if (!dateStr) return '';
+  try {
+    const date = new Date(dateStr);
+    const day = date.getDate();
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+    const month = months[date.getMonth()];
+    const year = date.getFullYear();
+    const time = `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+    return `${day} ${month} ${year} • ${time}`;
+  } catch (e) {
+    return dateStr;
+  }
+};
+
+const formatDueDate = (dateStr: string | null) => {
+  if (!dateStr) return '-';
+  try {
+    const date = new Date(dateStr);
+    const day = date.getDate();
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+    const month = months[date.getMonth()];
+    const year = date.getFullYear();
+    return `${day} ${month} ${year}`;
+  } catch (e) {
+    return dateStr;
+  }
+};
+
+interface DashboardScreenProps {
+  navigation: BottomTabNavigationProp<CustomerRouteParamList, 'Dashboard'>;
+}
+
+const DashboardScreen = ({ navigation }: DashboardScreenProps) => {
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [dashboardData, setDashboardData] = useState<CustomerDashboardData | null>(null);
+  const modal = useModal();
+
+  const fetchDashboardData = useCallback(
+    (isRefreshing = false) => {
+      if (isRefreshing) {
+        setRefreshing(true);
+      }
+      customerDashboardFetched({ setData: setDashboardData, setLoading, modal, setRefreshing });
+    },
+    [modal],
+  );
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
+
+  if (loading && !refreshing) {
+    return (
+      <AppLayout scrollable={false}>
+        <SkeletonCard style={{ marginBottom: 15 }} />
+
+        <SkeletonCard style={{ marginBottom: 15 }} />
+
+        <View style={styles.sectionHeader}>
+          <AppText variant="semiBold" style={styles.sectionTitle}>
+            Transaksi Terakhir
+          </AppText>
+
+          <TouchableOpacity onPress={() => navigation.navigate('History')}>
+            <AppText variant="semiBold" style={styles.seeAllText}>
+              Lihat Semua
+            </AppText>
+          </TouchableOpacity>
+        </View>
+
+        {skeletonData.map((_, idx) => (
+          <SkeletonCard key={idx} style={{ marginBottom: 10 }} />
+        ))}
+      </AppLayout>
+    );
+  }
+
+  const hasActiveLoan = dashboardData && dashboardData.stats.totalActiveLoan > 0;
+
   return (
-    <AppLayout scrollable={true}>
+    <AppLayout
+      scrollable={true}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchDashboardData(true)} colors={[color.blue]} />}>
+      <View style={styles.welcomeContainer}>
+        <AppText variant="bold" style={styles.welcomeText}>
+          Halo, {dashboardData?.customer?.full_name || 'Nasabah'}
+        </AppText>
+        <AppText style={styles.subWelcomeText}>Selamat datang kembali di Koperasi BJB</AppText>
+      </View>
+
       <View style={styles.mainCard}>
         <View style={styles.rowBetween}>
           <View>
@@ -15,15 +112,17 @@ const DashboardScreen = () => {
               Total Pinjaman Aktif
             </AppText>
             <AppText variant="bold" style={styles.valueLight}>
-              Rp 10.000.000
+              Rp {formatCurrency(dashboardData?.stats?.totalActiveLoan || 0)}
             </AppText>
           </View>
 
-          <View style={styles.badgePremium}>
-            <AppText variant="bold" style={styles.textBadge}>
-              Premium Member
-            </AppText>
-          </View>
+          {dashboardData?.customer?.status === 'priority' && (
+            <View style={styles.badgePremium}>
+              <AppText variant="bold" style={styles.textBadge}>
+                Premium Member
+              </AppText>
+            </View>
+          )}
         </View>
 
         <View style={styles.divider} />
@@ -32,30 +131,32 @@ const DashboardScreen = () => {
           <View>
             <AppText style={styles.labelLight}>Sisa Tagihan</AppText>
             <AppText variant="semiBold" style={styles.valueLight}>
-              Rp 4.250.000
+              Rp {formatCurrency(dashboardData?.stats?.totalRemainingAmount || 0)}
             </AppText>
           </View>
 
           <View style={styles.alignCenter}>
             <AppText style={styles.labelLight}>Jatuh Tempo</AppText>
             <AppText variant="semiBold" style={styles.valueLight}>
-              20 Des 2025
+              {formatDueDate(dashboardData?.nextInstallment?.dueDate || null)}
             </AppText>
           </View>
         </View>
 
-        <View style={styles.infoBox}>
-          <AppIcon name="calendar-today" size={20} color={color.white} />
-          <AppText variant="semiBold" style={styles.textInfo}>
-            Cicilan berikutnya: Rp. 850.000
-          </AppText>
-        </View>
+        {hasActiveLoan && dashboardData?.nextInstallment?.amount ? (
+          <View style={styles.infoBox}>
+            <AppIcon name="calendar-today" size={20} color={color.white} />
+            <AppText variant="semiBold" style={styles.textInfo}>
+              Cicilan berikutnya: Rp. {formatCurrency(dashboardData.nextInstallment.amount)}
+            </AppText>
+          </View>
+        ) : null}
       </View>
 
       <View style={styles.statusCard}>
         <View style={styles.progressBox}>
           <AppText variant="bold" style={styles.textProgress}>
-            75%
+            {dashboardData?.progress?.progressPercentage || 0}%
           </AppText>
         </View>
 
@@ -64,10 +165,10 @@ const DashboardScreen = () => {
             Status Pembayaran
           </AppText>
 
-          <AppText style={styles.statusDesc}>Langkah bagus! 9 dari 12 cicilan anda telah terbayar.</AppText>
+          <AppText style={styles.statusDesc}>{dashboardData?.progress?.progressMessage || 'Anda belum memiliki pinjaman aktif.'}</AppText>
 
           <View style={styles.progressBarBg}>
-            <View style={styles.progressBarFill} />
+            <View style={[styles.progressBarFill, { width: `${dashboardData?.progress?.progressPercentage || 0}%` }]} />
           </View>
         </View>
       </View>
@@ -77,43 +178,73 @@ const DashboardScreen = () => {
           Transaksi Terakhir
         </AppText>
 
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate('History')}>
           <AppText variant="semiBold" style={styles.seeAllText}>
             Lihat Semua
           </AppText>
         </TouchableOpacity>
       </View>
 
-      <FlatList
-        data={[1, 2, 3, 4]}
-        scrollEnabled={false}
-        renderItem={() => {
-          return (
-            <View style={styles.transactionItem}>
-              <View style={styles.iconContainer}>
-                <AppIcon name="receipt-long" size={16} color={color.blue} />
-              </View>
+      {dashboardData?.recentTransactions && dashboardData.recentTransactions.length > 0 ? (
+        <FlatList
+          data={dashboardData.recentTransactions}
+          scrollEnabled={false}
+          keyExtractor={item => item.id}
+          renderItem={({ item }) => {
+            return (
+              <View style={styles.transactionItem}>
+                <View style={styles.iconContainer}>
+                  <AppIcon name="receipt-long" size={16} color={color.blue} />
+                </View>
 
-              <View style={styles.flex1}>
-                <AppText style={styles.transactionTitle}>Bayar Cicilan</AppText>
-                <AppText style={styles.transactionDate}>20 Des 2025 • 14:20</AppText>
-              </View>
+                <View style={styles.flex1}>
+                  <AppText style={styles.transactionTitle}>{item.title}</AppText>
+                  <AppText style={styles.transactionDate}>{formatTransactionDate(item.date)}</AppText>
+                </View>
 
-              <View>
-                <AppText style={styles.transactionAmount} variant="semiBold">
-                  - Rp 850.000
-                </AppText>
-                <AppText style={styles.transactionStatus}>Berhasil</AppText>
+                <View>
+                  <AppText style={styles.transactionAmount} variant="semiBold">
+                    - Rp {formatCurrency(item.amount)}
+                  </AppText>
+                  <AppText style={styles.transactionStatus}>{item.status}</AppText>
+                </View>
               </View>
-            </View>
-          );
-        }}
-      />
+            );
+          }}
+        />
+      ) : (
+        <View style={styles.emptyContainer}>
+          <AppIcon name="receipt" size={32} color={color.neutral} />
+          <AppText style={styles.emptyText}>Belum ada riwayat transaksi</AppText>
+        </View>
+      )}
     </AppLayout>
   );
 };
 
 const styles = StyleSheet.create({
+  centerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 50,
+  },
+  loadingText: {
+    marginTop: 10,
+    color: color.neutral,
+  },
+  welcomeContainer: {
+    marginBottom: 15,
+  },
+  welcomeText: {
+    fontSize: 20,
+    color: color.black,
+  },
+  subWelcomeText: {
+    fontSize: 12,
+    color: color.neutral,
+    marginTop: 2,
+  },
   mainCard: {
     padding: 15,
     borderRadius: 15,
@@ -166,8 +297,8 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   infoBox: {
-    backgroundColor: color.light + 40,
-    padding: 15,
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    padding: 12,
     borderRadius: 10,
     flexDirection: 'row',
     alignItems: 'center',
@@ -225,7 +356,6 @@ const styles = StyleSheet.create({
   progressBarFill: {
     height: '100%',
     backgroundColor: color.blue,
-    width: '75%',
     borderRadius: 3,
   },
   sectionHeader: {
@@ -259,6 +389,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   transactionTitle: {
+    fontSize: 14,
+    color: color.black,
   },
   transactionDate: {
     fontSize: 12,
@@ -273,6 +405,18 @@ const styles = StyleSheet.create({
     color: color.success,
     fontSize: 12,
     textAlign: 'right',
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 30,
+    backgroundColor: color.white,
+    borderRadius: 10,
+  },
+  emptyText: {
+    color: color.neutral,
+    fontSize: 12,
+    marginTop: 6,
   },
 });
 

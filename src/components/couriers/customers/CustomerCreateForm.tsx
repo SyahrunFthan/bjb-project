@@ -13,6 +13,7 @@ import { maritalStatusOptions } from '@/constants/maritalStatus';
 import { religionOptions } from '@/constants/religion';
 import { Rules, useFormContext } from '@/contexts/FormContext';
 import { useModal } from '@/hooks/useModal';
+import api from '@/lib/api';
 import { RouteParamList } from '@/types/navigation';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -26,9 +27,41 @@ const CustomerCreateForm = () => {
   const modal = useModal();
 
   const [processing, setProcessing] = useState(false);
+  const [seqNumber, setSeqNumber] = useState<number>(1);
   const nikLength = ((values.national_id as string) || '').length;
 
   useEffect(() => {
+    const fetchNextSeq = async () => {
+      try {
+        const response = await api.get('/customers/options');
+        if (response.data && Array.isArray(response.data)) {
+          setSeqNumber(response.data.length + 1);
+        }
+      } catch (err) {
+        console.log('Error fetching customer count:', err);
+      }
+    };
+    fetchNextSeq();
+  }, []);
+
+  useEffect(() => {
+    if (values.date_of_birth) {
+      const dob = new Date(values.date_of_birth as string);
+      if (!isNaN(dob.getTime())) {
+        const currentYear = new Date().getFullYear();
+        const dateStr = String(dob.getDate()).padStart(2, '0');
+        const monthStr = String(dob.getMonth() + 1).padStart(2, '0');
+        const yearStr = String(dob.getFullYear()).slice(-2);
+        const seqStr = String(seqNumber).padStart(6, '0');
+
+        const generatedMemberNumber = `${currentYear}${dateStr}${monthStr}${yearStr}${seqStr}`;
+        setValue('member_number', generatedMemberNumber);
+      }
+    }
+  }, [values.date_of_birth, seqNumber]);
+
+  useEffect(() => {
+    register('member_number', [Rules.required('Nomor Anggota wajib diisi')]);
     register('national_id', [
       Rules.required('NIK wajib diisi'),
       Rules.pattern(/^[0-9]+$/, 'NIK hanya boleh berisi angka'),
@@ -74,6 +107,18 @@ const CustomerCreateForm = () => {
               keyboardType="numeric"
               maxLength={16}
               rightIcon={<AppText style={[styles.counterText, nikLength === 16 && styles.counterDone]}>{nikLength}/16</AppText>}
+            />
+          </View>
+
+          <View style={styles.fieldWrap}>
+            <Input
+              label="Nomor Anggota"
+              placeholder="Akan digenerate setelah Tgl Lahir dipilih"
+              value={(values.member_number as string) || ''}
+              onChangeText={val => setValue('member_number', val)}
+              error={errors.member_number}
+              editable={false}
+              style={{ backgroundColor: '#F8FAFC', color: '#64748B' }}
             />
           </View>
 
