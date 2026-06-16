@@ -1,10 +1,17 @@
 import AuthScreen from '@/screens/auth';
+import BoardingScreen from '@/screens/boarding';
+import TermsScreen from '@/screens/profiles/terms';
+import HelpScreen from '@/screens/profiles/help';
+import DeleteAccountScreen from '@/screens/profiles/delete-account';
+import SecureScreen from '@/screens/profiles/secure';
+import PersonalScreen from '@/screens/profiles/personal';
+import CourierProfileScreen from '@/screens/profiles/courier';
+import CourierCollectionScreen from '@/screens/couriers/collection';
+import CourierCollectionDetailScreen from '@/screens/couriers/collection/detail';
 import CustomerCreateScreen from '@/screens/couriers/customers/create';
 import CustomerEditScreen from '@/screens/couriers/customers/edit';
 import CourierLoanCreateScreen from '@/screens/couriers/loans/create';
 import CourierLoanEditScreen from '@/screens/couriers/loans/edit';
-import CourierCollectionScreen from '@/screens/couriers/collection';
-import CourierCollectionDetailScreen from '@/screens/couriers/collection/detail';
 import SplashScreen from '@/screens/splash';
 import StartScreen from '@/screens/start';
 import { RouteParamList } from '@/types/navigation';
@@ -29,6 +36,13 @@ const Routes = () => {
       <Stack.Screen name="CourierLoanEdit" component={CourierLoanEditScreen} options={{ statusBarStyle: 'dark' }} />
       <Stack.Screen name="CourierCollection" component={CourierCollectionScreen} options={{ statusBarStyle: 'dark' }} />
       <Stack.Screen name="CourierCollectionDetail" component={CourierCollectionDetailScreen} options={{ statusBarStyle: 'dark' }} />
+      <Stack.Screen name="Boarding" component={BoardingScreen} options={{ statusBarStyle: 'dark' }} />
+      <Stack.Screen name="Terms" component={TermsScreen} options={{ statusBarStyle: 'dark' }} />
+      <Stack.Screen name="Help" component={HelpScreen} options={{ statusBarStyle: 'dark' }} />
+      <Stack.Screen name="DeleteAccount" component={DeleteAccountScreen} options={{ statusBarStyle: 'dark' }} />
+      <Stack.Screen name="Secure" component={SecureScreen} options={{ statusBarStyle: 'dark' }} />
+      <Stack.Screen name="Personal" component={PersonalScreen} options={{ statusBarStyle: 'dark' }} />
+      <Stack.Screen name="CourierProfile" component={CourierProfileScreen} options={{ statusBarStyle: 'dark' }} />
     </Stack.Navigator>
   );
 };

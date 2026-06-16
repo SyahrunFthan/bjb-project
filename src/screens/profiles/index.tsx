@@ -5,10 +5,14 @@ import AppIcon from '@/components/Icon';
 import { getData } from '@/lib/storage';
 import { getInitials } from '@/lib/utils';
 import { User } from '@/model/user';
+import { RouteParamList } from '@/types/navigation';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 
 const ProfileScreen = () => {
+  const navigation = useNavigation<NativeStackNavigationProp<RouteParamList>>();
   const [profile, setProfile] = useState<User | null>(null);
 
   useEffect(() => {
@@ -56,23 +60,21 @@ const ProfileScreen = () => {
       </AppText>
 
       <View style={styles.menuContainer}>
-        <View style={styles.menuItem}>
+        <TouchableOpacity onPress={() => navigation.navigate(profile?.employee ? 'CourierProfile' : 'Personal')} style={styles.menuItem}>
           <View style={styles.menuLeft}>
             <View style={styles.iconPrimaryContainer}>
               <AppIcon name="manage-accounts" color={color.primary} size={20} />
             </View>
 
             <View style={styles.menuTextWrapper}>
-              <AppText variant="medium">Ubah Profil</AppText>
+              <AppText variant="medium">Data Probadi</AppText>
             </View>
           </View>
 
-          <TouchableOpacity>
-            <AppIcon name="chevron-right" size={24} color={color.primary} />
-          </TouchableOpacity>
-        </View>
+          <AppIcon name="chevron-right" size={24} color={color.primary} />
+        </TouchableOpacity>
 
-        <View style={[styles.menuItem, styles.menuItemSpacing]}>
+        <TouchableOpacity onPress={() => navigation.navigate('Secure')} style={[styles.menuItem, styles.menuItemSpacing]}>
           <View style={styles.menuLeft}>
             <View style={styles.iconPrimaryContainer}>
               <AppIcon name="security" color={color.primary} size={20} />
@@ -83,12 +85,10 @@ const ProfileScreen = () => {
             </View>
           </View>
 
-          <TouchableOpacity>
-            <AppIcon name="chevron-right" size={24} color={color.primary} />
-          </TouchableOpacity>
-        </View>
+          <AppIcon name="chevron-right" size={24} color={color.primary} />
+        </TouchableOpacity>
 
-        <View style={styles.menuItemNoBorder}>
+        <TouchableOpacity onPress={() => navigation.navigate('DeleteAccount')} style={styles.menuItemNoBorder}>
           <View style={styles.menuLeft}>
             <View style={styles.iconDangerContainer}>
               <AppIcon name="delete" color={color.tertiary} size={20} />
@@ -101,10 +101,8 @@ const ProfileScreen = () => {
             </View>
           </View>
 
-          <TouchableOpacity>
-            <AppIcon name="chevron-right" size={24} color={color.tertiary} />
-          </TouchableOpacity>
-        </View>
+          <AppIcon name="chevron-right" size={24} color={color.tertiary} />
+        </TouchableOpacity>
       </View>
 
       <AppText variant="medium" style={styles.sectionTitle}>
@@ -112,7 +110,7 @@ const ProfileScreen = () => {
       </AppText>
 
       <View style={styles.menuContainer}>
-        <View style={styles.menuItem}>
+        <TouchableOpacity onPress={() => navigation.navigate('Help')} style={styles.menuItem}>
           <View style={styles.menuLeft}>
             <View style={styles.iconPrimaryContainer}>
               <AppIcon name="support-agent" color={color.primary} size={20} />
@@ -123,12 +121,10 @@ const ProfileScreen = () => {
             </View>
           </View>
 
-          <TouchableOpacity>
-            <AppIcon name="chevron-right" size={24} color={color.primary} />
-          </TouchableOpacity>
-        </View>
+          <AppIcon name="chevron-right" size={24} color={color.primary} />
+        </TouchableOpacity>
 
-        <View style={styles.menuItemNoBorder}>
+        <TouchableOpacity onPress={() => navigation.navigate('Terms')} style={styles.menuItemNoBorder}>
           <View style={styles.menuLeft}>
             <View style={styles.iconPrimaryContainer}>
               <AppIcon name="policy" color={color.primary} size={20} />
@@ -139,10 +135,8 @@ const ProfileScreen = () => {
             </View>
           </View>
 
-          <TouchableOpacity>
-            <AppIcon name="chevron-right" size={24} color={color.primary} />
-          </TouchableOpacity>
-        </View>
+          <AppIcon name="chevron-right" size={24} color={color.primary} />
+        </TouchableOpacity>
       </View>
 
       <TouchableOpacity style={styles.logoutButton}>

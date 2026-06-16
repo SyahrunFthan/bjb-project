@@ -1,6 +1,6 @@
 import { color } from '@/assets/color';
-import React, { useState, useEffect } from 'react';
-import { Modal, StyleSheet, Text, TouchableOpacity, View, ViewStyle, FlatList } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { FlatList, Modal, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 import AppIcon from './Icon';
 
 interface Props {
@@ -15,21 +15,28 @@ interface Props {
 const DatePicker = ({ label, placeholder = 'Pilih Tanggal', value, onDateChange, error, containerStyle }: Props) => {
   const [modalVisible, setModalVisible] = useState(false);
   
-  // Temporary states for selections inside bottom sheet
   const [selectedDay, setSelectedDay] = useState(1);
-  const [selectedMonth, setSelectedMonth] = useState(0); // 0-11
+  const [selectedMonth, setSelectedMonth] = useState(0);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
-  const months = [
-    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
-  ];
+  const dayListRef = useRef<FlatList>(null);
+  const monthListRef = useRef<FlatList>(null);
+  const yearListRef = useRef<FlatList>(null);
+
+  const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 
   const getDaysInMonth = (year: number, month: number) => {
     return new Date(year, month + 1, 0).getDate();
   };
 
-  // Adjust selected day if it exceeds the number of days in the newly selected month/year
+  const daysInSelectedMonth = getDaysInMonth(selectedYear, selectedMonth);
+  const daysData = Array.from({ length: daysInSelectedMonth }, (_, i) => i + 1);
+
+  const monthsData = months.map((name, index) => ({ label: name, value: index }));
+
+  const currentYear = new Date().getFullYear();
+  const yearsData = Array.from({ length: currentYear - 1930 + 6 }, (_, i) => currentYear + 5 - i);
+
   useEffect(() => {
     if (modalVisible) {
       const daysInSelected = getDaysInMonth(selectedYear, selectedMonth);
@@ -38,6 +45,26 @@ const DatePicker = ({ label, placeholder = 'Pilih Tanggal', value, onDateChange,
       }
     }
   }, [selectedMonth, selectedYear, selectedDay, modalVisible]);
+
+  useEffect(() => {
+    if (modalVisible) {
+      const dayIndex = selectedDay - 1;
+      const monthIndex = selectedMonth;
+      const yearIndex = yearsData.indexOf(selectedYear);
+
+      setTimeout(() => {
+        if (dayIndex >= 0 && dayListRef.current) {
+          dayListRef.current.scrollToIndex({ index: dayIndex, animated: false, viewPosition: 0.5 });
+        }
+        if (monthIndex >= 0 && monthListRef.current) {
+          monthListRef.current.scrollToIndex({ index: monthIndex, animated: false, viewPosition: 0.5 });
+        }
+        if (yearIndex >= 0 && yearListRef.current) {
+          yearListRef.current.scrollToIndex({ index: yearIndex, animated: false, viewPosition: 0.5 });
+        }
+      }, 120);
+    }
+  }, [modalVisible, selectedDay, selectedMonth, selectedYear, yearsData]);
 
   const handleOpen = () => {
     const initialDate = value || new Date();
@@ -63,28 +90,12 @@ const DatePicker = ({ label, placeholder = 'Pilih Tanggal', value, onDateChange,
     return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
   };
 
-  // Days list dynamically adjusts to month/year selection
-  const daysInSelectedMonth = getDaysInMonth(selectedYear, selectedMonth);
-  const daysData = Array.from({ length: daysInSelectedMonth }, (_, i) => i + 1);
-
-  // Month data
-  const monthsData = months.map((name, index) => ({ label: name, value: index }));
-
-  // Years list (from currentYear + 5 down to 1930)
-  const currentYear = new Date().getFullYear();
-  const yearsData = Array.from({ length: currentYear - 1930 + 6 }, (_, i) => currentYear + 5 - i);
-
   return (
     <View style={[styles.container, containerStyle]}>
       {label && <Text style={styles.label}>{label}</Text>}
 
-      <TouchableOpacity
-        activeOpacity={0.7}
-        onPress={handleOpen}
-        style={[styles.selectorContainer, error ? styles.inputError : null]}>
-        <Text style={[styles.valueText, !value && styles.placeholderText]}>
-          {value ? formatDate(value) : placeholder}
-        </Text>
+      <TouchableOpacity activeOpacity={0.7} onPress={handleOpen} style={[styles.selectorContainer, error ? styles.inputError : null]}>
+        <Text style={[styles.valueText, !value && styles.placeholderText]}>{value ? formatDate(value) : placeholder}</Text>
         <AppIcon name="calendar-today" size={20} color={color.neutral} />
       </TouchableOpacity>
 
@@ -94,7 +105,6 @@ const DatePicker = ({ label, placeholder = 'Pilih Tanggal', value, onDateChange,
         <TouchableOpacity style={styles.modalBackdrop} activeOpacity={1} onPress={handleCancel}>
           <TouchableOpacity activeOpacity={1} style={styles.modalContent}>
             
-            {/* Header / Actions */}
             <View style={styles.header}>
               <TouchableOpacity onPress={handleCancel} style={styles.headerButton}>
                 <Text style={styles.cancelText}>Batal</Text>
@@ -107,17 +117,17 @@ const DatePicker = ({ label, placeholder = 'Pilih Tanggal', value, onDateChange,
               </TouchableOpacity>
             </View>
 
-            {/* Scroll Pickers */}
             <View style={styles.pickersContainer}>
               
-              {/* Day Column */}
               <View style={styles.pickerColumn}>
                 <Text style={styles.columnLabel}>Tanggal</Text>
                 <FlatList
+                  ref={dayListRef}
                   data={daysData}
                   keyExtractor={item => `day-${item}`}
                   showsVerticalScrollIndicator={false}
                   initialNumToRender={31}
+                  getItemLayout={(_, index) => ({ length: 40, offset: 40 * index, index })}
                   renderItem={({ item }) => {
                     const isSelected = selectedDay === item;
                     return (
@@ -125,23 +135,22 @@ const DatePicker = ({ label, placeholder = 'Pilih Tanggal', value, onDateChange,
                         activeOpacity={0.7}
                         style={[styles.pickerItem, isSelected && styles.selectedPickerItem]}
                         onPress={() => setSelectedDay(item)}>
-                        <Text style={[styles.pickerItemText, isSelected && styles.selectedPickerItemText]}>
-                          {item}
-                        </Text>
+                        <Text style={[styles.pickerItemText, isSelected && styles.selectedPickerItemText]}>{item}</Text>
                       </TouchableOpacity>
                     );
                   }}
                 />
               </View>
 
-              {/* Month Column */}
               <View style={[styles.pickerColumn, styles.borderHorizontal]}>
                 <Text style={styles.columnLabel}>Bulan</Text>
                 <FlatList
+                  ref={monthListRef}
                   data={monthsData}
                   keyExtractor={item => `month-${item.value}`}
                   showsVerticalScrollIndicator={false}
                   initialNumToRender={12}
+                  getItemLayout={(_, index) => ({ length: 40, offset: 40 * index, index })}
                   renderItem={({ item }) => {
                     const isSelected = selectedMonth === item.value;
                     return (
@@ -149,23 +158,22 @@ const DatePicker = ({ label, placeholder = 'Pilih Tanggal', value, onDateChange,
                         activeOpacity={0.7}
                         style={[styles.pickerItem, isSelected && styles.selectedPickerItem]}
                         onPress={() => setSelectedMonth(item.value)}>
-                        <Text style={[styles.pickerItemText, isSelected && styles.selectedPickerItemText]}>
-                          {item.label}
-                        </Text>
+                        <Text style={[styles.pickerItemText, isSelected && styles.selectedPickerItemText]}>{item.label}</Text>
                       </TouchableOpacity>
                     );
                   }}
                 />
               </View>
 
-              {/* Year Column */}
               <View style={styles.pickerColumn}>
                 <Text style={styles.columnLabel}>Tahun</Text>
                 <FlatList
+                  ref={yearListRef}
                   data={yearsData}
                   keyExtractor={item => `year-${item}`}
                   showsVerticalScrollIndicator={false}
                   initialNumToRender={20}
+                  getItemLayout={(_, index) => ({ length: 40, offset: 40 * index, index })}
                   renderItem={({ item }) => {
                     const isSelected = selectedYear === item;
                     return (
@@ -173,9 +181,7 @@ const DatePicker = ({ label, placeholder = 'Pilih Tanggal', value, onDateChange,
                         activeOpacity={0.7}
                         style={[styles.pickerItem, isSelected && styles.selectedPickerItem]}
                         onPress={() => setSelectedYear(item)}>
-                        <Text style={[styles.pickerItemText, isSelected && styles.selectedPickerItemText]}>
-                          {item}
-                        </Text>
+                        <Text style={[styles.pickerItemText, isSelected && styles.selectedPickerItemText]}>{item}</Text>
                       </TouchableOpacity>
                     );
                   }}
@@ -300,14 +306,14 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   pickerItem: {
+    height: 40,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
     marginHorizontal: 4,
     borderRadius: 8,
   },
   selectedPickerItem: {
-    backgroundColor: color.primary + '15', // light primary highlight
+    backgroundColor: color.primary + '15',
   },
   pickerItemText: {
     fontSize: 15,

@@ -127,7 +127,7 @@ const DebounceSelect = ({
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>{label || 'Pilih Opsi'}</Text>
-              <TouchableOpacity onPress={handleCloseModal}>
+              <TouchableOpacity onPress={handleCloseModal} style={styles.closeButton} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
                 <AppIcon name="close" size={24} color={color.black} />
               </TouchableOpacity>
             </View>
@@ -246,6 +246,11 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: color.black,
+    flex: 1,
+    marginRight: 12,
+  },
+  closeButton: {
+    padding: 4,
   },
   searchContainer: {
     paddingHorizontal: 20,

@@ -1,46 +1,19 @@
+import { authSendEmailVerification } from '@/api/auth';
 import { customerDashboardFetched } from '@/api/customer';
 import { color } from '@/assets/color';
 import AppLayout from '@/components/AppLayout';
 import { AppText } from '@/components/AppText';
 import AppIcon from '@/components/Icon';
 import { SkeletonCard } from '@/components/ui/Skeleton';
+import { useAuth } from '@/contexts/AuthContext';
 import { useModal } from '@/hooks/useModal';
-import { formatCurrency } from '@/lib/formatter';
+import { formatCurrency, formatDueDate, formatTransactionDate } from '@/lib/formatter';
 import { skeletonData } from '@/lib/utils';
 import { CustomerDashboardData } from '@/model/dashboard';
 import { CustomerRouteParamList } from '@/types/navigation';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import React, { useCallback, useEffect, useState } from 'react';
 import { FlatList, RefreshControl, StyleSheet, TouchableOpacity, View } from 'react-native';
-
-const formatTransactionDate = (dateStr: string) => {
-  if (!dateStr) return '';
-  try {
-    const date = new Date(dateStr);
-    const day = date.getDate();
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-    const month = months[date.getMonth()];
-    const year = date.getFullYear();
-    const time = `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
-    return `${day} ${month} ${year} • ${time}`;
-  } catch (e) {
-    return dateStr;
-  }
-};
-
-const formatDueDate = (dateStr: string | null) => {
-  if (!dateStr) return '-';
-  try {
-    const date = new Date(dateStr);
-    const day = date.getDate();
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-    const month = months[date.getMonth()];
-    const year = date.getFullYear();
-    return `${day} ${month} ${year}`;
-  } catch (e) {
-    return dateStr;
-  }
-};
 
 interface DashboardScreenProps {
   navigation: BottomTabNavigationProp<CustomerRouteParamList, 'Dashboard'>;
@@ -50,16 +23,26 @@ const DashboardScreen = ({ navigation }: DashboardScreenProps) => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [dashboardData, setDashboardData] = useState<CustomerDashboardData | null>(null);
+  const { auth, setAuth } = useAuth();
   const modal = useModal();
+  const [sendingEmail, setSendingEmail] = useState(false);
+
+  const handleSendVerification = () => {
+    authSendEmailVerification({
+      process: modal.process,
+      result: modal.result,
+      setSending: setSendingEmail,
+    });
+  };
 
   const fetchDashboardData = useCallback(
     (isRefreshing = false) => {
       if (isRefreshing) {
         setRefreshing(true);
       }
-      customerDashboardFetched({ setData: setDashboardData, setLoading, modal, setRefreshing });
+      customerDashboardFetched({ setData: setDashboardData, setLoading, modal, setRefreshing, setAuth });
     },
-    [modal],
+    [modal, setAuth],
   );
 
   useEffect(() => {
@@ -98,6 +81,32 @@ const DashboardScreen = ({ navigation }: DashboardScreenProps) => {
     <AppLayout
       scrollable={true}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchDashboardData(true)} colors={[color.blue]} />}>
+      {!auth?.email_verified_at && (
+        <View style={styles.emailAlert}>
+          <View style={styles.emailAlertLeft}>
+            <View style={styles.emailAlertIconContainer}>
+              <AppIcon name="mail-lock" size={20} color={color.yellow} />
+            </View>
+          </View>
+
+          <View style={styles.emailAlertRight}>
+            <AppText variant="semiBold" style={styles.emailAlertTitle}>
+              Verifikasi Email Diperlukan
+            </AppText>
+            <AppText style={styles.emailAlertSubtitle}>
+              Anda belum melakukan verifikasi email. Silakan verifikasi untuk mengamankan dan menikmati semua fitur akun Anda.
+            </AppText>
+
+            <TouchableOpacity style={styles.emailAlertButton} onPress={handleSendVerification} disabled={sendingEmail}>
+              <AppText variant="medium" style={styles.emailAlertButtonText}>
+                {sendingEmail ? 'Mengirim...' : 'Kirim Verifikasi Email'}
+              </AppText>
+              <AppIcon name="arrow-forward" size={14} color={color.white} />
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+
       <View style={styles.welcomeContainer}>
         <AppText variant="bold" style={styles.welcomeText}>
           Halo, {dashboardData?.customer?.full_name || 'Nasabah'}
@@ -417,6 +426,63 @@ const styles = StyleSheet.create({
     color: color.neutral,
     fontSize: 12,
     marginTop: 6,
+  },
+  emailAlert: {
+    backgroundColor: color.yellow + '15',
+    borderWidth: 1,
+    borderColor: color.yellow + '30',
+    borderLeftWidth: 4,
+    borderLeftColor: color.yellow,
+    borderRadius: 12,
+    padding: 14,
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 16,
+    alignItems: 'center',
+  },
+  emailAlertLeft: {
+    paddingTop: 2,
+  },
+  emailAlertIconContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: color.yellow + '20',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emailAlertRight: {
+    flex: 1,
+    gap: 4,
+  },
+  emailAlertTitle: {
+    fontSize: 14,
+    color: color.black,
+  },
+  emailAlertSubtitle: {
+    fontSize: 11,
+    color: color.neutral,
+    lineHeight: 15,
+  },
+  emailAlertButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    backgroundColor: color.primary,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 16,
+    gap: 6,
+    marginTop: 6,
+    shadowColor: color.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  emailAlertButtonText: {
+    fontSize: 11,
+    color: color.white,
   },
 });
 

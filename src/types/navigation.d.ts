@@ -21,6 +21,7 @@ export type RouteParamList = {
   Customer: undefined;
   Courier: undefined;
   CustomerCreate: undefined;
+  Boarding: undefined;
   CustomerEdit: {
     customer: Customer;
   };
@@ -32,6 +33,12 @@ export type RouteParamList = {
   CourierCollectionDetail: {
     loanId: string;
   };
+  Terms: undefined;
+  Help: undefined;
+  DeleteAccount: undefined;
+  Secure: undefined;
+  Personal: undefined;
+  CourierProfile: undefined;
 };
 
 declare global {

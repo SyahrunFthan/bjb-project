@@ -1,3 +1,5 @@
+import { User } from './user';
+
 export interface DashboardStats {
   totalCustomers: number;
   activeLoansCount: number;
@@ -48,6 +50,7 @@ export interface CustomerDashboardTransaction {
 }
 
 export interface CustomerDashboardData {
+  user?: User;
   customer: {
     full_name: string;
     status: string;

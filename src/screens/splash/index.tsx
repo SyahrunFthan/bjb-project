@@ -2,11 +2,11 @@ import { color } from '@/assets/color';
 import { AppLogo, OJKLogo } from '@/assets/images';
 import { AppText } from '@/components/AppText';
 import AppIcon from '@/components/Icon';
+import { getData } from '@/lib/storage';
 import { RouteParamList } from '@/types/navigation';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useEffect, useRef } from 'react';
 import { Animated, Image, StatusBar, StyleSheet, View } from 'react-native';
-import { getData } from '@/lib/storage';
 
 const SplashScreen = ({ navigation }: NativeStackScreenProps<RouteParamList, 'Splash'>) => {
   const progress = useRef(new Animated.Value(0)).current;
@@ -20,16 +20,19 @@ const SplashScreen = ({ navigation }: NativeStackScreenProps<RouteParamList, 'Sp
       if (finished) {
         try {
           const storeAuth = await getData('auth');
-          console.log(storeAuth);
 
           if (storeAuth) {
-            const role = storeAuth.role_level ?? storeAuth.user?.role_level;
-            if (role === 3) {
-              navigation.replace('Courier' as any);
-            } else if (role === 4) {
-              navigation.replace('Customer');
+            if (!storeAuth.registration_at) {
+              navigation.replace('Boarding');
             } else {
-              navigation.replace('Start');
+              const role = storeAuth.role_level ?? storeAuth.user?.role_level;
+              if (role === 3) {
+                navigation.replace('Courier' as any);
+              } else if (role === 4) {
+                navigation.replace('Customer');
+              } else {
+                navigation.replace('Start');
+              }
             }
           } else {
             navigation.replace('Start');

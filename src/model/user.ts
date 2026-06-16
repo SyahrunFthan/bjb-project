@@ -8,6 +8,8 @@ export interface UserModel {
   email: string;
   status: string;
   role_level: number;
+  registration_at?: string;
+  email_verified_at?: string;
   createdAt: string;
   updatedAt: string;
 }

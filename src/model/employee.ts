@@ -11,6 +11,7 @@ export interface EmployeeModel {
   date_of_birth: string;
   gender: string;
   religion: string;
+  address: string;
   created_by: string;
   updated_by: string;
   createdAt: string;
