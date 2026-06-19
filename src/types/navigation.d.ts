@@ -39,6 +39,10 @@ export type RouteParamList = {
   Secure: undefined;
   Personal: undefined;
   CourierProfile: undefined;
+  Notification: undefined;
+  LoanItem: {
+    loanId: string;
+  };
 };
 
 declare global {

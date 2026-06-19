@@ -1,8 +1,10 @@
 import { color } from '@/assets/color';
 import { AppLogo } from '@/assets/images';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import AppIcon from './Icon';
+import { useIsFocused } from '@react-navigation/native';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface HomeHeaderProps {
   name: string;
@@ -10,9 +12,14 @@ interface HomeHeaderProps {
 }
 
 const HomeHeader: React.FC<HomeHeaderProps> = ({ name, onNotificationPress }) => {
-  const getInitials = (fullName: string) => {
-    return fullName.charAt(0).toUpperCase();
-  };
+  const { auth, hasUnreadNotification, refreshUnreadStatus } = useAuth();
+  const isFocused = useIsFocused();
+
+  useEffect(() => {
+    if (auth && isFocused) {
+      refreshUnreadStatus();
+    }
+  }, [auth, isFocused]);
 
   return (
     <View style={styles.container}>
@@ -29,7 +36,7 @@ const HomeHeader: React.FC<HomeHeaderProps> = ({ name, onNotificationPress }) =>
 
       <TouchableOpacity onPress={onNotificationPress} style={styles.notificationButton} activeOpacity={0.7}>
         <AppIcon name="notifications" size={24} color={color.primary} />
-        <View style={styles.badge} />
+        {hasUnreadNotification && <View style={styles.badge} />}
       </TouchableOpacity>
     </View>
   );

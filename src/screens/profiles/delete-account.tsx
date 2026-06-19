@@ -24,7 +24,7 @@ type Props = NativeStackScreenProps<RouteParamList, 'DeleteAccount'>;
 
 const DeleteAccountScreen = ({ navigation }: Props) => {
   const { setAuth } = useAuth();
-  const { process, result } = useModal();
+  const modal = useModal();
   const [confirmation, setConfirmation] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -34,8 +34,7 @@ const DeleteAccountScreen = ({ navigation }: Props) => {
     if (!isValidConfirmation) return;
     
     authDeleteAccount({
-      process,
-      result,
+      modal,
       setProcessing: setIsProcessing,
       navigation,
       setAuth,

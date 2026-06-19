@@ -6,6 +6,7 @@ import Button from '@/components/Button';
 import AppIcon from '@/components/Icon';
 import Input from '@/components/Input';
 import { Rules, useFormContext } from '@/contexts/FormContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useModal } from '@/hooks/useModal';
 import { AuthFormValues } from '@/model/auth';
 import { RouteParamList } from '@/types/navigation';
@@ -14,10 +15,11 @@ import React, { useEffect, useState } from 'react';
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const AuthScreen = ({ navigation }: { navigation: NativeStackNavigationProp<RouteParamList, 'Auth'> }) => {
+  const { setAuth } = useAuth();
   const [processing, setProcessing] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const { values, errors, register, setValue, validateForm, resetForm, setErrors } = useFormContext();
-  const { process, result } = useModal();
+  const modal = useModal();
 
   useEffect(() => {
     register('email', [Rules.required('Email wajib diisi'), Rules.email('Format email tidak valid')]);
@@ -26,7 +28,7 @@ const AuthScreen = ({ navigation }: { navigation: NativeStackNavigationProp<Rout
 
   const handleLogin = () => {
     if (validateForm()) {
-      authLogin({ navigation, process, resetForm, result, setErrors, setProcessing, values: values as unknown as AuthFormValues });
+      authLogin({ navigation, modal, resetForm, setErrors, setProcessing, values: values as unknown as AuthFormValues, setAuth });
     }
   };
 

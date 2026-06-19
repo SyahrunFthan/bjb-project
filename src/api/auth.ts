@@ -1,35 +1,37 @@
 import { ModalProps } from '@/contexts/ModalContext';
 import api from '@/lib/api';
 import { setAccessToken } from '@/lib/auth';
-import { storeData, getData } from '@/lib/storage';
+import { getData, storeData } from '@/lib/storage';
 import { AuthFormValues } from '@/model/auth';
 import { User } from '@/model/user';
 import { RouteParamList } from '@/types/navigation';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AxiosError } from 'axios';
 import { Dispatch, SetStateAction } from 'react';
+import { processFail, processFinish, processStart, processSuccess } from '@/lib/process';
 
 interface LoginProps {
-  process: ModalProps['process'];
-  result: ModalProps['result'];
+  modal: ModalProps;
   values: AuthFormValues;
   setProcessing: Dispatch<SetStateAction<boolean>>;
   navigation: NativeStackNavigationProp<RouteParamList, 'Auth'>;
   setErrors: (errors: Record<string, string>) => void;
   resetForm: () => void;
+  setAuth: (auth: User | null) => void;
 }
 
-export const authLogin = async ({ process, result, setProcessing, values, resetForm, setErrors, navigation }: LoginProps) => {
+export const authLogin = async ({ modal, setProcessing, values, resetForm, setErrors, navigation, setAuth }: LoginProps) => {
   try {
     setProcessing(true);
-    process.show('Sedang mencoba login');
+    processStart(modal, 'Sedang mencoba login');
     const response = await api.post('/auth/login/mobile', values);
     if (response.status == 200) {
       const { userData, accessToken } = response.data;
       setAccessToken(accessToken);
       await storeData('auth', userData);
-      result.success('Berhasil', 'Anda berhasil login', () => {
-        process.hide();
+      setAuth(userData);
+      processSuccess(modal, 'Berhasil', 'Anda berhasil login', () => {
+        processFinish(modal);
         setProcessing(false);
         resetForm();
 
@@ -50,17 +52,17 @@ export const authLogin = async ({ process, result, setProcessing, values, resetF
     if (axiosError.response?.status == 400) {
       setErrors(axiosError.response?.data);
     } else {
-      result.error('Error', axiosError.response?.data?.message || 'Network Error');
+      processFail(modal, 'Error', axiosError.response?.data?.message || 'Network Error');
     }
   } finally {
-    process.hide();
-    setProcessing(false);
+    processFinish(modal, () => {
+      setProcessing(false);
+    });
   }
 };
 
 interface ChangePasswordProps {
-  process: ModalProps['process'];
-  result: ModalProps['result'];
+  modal: ModalProps;
   values: {
     current_password?: string;
     password: string;
@@ -74,8 +76,7 @@ interface ChangePasswordProps {
 }
 
 export const authChangePasswordBoarding = async ({
-  process,
-  result,
+  modal,
   values,
   userId,
   setProcessing,
@@ -85,7 +86,7 @@ export const authChangePasswordBoarding = async ({
 }: ChangePasswordProps) => {
   try {
     setProcessing(true);
-    process.show('Sedang memproses perubahan password');
+    processStart(modal, 'Sedang memproses perubahan password');
     const response = await api.put(`/auth/change-password/${userId}`, values);
     if (response.status == 200) {
       const storeAuth = await getData('auth');
@@ -95,8 +96,8 @@ export const authChangePasswordBoarding = async ({
         setAuth(storeAuth);
       }
 
-      result.success('Berhasil', 'Password Anda berhasil diperbarui', () => {
-        process.hide();
+      processSuccess(modal, 'Berhasil', 'Password Anda berhasil diperbarui', () => {
+        processFinish(modal);
         setProcessing(false);
 
         const role = storeAuth?.role_level ?? storeAuth?.user?.role_level;
@@ -114,84 +115,74 @@ export const authChangePasswordBoarding = async ({
 
     if (axiosError.response?.status == 400) {
       setErrors(axiosError.response?.data);
-      result.error('Gagal', 'Ada kesalahan pada pengisian data');
+      processFail(modal, 'Gagal', 'Ada kesalahan pada pengisian data');
     } else {
-      result.error('Error', axiosError.response?.data?.message || 'Network Error');
+      processFail(modal, 'Error', axiosError.response?.data?.message || 'Network Error');
     }
   } finally {
-    process.hide();
-    setProcessing(false);
+    processFinish(modal, () => {
+      setProcessing(false);
+    });
   }
 };
 
 interface SendEmailVerificationProps {
-  process: ModalProps['process'];
-  result: ModalProps['result'];
+  modal: ModalProps;
   setSending: (sending: boolean) => void;
 }
 
-export const authSendEmailVerification = async ({
-  process,
-  result,
-  setSending,
-}: SendEmailVerificationProps) => {
+export const authSendEmailVerification = async ({ modal, setSending }: SendEmailVerificationProps) => {
   try {
     setSending(true);
-    process.show('Mengirim link verifikasi email...');
+    processStart(modal, 'Mengirim link verifikasi email...');
     const response = await api.post('/auth/send-verification');
     if (response.status === 200) {
-      result.success('Sukses', response.data.message || 'Tautan verifikasi email berhasil dikirim.');
+      processSuccess(modal, 'Sukses', response.data.message || 'Tautan verifikasi email berhasil dikirim.');
     }
   } catch (error) {
     const axiosError = error as AxiosError<Record<string, string>>;
-    result.error('Gagal', axiosError.response?.data?.message || 'Gagal mengirim email verifikasi.');
+    processFail(modal, 'Gagal', axiosError.response?.data?.message || 'Gagal mengirim email verifikasi.');
   } finally {
-    process.hide();
-    setSending(false);
+    processFinish(modal, () => {
+      setSending(false);
+    });
   }
 };
 
 interface DeleteAccountProps {
-  process: ModalProps['process'];
-  result: ModalProps['result'];
+  modal: ModalProps;
   setProcessing: Dispatch<SetStateAction<boolean>>;
   navigation: NativeStackNavigationProp<RouteParamList, any>;
   setAuth: (auth: User | null) => void;
 }
 
-export const authDeleteAccount = async ({
-  process,
-  result,
-  setProcessing,
-  navigation,
-  setAuth,
-}: DeleteAccountProps) => {
+export const authDeleteAccount = async ({ modal, setProcessing, navigation, setAuth }: DeleteAccountProps) => {
   try {
     setProcessing(true);
-    process.show('Sedang memproses penghapusan akun...');
+    processStart(modal, 'Sedang memproses penghapusan akun...');
     const response = await api.delete('/auth/delete-account');
     if (response.status === 200) {
       setAccessToken('');
       await storeData('auth', null);
       setAuth(null);
-      result.success('Berhasil', 'Akun Anda telah berhasil dihapus.', () => {
-        process.hide();
+      processSuccess(modal, 'Berhasil', 'Akun Anda telah berhasil dihapus.', () => {
+        processFinish(modal);
         setProcessing(false);
         navigation.replace('Start');
       });
     }
   } catch (error) {
     const axiosError = error as AxiosError<Record<string, string>>;
-    result.error('Gagal', axiosError.response?.data?.message || 'Gagal menghapus akun.');
+    processFail(modal, 'Gagal', axiosError.response?.data?.message || 'Gagal menghapus akun.');
   } finally {
-    process.hide();
-    setProcessing(false);
+    processFinish(modal, () => {
+      setProcessing(false);
+    });
   }
 };
 
 interface RegularChangePasswordProps {
-  process: ModalProps['process'];
-  result: ModalProps['result'];
+  modal: ModalProps;
   values: {
     current_password?: string;
     password: string;
@@ -205,8 +196,7 @@ interface RegularChangePasswordProps {
 }
 
 export const authChangePassword = async ({
-  process,
-  result,
+  modal,
   values,
   userId,
   setProcessing,
@@ -216,11 +206,11 @@ export const authChangePassword = async ({
 }: RegularChangePasswordProps) => {
   try {
     setProcessing(true);
-    process.show('Sedang memproses perubahan password');
+    processStart(modal, 'Sedang memproses perubahan password');
     const response = await api.put(`/auth/change-password/${userId}`, values);
     if (response.status == 200) {
-      result.success('Berhasil', 'Password Anda berhasil diperbarui', () => {
-        process.hide();
+      processSuccess(modal, 'Berhasil', 'Password Anda berhasil diperbarui', () => {
+        processFinish(modal);
         setProcessing(false);
         onSuccess?.();
         navigation.goBack();
@@ -231,12 +221,13 @@ export const authChangePassword = async ({
 
     if (axiosError.response?.status == 400) {
       setErrors(axiosError.response?.data);
-      result.error('Gagal', 'Ada kesalahan pada pengisian data');
+      processFail(modal, 'Gagal', 'Ada kesalahan pada pengisian data');
     } else {
-      result.error('Error', axiosError.response?.data?.message || 'Network Error');
+      processFail(modal, 'Error', axiosError.response?.data?.message || 'Network Error');
     }
   } finally {
-    process.hide();
-    setProcessing(false);
+    processFinish(modal, () => {
+      setProcessing(false);
+    });
   }
 };

@@ -1,5 +1,8 @@
 import { color } from '@/assets/color';
 import { TabBarContext } from '@/contexts/TabBarContext';
+import { RouteParamList } from '@/types/navigation';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { ReactNode, useContext } from 'react';
 import { ScrollView, StatusBar, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -14,11 +17,12 @@ interface Props {
 const AppLayout = ({ children, scrollable = false, refreshControl }: Props) => {
   const tabBar = useContext(TabBarContext);
   const onScroll = tabBar?.onScroll ?? (() => {});
+  const navigation = useNavigation<NativeStackNavigationProp<RouteParamList>>();
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar backgroundColor={color.white} barStyle={'dark-content'} />
-      <HomeHeader name="PT. Bare Jaya Berdikari" />
+      <HomeHeader name="PT. Bare Jaya Berdikari" onNotificationPress={() => navigation.navigate('Notification')} />
       {scrollable ? (
         <ScrollView
           style={styles.container}

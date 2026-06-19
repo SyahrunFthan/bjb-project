@@ -7,6 +7,11 @@ import { AppRegistry, Text, TextInput } from 'react-native';
 import { fonts } from '@/assets/fonts';
 import App from './App';
 import { name as appName } from './app.json';
+import messaging from '@react-native-firebase/messaging';
+import { backgroundMessageHandler } from '@/lib/notification';
+
+// Register background handler for Firebase Cloud Messaging
+messaging().setBackgroundMessageHandler(backgroundMessageHandler);
 
 // Set global font family
 const oldTextRender = Text.render;

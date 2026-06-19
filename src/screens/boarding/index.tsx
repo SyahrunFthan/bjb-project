@@ -7,6 +7,7 @@ import AppIcon from '@/components/Icon';
 import Input from '@/components/Input';
 import { useAuth } from '@/contexts/AuthContext';
 import { useModal } from '@/hooks/useModal';
+import { getData } from '@/lib/storage';
 import { RouteParamList } from '@/types/navigation';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useState } from 'react';
@@ -16,7 +17,7 @@ type Props = NativeStackScreenProps<RouteParamList, 'Boarding'>;
 
 const BoardingScreen = ({ navigation }: Props) => {
   const { auth, setAuth } = useAuth();
-  const { process, result } = useModal();
+  const modal = useModal();
 
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -40,7 +41,7 @@ const BoardingScreen = ({ navigation }: Props) => {
     }
   };
 
-  const handleUpdatePassword = () => {
+  const handleUpdatePassword = async () => {
     const localErrors: Record<string, string> = {};
 
     if (!newPassword) {
@@ -74,19 +75,20 @@ const BoardingScreen = ({ navigation }: Props) => {
       return;
     }
 
-    if (!auth?.id) {
-      result.error('Error', 'Sesi pengguna tidak valid. Silakan login kembali.');
+    const storeAuth = await getData('auth');
+
+    if (!storeAuth?.id) {
+      modal.result.error('Error', 'Sesi pengguna tidak valid. Silakan login kembali.');
       return;
     }
 
     authChangePasswordBoarding({
-      process,
-      result,
+      modal,
       values: {
         password: newPassword,
         confirm_password: confirmPassword,
       },
-      userId: auth.id,
+      userId: storeAuth.id,
       setProcessing,
       navigation,
       setAuth,

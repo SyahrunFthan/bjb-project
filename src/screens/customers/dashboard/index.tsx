@@ -29,8 +29,7 @@ const DashboardScreen = ({ navigation }: DashboardScreenProps) => {
 
   const handleSendVerification = () => {
     authSendEmailVerification({
-      process: modal.process,
-      result: modal.result,
+      modal,
       setSending: setSendingEmail,
     });
   };

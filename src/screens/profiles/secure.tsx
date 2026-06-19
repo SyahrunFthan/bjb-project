@@ -24,7 +24,7 @@ type Props = NativeStackScreenProps<RouteParamList, 'Secure'>;
 
 const SecureScreen = ({ navigation }: Props) => {
   const { auth } = useAuth();
-  const { process, result } = useModal();
+  const modal = useModal();
 
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -87,13 +87,12 @@ const SecureScreen = ({ navigation }: Props) => {
     }
 
     if (!auth?.id) {
-      result.error('Error', 'Sesi pengguna tidak valid. Silakan login kembali.');
+      modal.result.error('Error', 'Sesi pengguna tidak valid. Silakan login kembali.');
       return;
     }
 
     authChangePassword({
-      process,
-      result,
+      modal,
       values: {
         current_password: currentPassword,
         password: newPassword,

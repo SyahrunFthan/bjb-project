@@ -8,10 +8,14 @@ import { useModal } from '@/hooks/useModal';
 import { formatCurrency, formatDueDate, formatTransactionDate } from '@/lib/formatter';
 import { skeletonData } from '@/lib/utils';
 import { CustomerLoanHistory, CustomerPaymentHistory } from '@/model/history';
+import { RouteParamList } from '@/types/navigation';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useCallback, useEffect, useState } from 'react';
 import { FlatList, RefreshControl, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 const HistoryScreen = () => {
+  const navigation = useNavigation<NativeStackNavigationProp<RouteParamList>>();
   const [activeTab, setActiveTab] = useState<'loans' | 'payments'>('loans');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -77,9 +81,18 @@ const HistoryScreen = () => {
   const renderLoanItem = ({ item }: { item: CustomerLoanHistory }) => {
     const statusLabel = getLoanStatusLabel(item);
     const statusColor = getLoanStatusColor(item);
+    const isClickable = item.submission_status === 'approved' || item.loan_status === 'active' || item.loan_status === 'done';
 
     return (
-      <View style={styles.card}>
+      <TouchableOpacity
+        style={styles.card}
+        activeOpacity={isClickable ? 0.7 : 1}
+        onPress={() => {
+          if (isClickable) {
+            navigation.navigate('LoanItem', { loanId: item.id });
+          }
+        }}
+      >
         <View style={styles.cardHeader}>
           <View style={styles.loanSequenceBox}>
             <AppIcon name="credit-card" size={16} color={color.blue} />
@@ -134,7 +147,7 @@ const HistoryScreen = () => {
             </AppText>
           </View>
         ) : null}
-      </View>
+      </TouchableOpacity>
     );
   };
 

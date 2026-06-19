@@ -10,15 +10,15 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 const App = () => {
   return (
     <SafeAreaProvider>
-      <AuthProvider>
-        <FormProvider>
-          <ModalProvider>
+      <ModalProvider>
+        <AuthProvider>
+          <FormProvider>
             <NavigationContainer ref={navigationRef}>
               <Routes />
             </NavigationContainer>
-          </ModalProvider>
-        </FormProvider>
-      </AuthProvider>
+          </FormProvider>
+        </AuthProvider>
+      </ModalProvider>
     </SafeAreaProvider>
   );
 };

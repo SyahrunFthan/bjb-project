@@ -359,6 +359,27 @@ export const fetchLoanDetails = async (
   }
 };
 
+export const fetchCustomerLoanDetails = async (
+  id: string,
+  setLoan: Dispatch<SetStateAction<any>>,
+  setLoading: Dispatch<SetStateAction<boolean>>,
+  modal: ModalProps,
+): Promise<void> => {
+  try {
+    setLoading(true);
+    const response = await api.get(`/mobile/customers/loans/${id}`);
+    setLoan(response.data?.data || null);
+  } catch (error) {
+    const axiosError = error as AxiosError<ErrorResponse>;
+    console.error('Error fetching customer loan details:', error);
+    processFail(modal, 'Gagal', axiosError.response?.data?.message || 'Gagal mengambil detail pinjaman.');
+  } finally {
+    processFinish(modal, () => {
+      setLoading(false);
+    });
+  }
+};
+
 export const collectPayment = async (
   values: {
     installment_id: string;
