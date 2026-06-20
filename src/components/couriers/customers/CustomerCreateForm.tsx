@@ -18,7 +18,7 @@ import { RouteParamList } from '@/types/navigation';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { KeyboardAvoidingView, ScrollView, StyleSheet, View } from 'react-native';
 
 const CustomerCreateForm = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RouteParamList>>();
@@ -84,6 +84,8 @@ const CustomerCreateForm = () => {
 
   const handleSave = () => {
     if (validateForm()) {
+      console.log('Hallo');
+
       customerStore({
         modal,
         form,
@@ -94,7 +96,7 @@ const CustomerCreateForm = () => {
   };
 
   return (
-    <>
+    <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <SectionCard icon="card-membership" iconBg="#DBEAFE" iconColor="#1D4ED8" title="Identitas Diri">
           <View style={styles.fieldWrap}>
@@ -113,7 +115,6 @@ const CustomerCreateForm = () => {
           <View style={styles.fieldWrap}>
             <Input
               label="Nomor Anggota"
-              placeholder="Akan digenerate setelah Tgl Lahir dipilih"
               value={(values.member_number as string) || ''}
               onChangeText={val => setValue('member_number', val)}
               error={errors.member_number}
@@ -216,7 +217,7 @@ const CustomerCreateForm = () => {
         <Button title="Reset" type="outline" size="medium" onPress={() => resetForm()} disabled={processing} style={styles.btnReset} />
         <Button title="Simpan" type="default" size="medium" onPress={handleSave} loading={processing} style={styles.btnSave} />
       </View>
-    </>
+    </KeyboardAvoidingView>
   );
 };
 

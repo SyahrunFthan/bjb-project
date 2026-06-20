@@ -41,8 +41,14 @@ const HistoryScreen = () => {
   );
 
   useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      fetchHistoryData(activeTab);
+    });
+
     fetchHistoryData(activeTab);
-  }, [activeTab, fetchHistoryData]);
+
+    return unsubscribe;
+  }, [navigation, activeTab, fetchHistoryData]);
 
   const handleTabChange = (tab: 'loans' | 'payments') => {
     if (tab !== activeTab) {
@@ -91,8 +97,7 @@ const HistoryScreen = () => {
           if (isClickable) {
             navigation.navigate('LoanItem', { loanId: item.id });
           }
-        }}
-      >
+        }}>
         <View style={styles.cardHeader}>
           <View style={styles.loanSequenceBox}>
             <AppIcon name="credit-card" size={16} color={color.blue} />

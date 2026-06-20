@@ -1,5 +1,5 @@
 import { color } from '@/assets/color';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { FlatList, Modal, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 import AppIcon from './Icon';
 
@@ -90,6 +90,30 @@ const DatePicker = ({ label, placeholder = 'Pilih Tanggal', value, onDateChange,
     return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
   };
 
+  const renderDayItem = useCallback(({ item }: { item: number }) => (
+    <PickerItem
+      label={item}
+      isSelected={selectedDay === item}
+      onPress={() => setSelectedDay(item)}
+    />
+  ), [selectedDay]);
+
+  const renderMonthItem = useCallback(({ item }: { item: { label: string; value: number } }) => (
+    <PickerItem
+      label={item.label}
+      isSelected={selectedMonth === item.value}
+      onPress={() => setSelectedMonth(item.value)}
+    />
+  ), [selectedMonth]);
+
+  const renderYearItem = useCallback(({ item }: { item: number }) => (
+    <PickerItem
+      label={item}
+      isSelected={selectedYear === item}
+      onPress={() => setSelectedYear(item)}
+    />
+  ), [selectedYear]);
+
   return (
     <View style={[styles.container, containerStyle]}>
       {label && <Text style={styles.label}>{label}</Text>}
@@ -127,18 +151,11 @@ const DatePicker = ({ label, placeholder = 'Pilih Tanggal', value, onDateChange,
                   keyExtractor={item => `day-${item}`}
                   showsVerticalScrollIndicator={false}
                   initialNumToRender={31}
+                  maxToRenderPerBatch={31}
+                  windowSize={3}
+                  removeClippedSubviews={true}
                   getItemLayout={(_, index) => ({ length: 40, offset: 40 * index, index })}
-                  renderItem={({ item }) => {
-                    const isSelected = selectedDay === item;
-                    return (
-                      <TouchableOpacity
-                        activeOpacity={0.7}
-                        style={[styles.pickerItem, isSelected && styles.selectedPickerItem]}
-                        onPress={() => setSelectedDay(item)}>
-                        <Text style={[styles.pickerItemText, isSelected && styles.selectedPickerItemText]}>{item}</Text>
-                      </TouchableOpacity>
-                    );
-                  }}
+                  renderItem={renderDayItem}
                 />
               </View>
 
@@ -150,18 +167,11 @@ const DatePicker = ({ label, placeholder = 'Pilih Tanggal', value, onDateChange,
                   keyExtractor={item => `month-${item.value}`}
                   showsVerticalScrollIndicator={false}
                   initialNumToRender={12}
+                  maxToRenderPerBatch={12}
+                  windowSize={3}
+                  removeClippedSubviews={true}
                   getItemLayout={(_, index) => ({ length: 40, offset: 40 * index, index })}
-                  renderItem={({ item }) => {
-                    const isSelected = selectedMonth === item.value;
-                    return (
-                      <TouchableOpacity
-                        activeOpacity={0.7}
-                        style={[styles.pickerItem, isSelected && styles.selectedPickerItem]}
-                        onPress={() => setSelectedMonth(item.value)}>
-                        <Text style={[styles.pickerItemText, isSelected && styles.selectedPickerItemText]}>{item.label}</Text>
-                      </TouchableOpacity>
-                    );
-                  }}
+                  renderItem={renderMonthItem}
                 />
               </View>
 
@@ -173,18 +183,11 @@ const DatePicker = ({ label, placeholder = 'Pilih Tanggal', value, onDateChange,
                   keyExtractor={item => `year-${item}`}
                   showsVerticalScrollIndicator={false}
                   initialNumToRender={20}
+                  maxToRenderPerBatch={20}
+                  windowSize={5}
+                  removeClippedSubviews={true}
                   getItemLayout={(_, index) => ({ length: 40, offset: 40 * index, index })}
-                  renderItem={({ item }) => {
-                    const isSelected = selectedYear === item;
-                    return (
-                      <TouchableOpacity
-                        activeOpacity={0.7}
-                        style={[styles.pickerItem, isSelected && styles.selectedPickerItem]}
-                        onPress={() => setSelectedYear(item)}>
-                        <Text style={[styles.pickerItemText, isSelected && styles.selectedPickerItemText]}>{item}</Text>
-                      </TouchableOpacity>
-                    );
-                  }}
+                  renderItem={renderYearItem}
                 />
               </View>
 
@@ -197,7 +200,25 @@ const DatePicker = ({ label, placeholder = 'Pilih Tanggal', value, onDateChange,
   );
 };
 
+interface PickerItemProps {
+  label: string | number;
+  isSelected: boolean;
+  onPress: () => void;
+}
+
+const PickerItem = React.memo(({ label, isSelected, onPress }: PickerItemProps) => {
+  return (
+    <TouchableOpacity
+      activeOpacity={0.7}
+      style={[styles.pickerItem, isSelected && styles.selectedPickerItem]}
+      onPress={onPress}>
+      <Text style={[styles.pickerItemText, isSelected && styles.selectedPickerItemText]}>{label}</Text>
+    </TouchableOpacity>
+  );
+});
+
 export default DatePicker;
+
 
 const styles = StyleSheet.create({
   container: {

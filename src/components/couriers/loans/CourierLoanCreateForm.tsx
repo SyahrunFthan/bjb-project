@@ -70,7 +70,7 @@ const CourierLoanCreateForm = ({ navigation }: Props) => {
             setValue('job', undefined);
           }
         })
-        .catch(err => console.error('Error fetching customer details:', err));
+        .catch(err => console.warn('Error fetching customer details:', err));
 
       fetchCustomerDocuments(customerId, setUploadedDocs, setLoadingDocs, modal);
     } else {
@@ -192,7 +192,7 @@ const CourierLoanCreateForm = ({ navigation }: Props) => {
   }
 
   return (
-    <KeyboardAvoidingView behavior={Platform.OS == 'android' ? 'height' : 'padding'}>
+    <KeyboardAvoidingView behavior={Platform.OS == 'android' ? 'padding' : 'height'}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <CustomerSelectSection selectedCustomer={selectedCustomer} error={errors.customer_id} />
 

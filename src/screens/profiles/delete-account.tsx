@@ -71,7 +71,7 @@ const DeleteAccountScreen = ({ navigation }: Props) => {
                 Pemberitahuan Penting
               </AppText>
               <AppText style={styles.warningDesc}>
-                Menghapus akun akan mencabut seluruh hak akses masuk Anda ke aplikasi KSP PT. Bare Jaya Berdikari. Tindakan ini permanen.
+                Menghapus akun akan mencabut seluruh hak akses masuk Anda ke aplikasi Koperasi Pinjaman PT. Bare Jaya Berdikari. Tindakan ini permanen.
               </AppText>
             </View>
           </View>
@@ -83,7 +83,7 @@ const DeleteAccountScreen = ({ navigation }: Props) => {
               <AppText variant="bold" style={styles.policyTitle}>Kebijakan Retensi Data Koperasi</AppText>
             </View>
             <AppText style={styles.policyDesc}>
-              Sesuai dengan ketentuan operasional Kementerian Koperasi & UKM RI, data keanggotaan, histori transaksi simpan pinjam, dan laporan audit Anda <AppText variant="bold">TIDAK akan dihapus</AppText> dari basis data utama demi pematutan laporan keuangan koperasi secara berkala. Hanya akun login (kredensial aplikasi) Anda saja yang akan dinonaktifkan sepenuhnya.
+              Sesuai dengan ketentuan operasional Kementerian Koperasi & UKM RI, data keanggotaan, histori transaksi pinjaman, dan laporan audit Anda <AppText variant="bold">TIDAK akan dihapus</AppText> dari basis data utama demi pematutan laporan keuangan koperasi secara berkala. Hanya akun login (kredensial aplikasi) Anda saja yang akan dinonaktifkan sepenuhnya.
             </AppText>
           </View>
 

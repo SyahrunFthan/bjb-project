@@ -69,7 +69,7 @@ const CustomerList = ({ item, index, loading, onEdit }: Props) => {
   );
 };
 
-export default CustomerList;
+export default React.memo(CustomerList);
 
 const styles = StyleSheet.create({
   card: {

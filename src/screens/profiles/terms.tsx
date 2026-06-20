@@ -33,7 +33,7 @@ const TermsScreen = ({ navigation }: Props) => {
               Pernyataan Kepatuhan Layanan Keuangan
             </AppText>
             <AppText style={styles.complianceDesc}>
-              Aplikasi KSP PT. Bare Jaya Berdikari adalah portal administrasi internal dan monitoring real-time yang ditujukan <AppText variant="bold">HANYA untuk anggota resmi</AppText> Koperasi Simpan Pinjam PT. Bare Jaya Berdikari. Aplikasi ini mematuhi Peraturan Kementerian Koperasi & UKM RI, Otoritas Jasa Keuangan (OJK), dan Kebijakan Layanan Keuangan Google Play Store.
+              Aplikasi Koperasi Pinjaman PT. Bare Jaya Berdikari adalah portal administrasi internal dan monitoring real-time yang ditujukan <AppText variant="bold">HANYA untuk anggota resmi</AppText> Koperasi Pinjaman PT. Bare Jaya Berdikari. Aplikasi ini mematuhi Peraturan Kementerian Koperasi & UKM RI, Otoritas Jasa Keuangan (OJK), dan Kebijakan Layanan Keuangan Google Play Store.
             </AppText>
           </View>
         </View>
@@ -44,18 +44,18 @@ const TermsScreen = ({ navigation }: Props) => {
             1. Ketentuan Umum & Keanggotaan
           </AppText>
           <AppText style={styles.paragraph}>
-            Dengan mengunduh, memasang, dan/atau menggunakan aplikasi KSP PT. Bare Jaya Berdikari ("Aplikasi"), Anda menyatakan bahwa Anda telah membaca, memahami, dan menyetujui seluruh ketentuan dalam Syarat dan Ketentuan Layanan ini. Jika Anda tidak menyetujui ketentuan ini, mohon untuk tidak melanjutkan penggunaan Aplikasi.
+            Dengan mengunduh, memasang, dan/atau menggunakan aplikasi Koperasi Pinjaman PT. Bare Jaya Berdikari ("Aplikasi"), Anda menyatakan bahwa Anda telah membaca, memahami, dan menyetujui seluruh ketentuan dalam Syarat dan Ketentuan Layanan ini. Jika Anda tidak menyetujui ketentuan ini, mohon untuk tidak melanjutkan penggunaan Aplikasi.
           </AppText>
           <View style={styles.bulletItem}>
             <AppText style={styles.bulletSymbol}>•</AppText>
             <AppText style={styles.bulletText}>
-              <AppText variant="bold">Pembatasan Anggota:</AppText> Layanan ini ditujukan secara eksklusif kepada Anggota Resmi Koperasi Simpan Pinjam PT. Bare Jaya Berdikari yang memiliki Nomor Baku Anggota (NBA).
+              <AppText variant="bold">Pembatasan Anggota:</AppText> Layanan ini ditujukan secara eksklusif kepada Anggota Resmi Koperasi Pinjaman PT. Bare Jaya Berdikari yang memiliki Nomor Baku Anggota (NBA).
             </AppText>
           </View>
           <View style={styles.bulletItem}>
             <AppText style={styles.bulletSymbol}>•</AppText>
             <AppText style={styles.bulletText}>
-              <AppText variant="bold">Kelayakan Usia:</AppText> Pengguna harus berusia minimal 21 tahun atau telah menikah, dan secara hukum cakap untuk mengikatkan diri dalam perjanjian simpan pinjam berdasarkan hukum Indonesia.
+              <AppText variant="bold">Kelayakan Usia:</AppText> Pengguna harus berusia minimal 21 tahun atau telah menikah, dan secara hukum cakap untuk mengikatkan diri dalam perjanjian pinjaman berdasarkan hukum Indonesia.
             </AppText>
           </View>
           <View style={styles.bulletItem}>
@@ -72,7 +72,7 @@ const TermsScreen = ({ navigation }: Props) => {
             2. Pendaftaran Akun & Keamanan
           </AppText>
           <AppText style={styles.paragraph}>
-            Proses pembuatan akun dan pendaftaran data Anggota/Nasabah dilakukan sepenuhnya secara luring (offline) oleh Petugas Lapangan resmi KSP PT. Bare Jaya Berdikari.
+            Proses pembuatan akun dan pendaftaran data Anggota/Nasabah dilakukan sepenuhnya secara luring (offline) oleh Petugas Lapangan resmi Koperasi Pinjaman PT. Bare Jaya Berdikari.
           </AppText>
           <View style={styles.bulletItem}>
             <AppText style={styles.bulletSymbol}>•</AppText>
@@ -97,7 +97,7 @@ const TermsScreen = ({ navigation }: Props) => {
         {/* Section 3 */}
         <View style={styles.sectionCard}>
           <AppText variant="bold" style={styles.sectionHeader}>
-            3. Layanan Simpan Pinjam, Invoice & Pembayaran
+            3. Layanan Pinjaman, Invoice & Pembayaran
           </AppText>
           <AppText style={styles.paragraph}>
             Aplikasi ini dirancang sebagai portal utilitas keanggotaan dengan alur transaksi sebagai berikut:
@@ -128,7 +128,7 @@ const TermsScreen = ({ navigation }: Props) => {
             4. Tenor, Suku Bunga & Kepatuhan Layanan Keuangan
           </AppText>
           <AppText style={styles.paragraph}>
-            Dalam operasional Koperasi Simpan Pinjam KSP PT. Bare Jaya Berdikari, produk keuangan kami diatur dengan ketentuan sebagai berikut:
+            Dalam operasional Koperasi Pinjaman PT. Bare Jaya Berdikari, produk keuangan kami diatur dengan ketentuan sebagai berikut:
           </AppText>
 
           {/* Simulation Box */}
@@ -138,7 +138,7 @@ const TermsScreen = ({ navigation }: Props) => {
                 PILIHAN JANGKA WAKTU PEMBAYARAN (TENOR)
               </AppText>
               <AppText style={styles.simValue}>
-                Tersedia pilihan Tenor Harian (khusus modal usaha mikro luring) dan Tenor Bulanan yang disepakati bersama dalam perjanjian fisik tertulis.
+                Tersedia pilihan Tenor Harian yaitu 36 Hari, 42 Hari, 60 Hari, 90 Hari, 120 Hari, dan 150 Hari yang disepakati bersama dalam perjanjian fisik tertulis.
               </AppText>
             </View>
 
@@ -146,10 +146,10 @@ const TermsScreen = ({ navigation }: Props) => {
 
             <View style={styles.simulationField}>
               <AppText variant="semiBold" style={styles.simLabel}>
-                SUKU BUNGA TAHUNAN MAKSIMUM (MAXIMUM ANNUAL PERCENTAGE RATE - APR)
+                SUKU BUNGA KESELURUHAN (TOTAL INTEREST RATE)
               </AppText>
               <AppText style={styles.simValue}>
-                Maksimal 12% - 15% per tahun (Bunga Flat Koperasi sesuai regulasi).
+                Total suku bunga keseluruhan adalah 26% untuk jangka waktu pinjaman yang disepakati.
               </AppText>
             </View>
 
@@ -160,7 +160,7 @@ const TermsScreen = ({ navigation }: Props) => {
                 SIMULASI CONTOH PERHITUNGAN TAGIHAN PINJAMAN
               </AppText>
               <AppText style={styles.simIntro}>
-                Jika Anggota memiliki Pinjaman sebesar <AppText variant="bold">Rp3.000.000</AppText> dengan tenor bulanan <AppText variant="bold">90 hari (3 Bulan)</AppText> dan suku bunga <AppText variant="bold">12% per tahun (1% per bulan)</AppText>:
+                Jika Anggota memiliki Pinjaman sebesar <AppText variant="bold">Rp3.000.000</AppText> dengan tenor harian <AppText variant="bold">90 Hari</AppText> dan total suku bunga keseluruhan <AppText variant="bold">26%</AppText>:
               </AppText>
               <View style={styles.subBulletItem}>
                 <AppText style={styles.bulletSymbol}>•</AppText>
@@ -168,19 +168,23 @@ const TermsScreen = ({ navigation }: Props) => {
               </View>
               <View style={styles.subBulletItem}>
                 <AppText style={styles.bulletSymbol}>•</AppText>
-                <AppText style={styles.subBulletText}>Total Bunga (12% per tahun selama 3 bulan): Rp3.000.000 x (12% / 12) x 3 = Rp90.000</AppText>
+                <AppText style={styles.subBulletText}>Total Bunga (26% keseluruhan): Rp3.000.000 x 26% = Rp780.000</AppText>
               </View>
               <View style={styles.subBulletItem}>
                 <AppText style={styles.bulletSymbol}>•</AppText>
-                <AppText style={styles.subBulletText}>Biaya Administrasi Transaksi: Rp30.000</AppText>
+                <AppText style={styles.subBulletText}>Biaya Administrasi Transaksi (Dipotong saat pencairan): Rp30.000</AppText>
               </View>
               <View style={styles.subBulletItem}>
                 <AppText style={styles.bulletSymbol}>•</AppText>
-                <AppText style={styles.subBulletText}>Total Biaya Pengembalian: Rp3.000.000 + Rp90.000 + Rp30.000 = Rp3.120.000</AppText>
+                <AppText style={styles.subBulletText}>Jumlah Dana Diterima Anggota: Rp3.000.000 - Rp30.000 = Rp2.970.000</AppText>
               </View>
               <View style={styles.subBulletItem}>
                 <AppText style={styles.bulletSymbol}>•</AppText>
-                <AppText style={styles.subBulletText}>Cicilan Bulanan: Rp3.120.000 / 3 Bulan = Rp1.040.000 per bulan</AppText>
+                <AppText style={styles.subBulletText}>Total Pengembalian (Pokok + Bunga): Rp3.000.000 + Rp780.000 = Rp3.780.000</AppText>
+              </View>
+              <View style={styles.subBulletItem}>
+                <AppText style={styles.bulletSymbol}>•</AppText>
+                <AppText style={styles.subBulletText}>Cicilan Harian: Rp3.780.000 / 90 Hari = Rp42.000 per hari</AppText>
               </View>
             </View>
           </View>
@@ -196,7 +200,7 @@ const TermsScreen = ({ navigation }: Props) => {
             5. Pengumpulan & Penggunaan Data
           </AppText>
           <AppText style={styles.paragraph}>
-            Privasi data Anda adalah prioritas kami. Seluruh informasi data pribadi yang dikumpulkan melalui Aplikasi diatur dalam Kebijakan Privasi KSP PT. Bare Jaya Berdikari.
+            Privasi data Anda adalah prioritas kami. Seluruh informasi data pribadi yang dikumpulkan melalui Aplikasi diatur dalam Kebijakan Privasi Koperasi Pinjaman PT. Bare Jaya Berdikari.
           </AppText>
           <View style={styles.bulletItem}>
             <AppText style={styles.bulletSymbol}>•</AppText>
@@ -224,7 +228,7 @@ const TermsScreen = ({ navigation }: Props) => {
             6. Batasan Tanggung Jawab
           </AppText>
           <AppText style={styles.paragraph}>
-            KSP PT. Bare Jaya Berdikari berupaya semaksimal mungkin menyediakan sistem teknologi yang andal, aman, dan tanpa kendala. Namun:
+            Koperasi Pinjaman PT. Bare Jaya Berdikari berupaya semaksimal mungkin menyediakan sistem teknologi yang andal, aman, dan tanpa kendala. Namun:
           </AppText>
           <View style={styles.bulletItem}>
             <AppText style={styles.bulletSymbol}>•</AppText>
@@ -270,7 +274,7 @@ const TermsScreen = ({ navigation }: Props) => {
               </View>
               <View style={styles.contactTextContainer}>
                 <AppText variant="semiBold" style={styles.contactLabel}>Alamat Kantor</AppText>
-                <AppText style={styles.contactValue}>Jl. Cendrawasih Tojo Una-Una, Sulawesi Tengah, Indonesia</AppText>
+                <AppText style={styles.contactValue}>Jl. Sis-Aljufrie, Kab. Tojo Una Una, Kec. Ampana Kota Sulawesi Tengah</AppText>
               </View>
             </View>
 
@@ -280,7 +284,7 @@ const TermsScreen = ({ navigation }: Props) => {
               </View>
               <View style={styles.contactTextContainer}>
                 <AppText variant="semiBold" style={styles.contactLabel}>Telepon</AppText>
-                <AppText style={styles.contactValue}>(0451) 123-4567 (Senin - Jumat | 08:00 - 16:00 WITA)</AppText>
+                <AppText style={styles.contactValue}>082151077894 (Senin - Jumat | 08:00 - 16:00 WITA)</AppText>
               </View>
             </View>
 

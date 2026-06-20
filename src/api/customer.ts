@@ -87,6 +87,8 @@ export const customerStore = async ({ modal, form, setProcessing, goBack }: Stor
     }
   } catch (error) {
     const axiosError = error as AxiosError;
+    console.log(axiosError.response);
+
     processError(modal, form, axiosError);
   } finally {
     processFinish(modal, () => {

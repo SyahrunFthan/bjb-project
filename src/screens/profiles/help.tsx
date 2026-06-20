@@ -1,11 +1,11 @@
-import React from 'react';
-import { ScrollView, StatusBar, StyleSheet, TouchableOpacity, View, Linking, Alert } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { color } from '@/assets/color';
 import { AppText } from '@/components/AppText';
 import AppIcon from '@/components/Icon';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RouteParamList } from '@/types/navigation';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import React from 'react';
+import { Alert, Linking, ScrollView, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type Props = NativeStackScreenProps<RouteParamList, 'Help'>;
 
@@ -27,7 +27,9 @@ const HelpScreen = ({ navigation }: Props) => {
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()} activeOpacity={0.7}>
           <AppIcon name="arrow-back" size={20} color={color.black} />
         </TouchableOpacity>
-        <AppText style={styles.headerTitle} variant="semiBold">Pusat Bantuan</AppText>
+        <AppText style={styles.headerTitle} variant="semiBold">
+          Pusat Bantuan
+        </AppText>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
@@ -36,58 +38,64 @@ const HelpScreen = ({ navigation }: Props) => {
           <View style={styles.introIconContainer}>
             <AppIcon name="support-agent" size={36} color={color.primary} />
           </View>
-          <AppText variant="bold" style={styles.introTitle}>Ada Kendala atau Pertanyaan?</AppText>
+          <AppText variant="bold" style={styles.introTitle}>
+            Ada Kendala atau Pertanyaan?
+          </AppText>
           <AppText style={styles.introDesc}>
-            Tim Customer Service KSP PT. Bare Jaya Berdikari siap membantu Anda menemukan solusi terbaik untuk kebutuhan finansial Anda.
+            Tim Customer Service Koperasi Pinjaman PT. Bare Jaya Berdikari siap membantu Anda menemukan solusi terbaik untuk kebutuhan finansial Anda.
           </AppText>
         </View>
 
         {/* Contact Options */}
-        <AppText variant="bold" style={styles.sectionTitle}>Pilih Saluran Hubung</AppText>
+        <AppText variant="bold" style={styles.sectionTitle}>
+          Pilih Saluran Hubung
+        </AppText>
 
         {/* WhatsApp Card */}
-        <TouchableOpacity 
-          style={styles.contactCard} 
+        <TouchableOpacity
+          style={styles.contactCard}
           activeOpacity={0.8}
-          onPress={() => handleOpenLink('https://wa.me/6281234567890?text=Halo%20Admin%20KSP%20PT.%20Bare%20Jaya%20Berdikari,%20saya%20butuh%20bantuan...')}
-        >
+          onPress={() =>
+            handleOpenLink('https://wa.me/6282151077894?text=Halo%20Admin%20Koperasi%20Pinjaman%20PT.%20Bare%20Jaya%20Berdikari,%20saya%20butuh%20bantuan...')
+          }>
           <View style={[styles.iconContainer, { backgroundColor: '#E6FDF4' }]}>
             <AppIcon name="chat" size={24} color="#10B981" />
           </View>
           <View style={styles.cardInfo}>
-            <AppText variant="bold" style={styles.cardTitle}>WhatsApp Support</AppText>
+            <AppText variant="bold" style={styles.cardTitle}>
+              WhatsApp Support
+            </AppText>
             <AppText style={styles.cardDesc}>Respon cepat via pesan instan chat WhatsApp</AppText>
           </View>
           <AppIcon name="chevron-right" size={20} color={color.neutral} />
         </TouchableOpacity>
 
         {/* Instagram Card */}
-        <TouchableOpacity 
-          style={styles.contactCard} 
+        <TouchableOpacity
+          style={styles.contactCard}
           activeOpacity={0.8}
-          onPress={() => handleOpenLink('https://www.instagram.com/barejayaberdikari')}
-        >
+          onPress={() => handleOpenLink('https://www.instagram.com/barejayaberdikari')}>
           <View style={[styles.iconContainer, { backgroundColor: '#FDF2F8' }]}>
             <AppIcon name="photo-camera" size={24} color="#EC4899" />
           </View>
           <View style={styles.cardInfo}>
-            <AppText variant="bold" style={styles.cardTitle}>Instagram Resmi</AppText>
+            <AppText variant="bold" style={styles.cardTitle}>
+              Instagram Resmi
+            </AppText>
             <AppText style={styles.cardDesc}>Ikuti berita terbaru & info layanan kami</AppText>
           </View>
           <AppIcon name="chevron-right" size={20} color={color.neutral} />
         </TouchableOpacity>
 
         {/* Email Card */}
-        <TouchableOpacity 
-          style={styles.contactCard} 
-          activeOpacity={0.8}
-          onPress={() => handleOpenLink('mailto:bjb@barejaya.id')}
-        >
+        <TouchableOpacity style={styles.contactCard} activeOpacity={0.8} onPress={() => handleOpenLink('mailto:bjb@barejaya.id')}>
           <View style={[styles.iconContainer, { backgroundColor: '#EFF6FF' }]}>
             <AppIcon name="email" size={24} color="#3B82F6" />
           </View>
           <View style={styles.cardInfo}>
-            <AppText variant="bold" style={styles.cardTitle}>Email Support</AppText>
+            <AppText variant="bold" style={styles.cardTitle}>
+              Email Support
+            </AppText>
             <AppText style={styles.cardDesc}>Kirim keluhan resmi atau berkas dokumen</AppText>
           </View>
           <AppIcon name="chevron-right" size={20} color={color.neutral} />
@@ -98,8 +106,10 @@ const HelpScreen = ({ navigation }: Props) => {
           <View style={styles.infoRow}>
             <AppIcon name="location-on" size={18} color={color.primary} />
             <View style={styles.infoTextContainer}>
-              <AppText variant="semiBold" style={styles.infoLabel}>Alamat Kantor</AppText>
-              <AppText style={styles.infoValue}>Jl. Cendrawasih Tojo Una-Una, Sulawesi Tengah, Indonesia</AppText>
+              <AppText variant="semiBold" style={styles.infoLabel}>
+                Alamat Kantor
+              </AppText>
+              <AppText style={styles.infoValue}>Jl. Sis-Aljufrie, Kab. Tojo Una Una, Kec. Ampana Kota Sulawesi Tengah</AppText>
             </View>
           </View>
 
@@ -108,7 +118,9 @@ const HelpScreen = ({ navigation }: Props) => {
           <View style={styles.infoRow}>
             <AppIcon name="phone" size={18} color={color.primary} />
             <View style={styles.infoTextContainer}>
-              <AppText variant="semiBold" style={styles.infoLabel}>Jam Operasional</AppText>
+              <AppText variant="semiBold" style={styles.infoLabel}>
+                Jam Operasional
+              </AppText>
               <AppText style={styles.infoValue}>Senin - Jumat | 08:00 - 16:00 WITA</AppText>
             </View>
           </View>

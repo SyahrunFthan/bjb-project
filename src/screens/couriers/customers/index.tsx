@@ -54,6 +54,28 @@ const CustomerScreen = ({ navigation }: { navigation: NativeStackNavigationProp<
     return unsubscribe;
   }, [navigation, fetchData]);
 
+  const handleEdit = useCallback((item: Customer) => {
+    navigation.navigate('CustomerEdit', { customer: item });
+  }, [navigation]);
+
+  const renderCustomerItem = useCallback(({ item, index }: { item: any; index: number }) => (
+    <CustomerList
+      onEdit={handleEdit}
+      loading={loading}
+      item={item as Customer}
+      index={index}
+    />
+  ), [loading, handleEdit]);
+
+  const renderFilterItem = useCallback(({ item: f }: { item: typeof FILTER_OPTIONS[0] }) => (
+    <TouchableOpacity
+      style={[styles.chip, activeFilter === f.key && styles.chipActive]}
+      onPress={() => setActiveFilter(f.key)}
+      activeOpacity={0.7}>
+      <AppText style={[styles.chipText, activeFilter === f.key && styles.chipTextActive]}>{f.label}</AppText>
+    </TouchableOpacity>
+  ), [activeFilter]);
+
   return (
     <AppLayout>
       <StatusBar backgroundColor={color.primary} barStyle="light-content" />
@@ -80,29 +102,19 @@ const CustomerScreen = ({ navigation }: { navigation: NativeStackNavigationProp<
               showsHorizontalScrollIndicator={false}
               scrollEnabled={true}
               contentContainerStyle={styles.filterRow}
-              renderItem={({ item: f }) => (
-                <TouchableOpacity
-                  style={[styles.chip, activeFilter === f.key && styles.chipActive]}
-                  onPress={() => setActiveFilter(f.key)}
-                  activeOpacity={0.7}>
-                  <AppText style={[styles.chipText, activeFilter === f.key && styles.chipTextActive]}>{f.label}</AppText>
-                </TouchableOpacity>
-              )}
+              renderItem={renderFilterItem}
             />
 
             <AppText style={styles.sectionLabel}>Nasabah terdaftar</AppText>
           </>
         }
-        renderItem={({ item, index }) => (
-          <CustomerList
-            onEdit={() => navigation.navigate('CustomerEdit', { customer: item as Customer })}
-            loading={loading}
-            item={item as Customer}
-            index={index}
-          />
-        )}
+        renderItem={renderCustomerItem}
         ListEmptyComponent={<EmptyData />}
         ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+        initialNumToRender={10}
+        maxToRenderPerBatch={10}
+        windowSize={5}
+        removeClippedSubviews={true}
       />
     </AppLayout>
   );

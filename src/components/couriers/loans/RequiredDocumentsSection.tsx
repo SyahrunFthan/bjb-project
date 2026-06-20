@@ -72,6 +72,13 @@ const RequiredDocumentsSection = ({
                           {doc.is_required ? 'Wajib' : 'Opsional'}
                         </AppText>
                       </View>
+                      {doc.document_type === 'pdf' && (
+                        <View style={[styles.badge, styles.badgePdf]}>
+                          <AppText style={[styles.badgeText, styles.badgePdfText]}>
+                            PDF
+                          </AppText>
+                        </View>
+                      )}
                     </View>
 
                     {uploaded ? (
@@ -189,6 +196,15 @@ const styles = StyleSheet.create({
   },
   badgeRequiredText: {
     color: color.tertiary,
+  },
+  badgePdf: {
+    backgroundColor: '#FEE2E2',
+    borderWidth: 0.5,
+    borderColor: '#EF4444',
+  },
+  badgePdfText: {
+    color: '#DC2626',
+    fontWeight: '700',
   },
   badgeOptionalText: {
     color: color.neutral,

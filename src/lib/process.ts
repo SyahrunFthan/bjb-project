@@ -24,6 +24,13 @@ export function processFinish(modal: ModalProps, onFinish?: () => void) {
 }
 
 export function processError(modal: ModalProps, form: FormContextProps, errs: AxiosError) {
+  if (errs.response?.status !== 400) {
+    const errorData = errs.response?.data as any;
+    const msg = errorData?.message || errorData?.error || 'Terjadi kesalahan pada server.';
+    processFail(modal, 'Gagal', msg);
+    return;
+  }
+
   const errorData = errs.response?.data;
 
   if (!errorData || typeof errorData !== 'object') {
@@ -35,7 +42,7 @@ export function processError(modal: ModalProps, form: FormContextProps, errs: Ax
   let generalError = '';
 
   Object.entries(errorData).forEach(([field, message]) => {
-    if (isStrictStringNumber(field)) {
+    if (isStrictStringNumber(field) || field === 'message' || field === 'error') {
       generalError = String(message);
       return;
     }

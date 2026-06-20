@@ -4,9 +4,10 @@ import { AppText } from '@/components/AppText';
 import AppIcon from '@/components/Icon';
 import { useModal } from '@/hooks/useModal';
 import { CustomerDocument, RequirementDocument } from '@/model/loan';
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Modal, PermissionsAndroid, Platform, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
+import { pick, isErrorWithCode, errorCodes } from '@react-native-documents/picker';
 
 interface Props {
   visible: boolean;
@@ -23,6 +24,38 @@ interface SimulatedOption {
 
 export const UploadModal = ({ visible, onClose, customerId, activeReqDoc, onUploadSuccess }: Props) => {
   const modal = useModal();
+
+  const handleLaunchFilePicker = async () => {
+    if (!customerId || !activeReqDoc) return;
+    onClose();
+
+    try {
+      const result = await pick({
+        type: ['application/pdf'],
+      });
+
+      if (result && result.length > 0) {
+        const file = result[0];
+        uploadCustomerDocument(
+          customerId,
+          activeReqDoc.id,
+          file.name || 'document.pdf',
+          file.uri,
+          file.type || 'application/pdf',
+          modal,
+          newDoc => {
+            onUploadSuccess(newDoc);
+          },
+        );
+      }
+    } catch (err) {
+      if (isErrorWithCode(err) && err.code === errorCodes.OPERATION_CANCELED) {
+        return;
+      }
+      console.warn('DocumentPicker error:', err);
+      modal.result.error('Pilih Berkas Gagal', 'Gagal memilih dokumen PDF.');
+    }
+  };
 
   const handleLaunchCamera = async () => {
     if (!customerId || !activeReqDoc) return;
@@ -125,34 +158,62 @@ export const UploadModal = ({ visible, onClose, customerId, activeReqDoc, onUplo
             </TouchableOpacity>
           </View>
 
+          {activeReqDoc?.document_type === 'pdf' && (
+            <View style={styles.pdfAlertBanner}>
+              <AppIcon name="info" size={16} color="#DC2626" />
+              <AppText style={styles.pdfAlertText}>
+                PENTING: Dokumen ini wajib diunggah dalam format berkas PDF digital (bukan foto/kamera).
+              </AppText>
+            </View>
+          )}
+
           <AppText style={styles.modalSubtitle}>Pilih metode pengambilan dokumen di bawah ini:</AppText>
 
           <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.optionsList}>
-            <TouchableOpacity style={styles.optionItem} onPress={handleLaunchCamera} activeOpacity={0.7}>
-              <View style={styles.optionIconContainer}>
-                <AppIcon name="photo-camera" size={20} color={color.primary} />
-              </View>
-              <View style={{ flex: 1 }}>
-                <AppText variant="medium" style={styles.optionLabel}>
-                  Ambil Foto dari Kamera
-                </AppText>
-                <AppText style={styles.optionFile}>Memotret dokumen secara langsung</AppText>
-              </View>
-              <AppIcon name="chevron-right" size={20} color={color.neutral} />
-            </TouchableOpacity>
+            {(activeReqDoc?.document_type === 'pdf' || activeReqDoc?.document_type === 'all') && (
+              <TouchableOpacity style={styles.optionItem} onPress={handleLaunchFilePicker} activeOpacity={0.7}>
+                <View style={[styles.optionIconContainer, { backgroundColor: '#FEE2E2' }]}>
+                  <AppIcon name="picture-as-pdf" size={20} color="#DC2626" />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <AppText variant="medium" style={[styles.optionLabel, { color: '#DC2626', fontWeight: '600' }]}>
+                    Pilih Berkas PDF dari HP
+                  </AppText>
+                  <AppText style={styles.optionFile}>Pilih dokumen .pdf dari penyimpanan perangkat</AppText>
+                </View>
+                <AppIcon name="chevron-right" size={20} color={color.neutral} />
+              </TouchableOpacity>
+            )}
 
-            <TouchableOpacity style={styles.optionItem} onPress={handleLaunchGallery} activeOpacity={0.7}>
-              <View style={styles.optionIconContainer}>
-                <AppIcon name="photo-library" size={20} color={color.primary} />
-              </View>
-              <View style={{ flex: 1 }}>
-                <AppText variant="medium" style={styles.optionLabel}>
-                  Pilih Foto dari Galeri
-                </AppText>
-                <AppText style={styles.optionFile}>Memilih foto dokumen dari galeri hp</AppText>
-              </View>
-              <AppIcon name="chevron-right" size={20} color={color.neutral} />
-            </TouchableOpacity>
+            {activeReqDoc?.document_type !== 'pdf' && (
+              <>
+                <TouchableOpacity style={styles.optionItem} onPress={handleLaunchCamera} activeOpacity={0.7}>
+                  <View style={styles.optionIconContainer}>
+                    <AppIcon name="photo-camera" size={20} color={color.primary} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <AppText variant="medium" style={styles.optionLabel}>
+                      Ambil Foto dari Kamera
+                    </AppText>
+                    <AppText style={styles.optionFile}>Memotret dokumen secara langsung</AppText>
+                  </View>
+                  <AppIcon name="chevron-right" size={20} color={color.neutral} />
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.optionItem} onPress={handleLaunchGallery} activeOpacity={0.7}>
+                  <View style={styles.optionIconContainer}>
+                    <AppIcon name="photo-library" size={20} color={color.primary} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <AppText variant="medium" style={styles.optionLabel}>
+                      Pilih Foto dari Galeri
+                    </AppText>
+                    <AppText style={styles.optionFile}>Memilih foto dokumen dari galeri hp</AppText>
+                  </View>
+                  <AppIcon name="chevron-right" size={20} color={color.neutral} />
+                </TouchableOpacity>
+              </>
+            )}
           </ScrollView>
         </View>
       </TouchableOpacity>
@@ -236,5 +297,24 @@ const styles = StyleSheet.create({
     color: color.neutral,
     textAlign: 'center',
     marginBottom: 8,
+  },
+  pdfAlertBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#FEE2E2',
+    borderWidth: 1,
+    borderColor: '#FCA5A5',
+    borderRadius: 8,
+    padding: 12,
+    marginHorizontal: 20,
+    marginTop: 14,
+  },
+  pdfAlertText: {
+    flex: 1,
+    fontSize: 11,
+    color: '#991B1B',
+    fontWeight: '500',
+    lineHeight: 16,
   },
 });

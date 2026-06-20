@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { FlatList, Modal, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 
 import { color } from '@/assets/color';
@@ -25,6 +25,17 @@ const Select = ({ label, placeholder = 'Pilih salah satu', value, onValueChange,
     onValueChange(item.value);
     setModalVisible(false);
   };
+
+  const renderItem = useCallback(
+    ({ item }: { item: Option }) => (
+      <OptionItem
+        item={item}
+        isSelected={item.value === value}
+        onPress={handleSelect}
+      />
+    ),
+    [value, handleSelect],
+  );
 
   return (
     <View style={[styles.container, containerStyle]}>
@@ -54,12 +65,11 @@ const Select = ({ label, placeholder = 'Pilih salah satu', value, onValueChange,
             <FlatList
               data={options}
               keyExtractor={item => item.value.toString()}
-              renderItem={({ item }) => (
-                <TouchableOpacity style={[styles.optionItem, item.value === value && styles.optionSelected]} onPress={() => handleSelect(item)}>
-                  <Text style={[styles.optionText, item.value === value && styles.optionTextSelected]}>{item.label}</Text>
-                  {item.value === value && <AppIcon name="check" size={20} color={color.primary} />}
-                </TouchableOpacity>
-              )}
+              renderItem={renderItem}
+              initialNumToRender={10}
+              maxToRenderPerBatch={10}
+              windowSize={5}
+              removeClippedSubviews={true}
             />
           </View>
         </TouchableOpacity>
@@ -67,6 +77,24 @@ const Select = ({ label, placeholder = 'Pilih salah satu', value, onValueChange,
     </View>
   );
 };
+
+interface OptionItemProps {
+  item: Option;
+  isSelected: boolean;
+  onPress: (item: Option) => void;
+}
+
+const OptionItem = React.memo(({ item, isSelected, onPress }: OptionItemProps) => {
+  return (
+    <TouchableOpacity
+      style={[styles.optionItem, isSelected && styles.optionSelected]}
+      onPress={() => onPress(item)}>
+      <Text style={[styles.optionText, isSelected && styles.optionTextSelected]}>{item.label}</Text>
+      {isSelected && <AppIcon name="check" size={20} color={color.primary} />}
+    </TouchableOpacity>
+  );
+});
+
 
 export default Select;
 

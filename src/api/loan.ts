@@ -179,7 +179,7 @@ export const loanStore = async (
     setProcessing(true);
     processStart(modal, 'Mengirim pengajuan pinjaman...');
 
-    const response = await api.post('/loans', values);
+    const response = await api.post('/mobile/loans', values);
 
     if (response.status === 201) {
       processSuccess(modal, 'Berhasil', 'Pengajuan pinjaman berhasil dibuat.', () => {
@@ -190,7 +190,6 @@ export const loanStore = async (
     }
   } catch (error) {
     const axiosError = error as AxiosError<ErrorResponse>;
-    console.error('Error creating loan:', error);
     processFail(modal, 'Pengajuan Gagal', axiosError.response?.data?.message || 'Gagal membuat pengajuan pinjaman.');
   } finally {
     processFinish(modal, () => {
@@ -229,7 +228,7 @@ export const loanUpdate = async (
   try {
     setProcessing(true);
     processStart(modal, 'Menyimpan perubahan pengajuan...');
-    const response = await api.put(`/loans/${id}`, values);
+    const response = await api.put(`/mobile/loans/${id}`, values);
     if (response.status === 200) {
       processSuccess(modal, 'Berhasil', 'Pengajuan pinjaman berhasil diperbarui.', () => {
         processFinish(modal);
@@ -239,7 +238,6 @@ export const loanUpdate = async (
     }
   } catch (error) {
     const axiosError = error as AxiosError<ErrorResponse>;
-    console.error('Error updating loan:', error);
     processFail(modal, 'Pembaruan Gagal', axiosError.response?.data?.message || 'Gagal memperbarui pengajuan pinjaman.');
   } finally {
     processFinish(modal, () => {
@@ -251,7 +249,7 @@ export const loanUpdate = async (
 export const loanDelete = async (id: string, modal: ModalProps, onSuccess: () => void): Promise<void> => {
   try {
     processStart(modal, 'Menghapus pengajuan pinjaman...');
-    const response = await api.delete(`/loans/${id}`);
+    const response = await api.delete(`/mobile/loans/${id}`);
     if (response.status === 200) {
       processSuccess(modal, 'Berhasil', 'Pengajuan pinjaman berhasil dihapus.', () => {
         processFinish(modal);
@@ -268,16 +266,21 @@ export const loanDelete = async (id: string, modal: ModalProps, onSuccess: () =>
 };
 
 export const fetchCustomerDetails = async (customerId: string): Promise<Customer | null> => {
-  const response = await api.get('/employees/customers');
-  const list = (response.data || []) as Customer[];
-  return list.find(c => c.id === customerId) || null;
+  try {
+    const response = await api.get('/mobile/employees/customers');
+    const list = (response.data || []) as Customer[];
+    return list.find(c => c.id === customerId) || null;
+  } catch (error) {
+    console.warn('Error fetching customer details:', error);
+    return null;
+  }
 };
 
 export const fetchCustomerOptions = async (query: string): Promise<{ label: string; value: string | number }[]> => {
   const response = await api.get(`/mobile/employees/customers?search=${query}`);
   const list = (response.data || []) as Customer[];
   return list.map(c => ({
-    label: `${c.full_name} (${c.member_number})`,
+    label: c.full_name,
     value: c.id,
   }));
 };

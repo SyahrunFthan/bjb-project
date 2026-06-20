@@ -10,10 +10,16 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { useAuth } from '@/contexts/AuthContext';
+import { useModal } from '@/hooks/useModal';
+import { authLogout } from '@/api/auth';
 
 const ProfileScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RouteParamList>>();
+  const { setAuth } = useAuth();
+  const modal = useModal();
   const [profile, setProfile] = useState<User | null>(null);
+  const [processing, setProcessing] = useState(false);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -23,6 +29,15 @@ const ProfileScreen = () => {
 
     loadProfile();
   }, []);
+
+  const handleLogout = () => {
+    authLogout({
+      modal,
+      setProcessing,
+      navigation,
+      setAuth,
+    });
+  };
 
   return (
     <AppLayout scrollable={true}>
@@ -139,7 +154,7 @@ const ProfileScreen = () => {
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity style={styles.logoutButton}>
+      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout} disabled={processing}>
         <AppIcon name="logout" size={20} color={color.tertiary} />
         <AppText variant="medium" style={styles.logoutText}>
           Keluar Aplikasi

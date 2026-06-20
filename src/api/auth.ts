@@ -1,6 +1,7 @@
 import { ModalProps } from '@/contexts/ModalContext';
 import api from '@/lib/api';
 import { setAccessToken } from '@/lib/auth';
+import { processFail, processFinish, processStart, processSuccess } from '@/lib/process';
 import { getData, storeData } from '@/lib/storage';
 import { AuthFormValues } from '@/model/auth';
 import { User } from '@/model/user';
@@ -8,7 +9,6 @@ import { RouteParamList } from '@/types/navigation';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AxiosError } from 'axios';
 import { Dispatch, SetStateAction } from 'react';
-import { processFail, processFinish, processStart, processSuccess } from '@/lib/process';
 
 interface LoginProps {
   modal: ModalProps;
@@ -75,15 +75,7 @@ interface ChangePasswordProps {
   setErrors: (errors: Record<string, string>) => void;
 }
 
-export const authChangePasswordBoarding = async ({
-  modal,
-  values,
-  userId,
-  setProcessing,
-  navigation,
-  setAuth,
-  setErrors,
-}: ChangePasswordProps) => {
+export const authChangePasswordBoarding = async ({ modal, values, userId, setProcessing, navigation, setAuth, setErrors }: ChangePasswordProps) => {
   try {
     setProcessing(true);
     processStart(modal, 'Sedang memproses perubahan password');
@@ -168,7 +160,10 @@ export const authDeleteAccount = async ({ modal, setProcessing, navigation, setA
       processSuccess(modal, 'Berhasil', 'Akun Anda telah berhasil dihapus.', () => {
         processFinish(modal);
         setProcessing(false);
-        navigation.replace('Start');
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Start' }],
+        });
       });
     }
   } catch (error) {
@@ -195,15 +190,7 @@ interface RegularChangePasswordProps {
   onSuccess?: () => void;
 }
 
-export const authChangePassword = async ({
-  modal,
-  values,
-  userId,
-  setProcessing,
-  navigation,
-  setErrors,
-  onSuccess,
-}: RegularChangePasswordProps) => {
+export const authChangePassword = async ({ modal, values, userId, setProcessing, navigation, setErrors, onSuccess }: RegularChangePasswordProps) => {
   try {
     setProcessing(true);
     processStart(modal, 'Sedang memproses perubahan password');
@@ -225,6 +212,51 @@ export const authChangePassword = async ({
     } else {
       processFail(modal, 'Error', axiosError.response?.data?.message || 'Network Error');
     }
+  } finally {
+    processFinish(modal, () => {
+      setProcessing(false);
+    });
+  }
+};
+
+interface LogoutProps {
+  modal: ModalProps;
+  setProcessing: Dispatch<SetStateAction<boolean>>;
+  navigation: NativeStackNavigationProp<RouteParamList, any>;
+  setAuth: (auth: User | null) => void;
+}
+
+export const authLogout = async ({ modal, setProcessing, navigation, setAuth }: LogoutProps) => {
+  try {
+    setProcessing(true);
+    processStart(modal, 'Sedang keluar...');
+    const response = await api.delete('/auth/logout');
+    if (response.status === 200) {
+      setAccessToken(null);
+      await storeData('auth', null);
+      setAuth(null);
+      processSuccess(modal, 'Berhasil', 'Anda berhasil keluar dari aplikasi', () => {
+        processFinish(modal);
+        setProcessing(false);
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Start' }],
+        });
+      });
+    }
+  } catch (error) {
+    // If request fails (e.g. offline), still force local logout
+    setAccessToken(null);
+    await storeData('auth', null);
+    setAuth(null);
+    processSuccess(modal, 'Berhasil', 'Anda keluar dari aplikasi', () => {
+      processFinish(modal);
+      setProcessing(false);
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Start' }],
+      });
+    });
   } finally {
     processFinish(modal, () => {
       setProcessing(false);

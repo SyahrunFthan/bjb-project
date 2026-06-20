@@ -23,7 +23,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const refreshUnreadStatus = async () => {
     const storeAuth = await getData('auth');
-    if (storeAuth) {
+    const role = storeAuth?.role_level ?? storeAuth?.user?.role_level;
+    if (storeAuth && role === 4) {
       try {
         const data = await fetchNotifications();
         setHasUnreadNotification(data.some(n => !n.is_read));

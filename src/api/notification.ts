@@ -22,7 +22,7 @@ export const fetchNotifications = async (): Promise<NotificationItem[]> => {
     const response = await api.get('/mobile/customers/notifications');
     return response.data?.data || [];
   } catch (error) {
-    console.error('[API] Error fetching notifications:', error);
+    console.warn('[API] Error fetching notifications:', error);
     throw error;
   }
 };
@@ -35,7 +35,7 @@ export const markNotificationsAsReadApi = async (): Promise<boolean> => {
     const response = await api.put('/mobile/customers/notifications/read');
     return response.status === 200;
   } catch (error) {
-    console.error('[API] Error marking notifications as read:', error);
+    console.warn('[API] Error marking notifications as read:', error);
     throw error;
   }
 };

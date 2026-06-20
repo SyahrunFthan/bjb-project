@@ -9,7 +9,8 @@ import { useModal } from '@/hooks/useModal';
 import { genderOptions } from '@/constants/gender';
 import { maritalStatusOptions } from '@/constants/maritalStatus';
 import { religionOptions } from '@/constants/religion';
-import { customerProfileUpdated, employeeProfileUpdated } from '@/api/customer';
+import { customerProfileUpdated } from '@/api/customer';
+import { employeeProfileUpdated } from '@/api/employee';
 
 interface Props {
   profile: any;
