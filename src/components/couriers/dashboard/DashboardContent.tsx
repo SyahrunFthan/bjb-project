@@ -31,6 +31,17 @@ const DashboardContent = ({ dashboardData, loading, navigation }: Props) => {
           </Card>
         </View>
 
+        <View style={styles.statsContainer}>
+          <Card style={styles.statCard}>
+            <SkeletonCircle size={24} />
+            <SkeletonText lines={3} style={{ marginTop: 5 }} />
+          </Card>
+          <Card style={styles.statCard}>
+            <SkeletonCircle size={24} />
+            <SkeletonText lines={3} style={{ marginTop: 5 }} />
+          </Card>
+        </View>
+
         <View style={styles.section}>
           <AppText variant="bold" style={styles.sectionTitle}>
             Akses Cepat
@@ -113,6 +124,27 @@ const DashboardContent = ({ dashboardData, loading, navigation }: Props) => {
           </AppText>
           <AppText variant="semiBold" style={styles.statValue}>
             {stats.activeLoansCount?.toLocaleString('id-ID') ?? '0'}
+          </AppText>
+        </Card>
+      </View>
+
+      <View style={styles.statsContainer}>
+        <Card style={styles.statCard}>
+          <AppIcon name="check-circle" size={24} color={color.success} />
+          <AppText variant="regular" style={styles.statLabel}>
+            Tagihan Lunas Hari Ini
+          </AppText>
+          <AppText variant="semiBold" style={styles.billValue}>
+            Rp {formatCurrency(stats.totalDailyBillPaid ?? 0)}
+          </AppText>
+        </Card>
+        <Card style={styles.statCard}>
+          <AppIcon name="pending-actions" size={24} color={color.tertiary} />
+          <AppText variant="regular" style={styles.statLabel}>
+            Tagihan Belum Bayar
+          </AppText>
+          <AppText variant="semiBold" style={styles.billValue}>
+            Rp {formatCurrency(stats.totalDailyBillUnpaid ?? 0)}
           </AppText>
         </Card>
       </View>
@@ -226,6 +258,10 @@ const styles = StyleSheet.create({
   },
   statValue: {
     fontSize: 26,
+    marginTop: 2,
+  },
+  billValue: {
+    fontSize: 14,
     marginTop: 2,
   },
   section: {

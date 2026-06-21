@@ -3,6 +3,8 @@ import { User } from './user';
 export interface DashboardStats {
   totalCustomers: number;
   activeLoansCount: number;
+  totalDailyBillPaid: number;
+  totalDailyBillUnpaid: number;
 }
 
 export interface RecentPayment {

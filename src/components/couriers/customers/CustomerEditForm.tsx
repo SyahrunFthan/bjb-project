@@ -25,7 +25,7 @@ interface Props {
 const CustomerEditForm = ({ customer }: Props) => {
   const navigation = useNavigation<NativeStackNavigationProp<RouteParamList, 'CustomerEdit'>>();
   const form = useFormContext();
-  const { values, errors, register, setValue, validateForm, resetForm } = form;
+  const { values, errors, register, unregister, setValue, validateForm, resetForm } = form;
   const modal = useModal();
 
   const [processing, setProcessing] = useState(false);
@@ -49,7 +49,19 @@ const CustomerEditForm = ({ customer }: Props) => {
     register('gender', [Rules.required('Jenis kelamin wajib dipilih')]);
     register('religion', [Rules.required('Agama wajib dipilih')]);
     register('marital_status', [Rules.required('Status pernikahan wajib dipilih')]);
-  }, [register]);
+
+    return () => {
+      unregister('national_id');
+      unregister('full_name');
+      unregister('email');
+      unregister('phone_number');
+      unregister('place_of_birth');
+      unregister('date_of_birth');
+      unregister('gender');
+      unregister('religion');
+      unregister('marital_status');
+    };
+  }, [register, unregister]);
 
   useEffect(() => {
     if (customer) {
@@ -61,15 +73,16 @@ const CustomerEditForm = ({ customer }: Props) => {
   }, [customer, setValue]);
 
   const handleSave = () => {
-    if (validateForm()) {
-      customerUpdate({
-        modal,
-        form,
-        setProcessing,
-        record: customer,
-        goBack: () => navigation.goBack(),
-      });
-    }
+    const isFormValid = validateForm();
+    if (!isFormValid) return;
+
+    customerUpdate({
+      modal,
+      form,
+      setProcessing,
+      record: customer,
+      goBack: () => navigation.goBack(),
+    });
   };
 
   return (

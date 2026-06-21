@@ -1,5 +1,5 @@
-import { ImageSourcePropType } from 'react-native';
 import { Onboarding1, Onboarding2, Onboarding3 } from '@/assets/images';
+import { ImageSourcePropType } from 'react-native';
 
 export interface OnboardingData {
   id: string;
@@ -11,20 +11,22 @@ export interface OnboardingData {
 export const ONBOARDING_DATA: OnboardingData[] = [
   {
     id: '1',
-    title: 'Pengajuan Pinjaman Cepat',
-    description: 'Akses dana darurat atau modal usaha dalam hitungan menit dengan proses koperasi yang modern.',
+    title: 'Portal Anggota Resmi BJB',
+    description:
+      'Aplikasi eksklusif anggota resmi PT. Bare Jaya Berdikari. Akun Anda didaftarkan secara offline oleh petugas lapangan kami setelah verifikasi.',
     image: Onboarding1,
   },
   {
     id: '2',
-    title: 'Simpanan & Investasi Cerdas',
-    description: 'Kelola masa depan finansial Anda dengan produk simpanan yang aman dan menguntungkan.',
+    title: 'Pantau Kewajiban & Invoice',
+    description: 'Pantau rincian tagihan harian, sisa kewajiban pinjaman, dan invoice digital Anda secara transparan langsung dari genggaman.',
     image: Onboarding2,
   },
   {
     id: '3',
-    title: 'Kelola Keuangan Mudah',
-    description: 'Pantau saldo, mutasi, dan pengajuan Anda kapan saja dan di mana saja dengan aman.',
+    title: 'Pembayaran Luring Terbantu',
+    description:
+      'Pembayaran cicilan dijemput langsung secara tunai oleh petugas lapangan resmi, dan dapatkan bukti tanda terima digital real-time di aplikasi.',
     image: Onboarding3,
   },
 ];

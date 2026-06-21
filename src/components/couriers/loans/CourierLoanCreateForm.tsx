@@ -31,7 +31,7 @@ interface Props {
 const CourierLoanCreateForm = ({ navigation }: Props) => {
   const modal = useModal();
   const form = useFormContext();
-  const { values, errors, register, setValue, getValue, validateForm, resetForm } = form;
+  const { values, errors, register, unregister, setValue, getValue, validateForm, resetForm } = form;
 
   const [tenors, setTenors] = useState<TenorModel[]>([]);
   const [requirementDocs, setRequirementDocs] = useState<RequirementDocument[]>([]);
@@ -55,7 +55,13 @@ const CourierLoanCreateForm = ({ navigation }: Props) => {
       setLoadingData(false);
     };
     initData();
-  }, [register]);
+
+    return () => {
+      unregister('customer_id');
+      unregister('tenor_id');
+      unregister('amount');
+    };
+  }, [register, unregister]);
 
   const customerId = values.customer_id as string | undefined;
 
@@ -98,7 +104,20 @@ const CourierLoanCreateForm = ({ navigation }: Props) => {
         register('job.address', [Rules.required('Alamat kantor wajib diisi')]);
       }
     }
-  }, [selectedCustomer, register]);
+
+    return () => {
+      unregister('address.province_id');
+      unregister('address.regency_id');
+      unregister('address.district_id');
+      unregister('address.sub_district_id');
+      unregister('address.postal_code');
+      unregister('address.address');
+      unregister('job.company_name');
+      unregister('job.position');
+      unregister('job.salary');
+      unregister('job.address');
+    };
+  }, [selectedCustomer, register, unregister]);
 
   const handleSubmit = () => {
     const isFormValid = validateForm();

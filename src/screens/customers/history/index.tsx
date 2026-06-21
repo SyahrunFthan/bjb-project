@@ -160,7 +160,10 @@ const HistoryScreen = () => {
     const statusColor = getPaymentStatusColor(item.payment_status);
 
     return (
-      <View style={styles.card}>
+      <TouchableOpacity
+        style={styles.card}
+        activeOpacity={0.7}
+        onPress={() => navigation.navigate('PaymentReceipt', { paymentId: item.id })}>
         <View style={styles.cardHeader}>
           <View style={styles.paymentBox}>
             <View style={styles.iconCircle}>
@@ -200,7 +203,16 @@ const HistoryScreen = () => {
             <AppText style={styles.detailValue}>{formatTransactionDate(item.payment_date)}</AppText>
           </View>
         </View>
-      </View>
+
+        <View style={styles.divider} />
+
+        <View style={styles.printCardFooter}>
+          <AppIcon name="print" size={16} color={color.primary} />
+          <AppText variant="semiBold" style={styles.printFooterText}>
+            Cetak Bukti Pembayaran
+          </AppText>
+        </View>
+      </TouchableOpacity>
     );
   };
 
@@ -431,6 +443,17 @@ const styles = StyleSheet.create({
     color: color.neutral,
     fontSize: 13,
     marginTop: 10,
+  },
+  printCardFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingTop: 8,
+  },
+  printFooterText: {
+    fontSize: 12,
+    color: color.primary,
   },
 });
 

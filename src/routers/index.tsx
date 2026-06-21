@@ -14,6 +14,7 @@ import CourierLoanCreateScreen from '@/screens/couriers/loans/create';
 import CourierLoanEditScreen from '@/screens/couriers/loans/edit';
 import NotificationScreen from '@/screens/notifications';
 import LoanItemScreen from '@/screens/customers/history/item';
+import PaymentReceiptScreen from '@/screens/customers/history/receipt';
 import SplashScreen from '@/screens/splash';
 import StartScreen from '@/screens/start';
 import { RouteParamList } from '@/types/navigation';
@@ -47,6 +48,7 @@ const Routes = () => {
       <Stack.Screen name="CourierProfile" component={CourierProfileScreen} options={{ statusBarStyle: 'dark' }} />
       <Stack.Screen name="Notification" component={NotificationScreen} options={{ statusBarStyle: 'dark' }} />
       <Stack.Screen name="LoanItem" component={LoanItemScreen} options={{ statusBarStyle: 'dark' }} />
+      <Stack.Screen name="PaymentReceipt" component={PaymentReceiptScreen} options={{ statusBarStyle: 'dark' }} />
     </Stack.Navigator>
   );
 };

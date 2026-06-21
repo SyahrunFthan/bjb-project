@@ -24,8 +24,11 @@ const DashboardScreen = ({ navigation }: { navigation: NativeStackNavigationProp
   }, []);
 
   useEffect(() => {
-    fetchDashboardData();
-  }, [fetchDashboardData]);
+    const unsubscribe = navigation.addListener('focus', () => {
+      fetchDashboardData();
+    });
+    return unsubscribe;
+  }, [fetchDashboardData, navigation]);
 
   return (
     <AppLayout

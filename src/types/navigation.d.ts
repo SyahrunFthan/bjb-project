@@ -43,6 +43,9 @@ export type RouteParamList = {
   LoanItem: {
     loanId: string;
   };
+  PaymentReceipt: {
+    paymentId: string;
+  };
 };
 
 declare global {

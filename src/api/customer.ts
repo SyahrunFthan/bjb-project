@@ -241,6 +241,32 @@ export const customerPaymentsFetched = async ({ setData, setLoading, modal, setR
   }
 };
 
+interface PaymentDetailsProps {
+  paymentId: string;
+  modal: ModalProps;
+  setLoading: Dispatch<SetStateAction<boolean>>;
+  setData: Dispatch<SetStateAction<any>>;
+}
+
+export const customerPaymentDetailsFetched = async ({ paymentId, setData, setLoading, modal }: PaymentDetailsProps) => {
+  try {
+    setLoading(true);
+    const response = await api.get(`/mobile/customers/payments/${paymentId}`);
+    if (response.data?.success) {
+      setData(response.data.data);
+    } else {
+      processFail(modal, 'Error', response.data?.message || 'Gagal memuat detail pembayaran');
+    }
+  } catch (error) {
+    const axiosError = error as AxiosError<{ message?: string }>;
+    processFail(modal, 'Error', axiosError.response?.data?.message || 'Gagal menghubungkan ke server');
+  } finally {
+    processFinish(modal, () => {
+      setLoading(false);
+    });
+  }
+};
+
 interface ProfileFetchProps {
   modal: ModalProps;
   setData: (data: any) => void;

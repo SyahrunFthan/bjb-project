@@ -52,6 +52,7 @@ export interface FormContextProps {
   values: Record<string, unknown>;
   errors: Record<string, string>;
   register: (name: string, rules?: ValidationRule[]) => void;
+  unregister: (name: string) => void;
   setValue: (name: string | Record<string, any>, value?: any) => void;
   getValue: (name: string) => unknown;
   validateField: (name: string, value: unknown) => boolean;
@@ -75,6 +76,20 @@ export const FormProvider: React.FC<{ children: React.ReactNode }> = ({ children
       ...prev,
       rules: { ...prev.rules, [name]: rules },
     }));
+  }, []);
+
+  const unregister = useCallback((name: string) => {
+    setFormState(prev => {
+      const newRules = { ...prev.rules };
+      delete newRules[name];
+      const newErrors = { ...prev.errors };
+      delete newErrors[name];
+      return {
+        ...prev,
+        rules: newRules,
+        errors: newErrors,
+      };
+    });
   }, []);
 
   const validateField = useCallback(
@@ -187,6 +202,7 @@ export const FormProvider: React.FC<{ children: React.ReactNode }> = ({ children
     () => ({
       ...formState,
       register,
+      unregister,
       setValue,
       getValue,
       validateField,
@@ -195,7 +211,7 @@ export const FormProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setError,
       setErrors,
     }),
-    [formState, register, setValue, getValue, validateField, validateForm, resetForm, setError, setErrors],
+    [formState, register, unregister, setValue, getValue, validateField, validateForm, resetForm, setError, setErrors],
   );
 
   return <FormContext.Provider value={value}>{children}</FormContext.Provider>;

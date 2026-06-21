@@ -123,13 +123,13 @@ const styles = StyleSheet.create({
     fontSize: 24,
     color: color.primary,
     textAlign: 'center',
-    marginBottom: 15,
+    marginBottom: 8,
   },
   description: {
-    fontSize: 16,
+    fontSize: 14,
     color: color.neutral,
     textAlign: 'center',
-    lineHeight: 24,
+    // lineHeight: 24,
   },
   footer: {
     paddingHorizontal: 40,

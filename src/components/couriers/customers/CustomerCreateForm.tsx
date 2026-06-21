@@ -13,7 +13,6 @@ import { maritalStatusOptions } from '@/constants/maritalStatus';
 import { religionOptions } from '@/constants/religion';
 import { Rules, useFormContext } from '@/contexts/FormContext';
 import { useModal } from '@/hooks/useModal';
-import api from '@/lib/api';
 import { RouteParamList } from '@/types/navigation';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -23,45 +22,17 @@ import { KeyboardAvoidingView, ScrollView, StyleSheet, View } from 'react-native
 const CustomerCreateForm = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RouteParamList>>();
   const form = useFormContext();
-  const { values, errors, register, setValue, validateForm, resetForm } = form;
+  const { values, errors, register, unregister, setValue, validateForm, resetForm } = form;
   const modal = useModal();
 
   const [processing, setProcessing] = useState(false);
-  const [seqNumber, setSeqNumber] = useState<number>(1);
   const nikLength = ((values.national_id as string) || '').length;
 
   useEffect(() => {
-    const fetchNextSeq = async () => {
-      try {
-        const response = await api.get('/customers/options');
-        if (response.data && Array.isArray(response.data)) {
-          setSeqNumber(response.data.length + 1);
-        }
-      } catch (err) {
-        console.log('Error fetching customer count:', err);
-      }
-    };
-    fetchNextSeq();
+    resetForm();
   }, []);
 
   useEffect(() => {
-    if (values.date_of_birth) {
-      const dob = new Date(values.date_of_birth as string);
-      if (!isNaN(dob.getTime())) {
-        const currentYear = new Date().getFullYear();
-        const dateStr = String(dob.getDate()).padStart(2, '0');
-        const monthStr = String(dob.getMonth() + 1).padStart(2, '0');
-        const yearStr = String(dob.getFullYear()).slice(-2);
-        const seqStr = String(seqNumber).padStart(6, '0');
-
-        const generatedMemberNumber = `${currentYear}${dateStr}${monthStr}${yearStr}${seqStr}`;
-        setValue('member_number', generatedMemberNumber);
-      }
-    }
-  }, [values.date_of_birth, seqNumber]);
-
-  useEffect(() => {
-    register('member_number', [Rules.required('Nomor Anggota wajib diisi')]);
     register('national_id', [
       Rules.required('NIK wajib diisi'),
       Rules.pattern(/^[0-9]+$/, 'NIK hanya boleh berisi angka'),
@@ -80,19 +51,31 @@ const CustomerCreateForm = () => {
     register('gender', [Rules.required('Jenis kelamin wajib dipilih')]);
     register('religion', [Rules.required('Agama wajib dipilih')]);
     register('marital_status', [Rules.required('Status pernikahan wajib dipilih')]);
-  }, [register]);
+
+    return () => {
+      unregister('national_id');
+      unregister('branch_id');
+      unregister('full_name');
+      unregister('email');
+      unregister('phone_number');
+      unregister('place_of_birth');
+      unregister('date_of_birth');
+      unregister('gender');
+      unregister('religion');
+      unregister('marital_status');
+    };
+  }, [register, unregister]);
 
   const handleSave = () => {
-    if (validateForm()) {
-      console.log('Hallo');
+    const isFormValid = validateForm();
+    if (!isFormValid) return;
 
-      customerStore({
-        modal,
-        form,
-        setProcessing,
-        goBack: () => navigation.goBack(),
-      });
-    }
+    customerStore({
+      modal,
+      form,
+      setProcessing,
+      goBack: () => navigation.goBack(),
+    });
   };
 
   return (
@@ -109,17 +92,6 @@ const CustomerCreateForm = () => {
               keyboardType="numeric"
               maxLength={16}
               rightIcon={<AppText style={[styles.counterText, nikLength === 16 && styles.counterDone]}>{nikLength}/16</AppText>}
-            />
-          </View>
-
-          <View style={styles.fieldWrap}>
-            <Input
-              label="Nomor Anggota"
-              value={(values.member_number as string) || ''}
-              onChangeText={val => setValue('member_number', val)}
-              error={errors.member_number}
-              editable={false}
-              style={{ backgroundColor: '#F8FAFC', color: '#64748B' }}
             />
           </View>
 
@@ -149,7 +121,7 @@ const CustomerCreateForm = () => {
             value={(values.place_of_birth as string) || ''}
             onChangeText={val => setValue('place_of_birth', val)}
             error={errors.place_of_birth}
-            autoCapitalize="words"
+            autoCapitalize="characters"
           />
           <DatePicker
             label="Tanggal Lahir"

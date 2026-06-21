@@ -5,28 +5,58 @@ import AuthBackground from '@/components/AuthBackground';
 import Button from '@/components/Button';
 import AppIcon from '@/components/Icon';
 import Input from '@/components/Input';
-import { Rules, useFormContext } from '@/contexts/FormContext';
+import TermsModal from '@/components/TermsModal';
 import { useAuth } from '@/contexts/AuthContext';
+import { Rules, useFormContext } from '@/contexts/FormContext';
 import { useModal } from '@/hooks/useModal';
+import { getData, storeData } from '@/lib/storage';
 import { AuthFormValues } from '@/model/auth';
 import { RouteParamList } from '@/types/navigation';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useEffect, useState } from 'react';
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const AuthScreen = ({ navigation }: { navigation: NativeStackNavigationProp<RouteParamList, 'Auth'> }) => {
   const { setAuth } = useAuth();
   const [processing, setProcessing] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const { values, errors, register, setValue, validateForm, resetForm, setErrors } = useFormContext();
+  const { values, errors, register, unregister, setValue, validateForm, resetForm, setErrors } = useFormContext();
   const modal = useModal();
+  const [accepted, setAccepted] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
+
+  useEffect(() => {
+    const checkTerms = async () => {
+      const hasAccepted = await getData('has_accepted_terms');
+      if (hasAccepted) {
+        setAccepted(true);
+      } else {
+        setShowTermsModal(true);
+      }
+    };
+    checkTerms();
+  }, []);
 
   useEffect(() => {
     register('email', [Rules.required('Email wajib diisi'), Rules.email('Format email tidak valid')]);
     register('password', [Rules.required('Password wajib diisi')]);
-  }, [register]);
+    return () => {
+      unregister('email');
+      unregister('password');
+    };
+  }, [register, unregister]);
+
+  const handleAcceptTerms = async () => {
+    await storeData('has_accepted_terms', true);
+    setAccepted(true);
+    setShowTermsModal(false);
+  };
 
   const handleLogin = () => {
+    if (!accepted) {
+      setShowTermsModal(true);
+      return;
+    }
     if (validateForm()) {
       authLogin({ navigation, modal, resetForm, setErrors, setProcessing, values: values as unknown as AuthFormValues, setAuth });
     }
@@ -86,17 +116,22 @@ const AuthScreen = ({ navigation }: { navigation: NativeStackNavigationProp<Rout
           </View>
 
           <View style={styles.biometricContainer}>
-            <TouchableOpacity style={styles.biometricButton}>
-              <AppIcon name="fingerprint" size={32} color={color.primary} />
-              <Text style={styles.biometricText}>Fingerprint</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.biometricButton}>
-              <AppIcon name="face" size={32} color={color.primary} />
-              <Text style={styles.biometricText}>Face ID</Text>
-            </TouchableOpacity>
+            {Platform.OS === 'android' ? (
+              <TouchableOpacity style={styles.biometricButton}>
+                <AppIcon name="fingerprint" size={32} color={color.primary} />
+                <Text style={styles.biometricText}>Fingerprint</Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity style={styles.biometricButton}>
+                <AppIcon name="face" size={32} color={color.primary} />
+                <Text style={styles.biometricText}>Face ID</Text>
+              </TouchableOpacity>
+            )}
           </View>
         </View>
       </ScrollView>
+
+      <TermsModal visible={showTermsModal} onAccept={handleAcceptTerms} onClose={() => setShowTermsModal(false)} />
     </AuthBackground>
   );
 };
