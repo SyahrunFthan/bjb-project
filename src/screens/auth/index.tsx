@@ -1,4 +1,4 @@
-import { authLogin } from '@/api/auth';
+import { authLogin, authLoginWithBiometric } from '@/api/auth';
 import { color } from '@/assets/color';
 import { AppLogo } from '@/assets/images';
 import AuthBackground from '@/components/AuthBackground';
@@ -8,13 +8,14 @@ import Input from '@/components/Input';
 import TermsModal from '@/components/TermsModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { Rules, useFormContext } from '@/contexts/FormContext';
+import { getBiometricLabel, useBiometric } from '@/hooks/useBiometric';
 import { useModal } from '@/hooks/useModal';
 import { getData, storeData } from '@/lib/storage';
 import { AuthFormValues } from '@/model/auth';
 import { RouteParamList } from '@/types/navigation';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useEffect, useState } from 'react';
-import { Image, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Image, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const AuthScreen = ({ navigation }: { navigation: NativeStackNavigationProp<RouteParamList, 'Auth'> }) => {
   const { setAuth } = useAuth();
@@ -24,6 +25,7 @@ const AuthScreen = ({ navigation }: { navigation: NativeStackNavigationProp<Rout
   const modal = useModal();
   const [accepted, setAccepted] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
+  const { isBiometricAvailable, isBiometricEnabled, biometricType, enableBiometric, authenticate } = useBiometric();
 
   useEffect(() => {
     const checkTerms = async () => {
@@ -52,13 +54,58 @@ const AuthScreen = ({ navigation }: { navigation: NativeStackNavigationProp<Rout
     setShowTermsModal(false);
   };
 
+  // Auto-trigger biometric if enabled when screen mounts
+  useEffect(() => {
+    const tryBiometric = async () => {
+      if (isBiometricAvailable && isBiometricEnabled) {
+        const hasAuth = await getData('auth');
+        if (!hasAuth) return;
+        const success = await authenticate('Masuk ke Koperasi BJB');
+        if (success) {
+          authLoginWithBiometric({ modal, navigation, setAuth, setProcessing });
+        }
+      }
+    };
+    tryBiometric();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isBiometricAvailable, isBiometricEnabled]);
+
+  const handleBiometricLogin = async () => {
+    const success = await authenticate('Masuk ke Koperasi BJB');
+    if (success) {
+      authLoginWithBiometric({ modal, navigation, setAuth, setProcessing });
+    }
+  };
+
+  const promptEnableBiometric = () => {
+    if (!isBiometricAvailable || isBiometricEnabled) return;
+    Alert.alert('Aktifkan Login Biometrik?', `Gunakan ${getBiometricLabel(biometricType)} untuk masuk lebih cepat di lain waktu.`, [
+      { text: 'Nanti', style: 'cancel' },
+      {
+        text: 'Aktifkan',
+        onPress: async () => {
+          await enableBiometric();
+        },
+      },
+    ]);
+  };
+
   const handleLogin = () => {
     if (!accepted) {
       setShowTermsModal(true);
       return;
     }
     if (validateForm()) {
-      authLogin({ navigation, modal, resetForm, setErrors, setProcessing, values: values as unknown as AuthFormValues, setAuth });
+      authLogin({
+        navigation,
+        modal,
+        resetForm,
+        setErrors,
+        setProcessing,
+        values: values as unknown as AuthFormValues,
+        setAuth,
+        onSuccess: promptEnableBiometric,
+      });
     }
   };
 
@@ -116,17 +163,10 @@ const AuthScreen = ({ navigation }: { navigation: NativeStackNavigationProp<Rout
           </View>
 
           <View style={styles.biometricContainer}>
-            {Platform.OS === 'android' ? (
-              <TouchableOpacity style={styles.biometricButton}>
-                <AppIcon name="fingerprint" size={32} color={color.primary} />
-                <Text style={styles.biometricText}>Fingerprint</Text>
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity style={styles.biometricButton}>
-                <AppIcon name="face" size={32} color={color.primary} />
-                <Text style={styles.biometricText}>Face ID</Text>
-              </TouchableOpacity>
-            )}
+            <TouchableOpacity style={styles.biometricButton} onPress={handleBiometricLogin} disabled={processing} activeOpacity={0.7}>
+              <AppIcon name={Platform.OS === 'android' ? 'fingerprint' : 'face'} size={32} color={color.primary} />
+              <Text style={styles.biometricText}>{getBiometricLabel(biometricType)}</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </ScrollView>

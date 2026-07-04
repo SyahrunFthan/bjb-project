@@ -1,30 +1,25 @@
-import React, { useState } from 'react';
-import { 
-  ScrollView, 
-  StatusBar, 
-  StyleSheet, 
-  TouchableOpacity, 
-  View, 
-  KeyboardAvoidingView, 
-  Platform 
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { authChangePassword } from '@/api/auth';
 import { color } from '@/assets/color';
 import { AppText } from '@/components/AppText';
+import Button from '@/components/Button';
 import AppIcon from '@/components/Icon';
 import Input from '@/components/Input';
-import Button from '@/components/Button';
 import { useAuth } from '@/contexts/AuthContext';
+import { getBiometricLabel, useBiometric } from '@/hooks/useBiometric';
 import { useModal } from '@/hooks/useModal';
-import { authChangePassword } from '@/api/auth';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { removeSecureCredentials } from '@/lib/storage';
 import { RouteParamList } from '@/types/navigation';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import React, { useState } from 'react';
+import { KeyboardAvoidingView, Platform, ScrollView, StatusBar, StyleSheet, Switch, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type Props = NativeStackScreenProps<RouteParamList, 'Secure'>;
 
 const SecureScreen = ({ navigation }: Props) => {
   const { auth } = useAuth();
   const modal = useModal();
+  const { isBiometricAvailable, biometricType, isBiometricEnabled, enableBiometric, disableBiometric } = useBiometric();
 
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -106,20 +101,14 @@ const SecureScreen = ({ navigation }: Props) => {
         setCurrentPassword('');
         setNewPassword('');
         setConfirmPassword('');
-      }
+      },
     });
   };
 
   const renderRule = (isValid: boolean, text: string) => (
     <View style={styles.ruleItem}>
-      <AppIcon 
-        name={isValid ? 'check-circle' : 'radio-button-unchecked'} 
-        size={16} 
-        color={isValid ? '#10B981' : color.neutral} 
-      />
-      <AppText style={[styles.ruleText, isValid ? styles.ruleTextValid : null]}>
-        {text}
-      </AppText>
+      <AppIcon name={isValid ? 'check-circle' : 'radio-button-unchecked'} size={16} color={isValid ? '#10B981' : color.neutral} />
+      <AppText style={[styles.ruleText, isValid ? styles.ruleTextValid : null]}>{text}</AppText>
     </View>
   );
 
@@ -132,17 +121,13 @@ const SecureScreen = ({ navigation }: Props) => {
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()} activeOpacity={0.7}>
           <AppIcon name="arrow-back" size={20} color={color.black} />
         </TouchableOpacity>
-        <AppText style={styles.headerTitle} variant="semiBold">Keamanan Akun</AppText>
+        <AppText style={styles.headerTitle} variant="semiBold">
+          Keamanan Akun
+        </AppText>
       </View>
 
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={{ flex: 1 }}
-      >
-        <ScrollView 
-          showsVerticalScrollIndicator={false} 
-          contentContainerStyle={styles.scrollContent}
-        >
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
           <View style={styles.infoCard}>
             <View style={styles.infoIconContainer}>
               <AppIcon name="lock" size={24} color={color.primary} />
@@ -163,17 +148,13 @@ const SecureScreen = ({ navigation }: Props) => {
             <Input
               label="Password Saat Ini"
               value={currentPassword}
-              onChangeText={(val) => handleInputChange('current_password', val)}
+              onChangeText={val => handleInputChange('current_password', val)}
               secureTextEntry={!showCurrentPassword}
               placeholder="Masukkan password saat ini"
               error={errors.current_password}
               rightIcon={
                 <TouchableOpacity onPress={() => setShowCurrentPassword(!showCurrentPassword)}>
-                  <AppIcon 
-                    name={showCurrentPassword ? 'visibility-off' : 'visibility'} 
-                    size={20} 
-                    color={color.neutral} 
-                  />
+                  <AppIcon name={showCurrentPassword ? 'visibility-off' : 'visibility'} size={20} color={color.neutral} />
                 </TouchableOpacity>
               }
             />
@@ -182,17 +163,13 @@ const SecureScreen = ({ navigation }: Props) => {
             <Input
               label="Password Baru"
               value={newPassword}
-              onChangeText={(val) => handleInputChange('password', val)}
+              onChangeText={val => handleInputChange('password', val)}
               secureTextEntry={!showNewPassword}
               placeholder="Masukkan password baru"
               error={errors.password}
               rightIcon={
                 <TouchableOpacity onPress={() => setShowNewPassword(!showNewPassword)}>
-                  <AppIcon 
-                    name={showNewPassword ? 'visibility-off' : 'visibility'} 
-                    size={20} 
-                    color={color.neutral} 
-                  />
+                  <AppIcon name={showNewPassword ? 'visibility-off' : 'visibility'} size={20} color={color.neutral} />
                 </TouchableOpacity>
               }
             />
@@ -200,7 +177,9 @@ const SecureScreen = ({ navigation }: Props) => {
             {/* Password Strength Indicator */}
             {newPassword.length > 0 && (
               <View style={styles.rulesContainer}>
-                <AppText variant="semiBold" style={styles.rulesLabel}>Kriteria Password Baru:</AppText>
+                <AppText variant="semiBold" style={styles.rulesLabel}>
+                  Kriteria Password Baru:
+                </AppText>
                 {renderRule(hasMinLength, 'Minimal 8 karakter')}
                 {renderRule(hasUppercase, 'Minimal satu huruf kapital (A-Z)')}
                 {renderRule(hasLowercase, 'Minimal satu huruf kecil (a-z)')}
@@ -213,28 +192,51 @@ const SecureScreen = ({ navigation }: Props) => {
             <Input
               label="Konfirmasi Password Baru"
               value={confirmPassword}
-              onChangeText={(val) => handleInputChange('confirm_password', val)}
+              onChangeText={val => handleInputChange('confirm_password', val)}
               secureTextEntry={!showConfirmPassword}
               placeholder="Ulangi password baru"
               error={errors.confirm_password}
               rightIcon={
                 <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
-                  <AppIcon 
-                    name={showConfirmPassword ? 'visibility-off' : 'visibility'} 
-                    size={20} 
-                    color={color.neutral} 
-                  />
+                  <AppIcon name={showConfirmPassword ? 'visibility-off' : 'visibility'} size={20} color={color.neutral} />
                 </TouchableOpacity>
               }
             />
 
-            <Button
-              title="Perbarui Password"
-              onPress={handleUpdate}
-              disabled={isProcessing}
-              style={styles.actionButton}
-            />
+            <Button title="Perbarui Password" onPress={handleUpdate} disabled={isProcessing} style={styles.actionButton} />
           </View>
+
+          {/* Biometric Toggle */}
+          {isBiometricAvailable && (
+            <View style={styles.biometricCard}>
+              <View style={styles.biometricRow}>
+                <View style={styles.biometricLeft}>
+                  <View style={styles.biometricIconContainer}>
+                    <AppIcon name={Platform.OS === 'android' ? 'fingerprint' : 'face'} size={22} color={color.primary} />
+                  </View>
+                  <View>
+                    <AppText variant="semiBold" style={styles.biometricTitle}>
+                      Login {getBiometricLabel(biometricType)}
+                    </AppText>
+                    <AppText style={styles.biometricDesc}>{isBiometricEnabled ? 'Aktif — masuk tanpa password' : 'Nonaktif'}</AppText>
+                  </View>
+                </View>
+                <Switch
+                  value={isBiometricEnabled}
+                  onValueChange={async val => {
+                    if (val) {
+                      await enableBiometric();
+                    } else {
+                      await removeSecureCredentials();
+                      await disableBiometric();
+                    }
+                  }}
+                  trackColor={{ false: '#E2E8F0', true: color.primary + '60' }}
+                  thumbColor={isBiometricEnabled ? color.primary : '#94A3B8'}
+                />
+              </View>
+            </View>
+          )}
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -348,5 +350,41 @@ const styles = StyleSheet.create({
   actionButton: {
     marginTop: 8,
     width: '100%',
+  },
+  biometricCard: {
+    marginTop: 16,
+    backgroundColor: color.white,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    padding: 16,
+  },
+  biometricRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  biometricLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flex: 1,
+  },
+  biometricIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: color.primary + '15',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  biometricTitle: {
+    fontSize: 14,
+    color: '#1E293B',
+  },
+  biometricDesc: {
+    fontSize: 11,
+    color: color.neutral,
+    marginTop: 2,
   },
 });

@@ -2,7 +2,7 @@ import { ModalProps } from '@/contexts/ModalContext';
 import api from '@/lib/api';
 import { setAccessToken } from '@/lib/auth';
 import { processFail, processFinish, processStart, processSuccess } from '@/lib/process';
-import { getData, storeData } from '@/lib/storage';
+import { getData, getSecureCredentials, removeData, storeData, storeSecureCredentials } from '@/lib/storage';
 import { AuthFormValues } from '@/model/auth';
 import { User } from '@/model/user';
 import { RouteParamList } from '@/types/navigation';
@@ -18,9 +18,10 @@ interface LoginProps {
   setErrors: (errors: Record<string, string>) => void;
   resetForm: () => void;
   setAuth: (auth: User | null) => void;
+  onSuccess?: () => void;
 }
 
-export const authLogin = async ({ modal, setProcessing, values, resetForm, setErrors, navigation, setAuth }: LoginProps) => {
+export const authLogin = async ({ modal, setProcessing, values, resetForm, setErrors, navigation, setAuth, onSuccess }: LoginProps) => {
   try {
     setProcessing(true);
     processStart(modal, 'Sedang mencoba login');
@@ -29,11 +30,14 @@ export const authLogin = async ({ modal, setProcessing, values, resetForm, setEr
       const { userData, accessToken } = response.data;
       setAccessToken(accessToken);
       await storeData('auth', userData);
+      // Simpan credential untuk biometric login
+      await storeSecureCredentials(values.email, values.password);
       setAuth(userData);
       processSuccess(modal, 'Berhasil', 'Anda berhasil login', () => {
         processFinish(modal);
         setProcessing(false);
         resetForm();
+        onSuccess?.();
 
         if (!userData.registration_at) {
           navigation.replace('Boarding');
@@ -54,6 +58,60 @@ export const authLogin = async ({ modal, setProcessing, values, resetForm, setEr
     } else {
       processFail(modal, 'Error', axiosError.response?.data?.message || 'Network Error');
     }
+  } finally {
+    processFinish(modal, () => {
+      setProcessing(false);
+    });
+  }
+};
+
+interface BiometricLoginProps {
+  modal: ModalProps;
+  navigation: NativeStackNavigationProp<RouteParamList, 'Auth'>;
+  setAuth: (auth: User | null) => void;
+  setProcessing: Dispatch<SetStateAction<boolean>>;
+}
+
+export const authLoginWithBiometric = async ({ modal, navigation, setAuth, setProcessing }: BiometricLoginProps) => {
+  try {
+    setProcessing(true);
+    processStart(modal, 'Memverifikasi biometrik...');
+
+    // Ambil credential tersimpan (disimpan saat login biasa berhasil)
+    const credentials = await getSecureCredentials();
+
+    if (!credentials) {
+      processFail(modal, 'Gagal', 'Data login tidak ditemukan. Silakan login dengan email & password terlebih dahulu.');
+      return;
+    }
+
+    // Re-login dengan credential yang tersimpan
+    const response = await api.post('/auth/login/mobile', {
+      email: credentials.email,
+      password: credentials.password,
+    });
+
+    if (response.status === 200) {
+      const { userData, accessToken } = response.data;
+      setAccessToken(accessToken);
+      await storeData('auth', userData);
+      setAuth(userData);
+      processSuccess(modal, 'Berhasil', 'Selamat datang kembali!', () => {
+        processFinish(modal);
+        setProcessing(false);
+        if (!userData.registration_at) {
+          navigation.replace('Boarding');
+        } else if (userData.role_level === 3) {
+          navigation.replace('Courier');
+        } else if (userData.role_level === 4) {
+          navigation.replace('Customer');
+        }
+      });
+    }
+  } catch (error) {
+    const axiosError = error as AxiosError<Record<string, string>>;
+    const msg = axiosError.response?.data?.message || 'Login gagal. Silakan login dengan email & password.';
+    processFail(modal, 'Gagal', msg);
   } finally {
     processFinish(modal, () => {
       setProcessing(false);
@@ -233,7 +291,7 @@ export const authLogout = async ({ modal, setProcessing, navigation, setAuth }: 
     const response = await api.delete('/auth/logout');
     if (response.status === 200) {
       setAccessToken(null);
-      await storeData('auth', null);
+      await removeData('auth');
       setAuth(null);
       processSuccess(modal, 'Berhasil', 'Anda berhasil keluar dari aplikasi', () => {
         processFinish(modal);
@@ -245,9 +303,8 @@ export const authLogout = async ({ modal, setProcessing, navigation, setAuth }: 
       });
     }
   } catch (error) {
-    // If request fails (e.g. offline), still force local logout
     setAccessToken(null);
-    await storeData('auth', null);
+    await removeData('auth');
     setAuth(null);
     processSuccess(modal, 'Berhasil', 'Anda keluar dari aplikasi', () => {
       processFinish(modal);

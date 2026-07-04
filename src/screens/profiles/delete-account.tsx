@@ -1,24 +1,16 @@
-import React, { useState } from 'react';
-import { 
-  ScrollView, 
-  StatusBar, 
-  StyleSheet, 
-  TouchableOpacity, 
-  View, 
-  KeyboardAvoidingView, 
-  Platform 
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { authDeleteAccount } from '@/api/auth';
 import { color } from '@/assets/color';
 import { AppText } from '@/components/AppText';
+import Button from '@/components/Button';
 import AppIcon from '@/components/Icon';
 import Input from '@/components/Input';
-import Button from '@/components/Button';
 import { useAuth } from '@/contexts/AuthContext';
 import { useModal } from '@/hooks/useModal';
-import { authDeleteAccount } from '@/api/auth';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RouteParamList } from '@/types/navigation';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import React, { useState } from 'react';
+import { KeyboardAvoidingView, Platform, ScrollView, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type Props = NativeStackScreenProps<RouteParamList, 'DeleteAccount'>;
 
@@ -32,7 +24,7 @@ const DeleteAccountScreen = ({ navigation }: Props) => {
 
   const handleDelete = () => {
     if (!isValidConfirmation) return;
-    
+
     authDeleteAccount({
       modal,
       setProcessing: setIsProcessing,
@@ -50,17 +42,13 @@ const DeleteAccountScreen = ({ navigation }: Props) => {
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()} activeOpacity={0.7}>
           <AppIcon name="arrow-back" size={20} color={color.black} />
         </TouchableOpacity>
-        <AppText style={styles.headerTitle} variant="semiBold">Hapus Akun</AppText>
+        <AppText style={styles.headerTitle} variant="semiBold">
+          Hapus Akun
+        </AppText>
       </View>
 
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={{ flex: 1 }}
-      >
-        <ScrollView 
-          showsVerticalScrollIndicator={false} 
-          contentContainerStyle={styles.scrollContent}
-        >
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
           {/* Warning Banner */}
           <View style={styles.warningCard}>
             <View style={styles.warningIconContainer}>
@@ -71,7 +59,8 @@ const DeleteAccountScreen = ({ navigation }: Props) => {
                 Pemberitahuan Penting
               </AppText>
               <AppText style={styles.warningDesc}>
-                Menghapus akun akan mencabut seluruh hak akses masuk Anda ke aplikasi Koperasi Pinjaman PT. Bare Jaya Berdikari. Tindakan ini permanen.
+                Menghapus akun akan mencabut seluruh hak akses masuk Anda ke aplikasi Koperasi Pinjaman PT. Bare Jaya Berdikari. Tindakan ini
+                permanen.
               </AppText>
             </View>
           </View>
@@ -80,10 +69,14 @@ const DeleteAccountScreen = ({ navigation }: Props) => {
           <View style={styles.policyCard}>
             <View style={styles.policyHeader}>
               <AppIcon name="security" size={18} color={color.primary} />
-              <AppText variant="bold" style={styles.policyTitle}>Kebijakan Retensi Data Koperasi</AppText>
+              <AppText variant="bold" style={styles.policyTitle}>
+                Kebijakan Retensi Data Koperasi
+              </AppText>
             </View>
             <AppText style={styles.policyDesc}>
-              Sesuai dengan ketentuan operasional Kementerian Koperasi & UKM RI, data keanggotaan, histori transaksi pinjaman, dan laporan audit Anda <AppText variant="bold">TIDAK akan dihapus</AppText> dari basis data utama demi pematutan laporan keuangan koperasi secara berkala. Hanya akun login (kredensial aplikasi) Anda saja yang akan dinonaktifkan sepenuhnya.
+              Sesuai dengan ketentuan operasional Kementerian Koperasi & UKM RI, data keanggotaan, histori transaksi pinjaman, dan laporan audit Anda{' '}
+              <AppText variant="bold">TIDAK akan dihapus</AppText> dari basis data utama demi pematutan laporan keuangan koperasi secara berkala.
+              Hanya akun login (kredensial aplikasi) Anda saja yang akan dinonaktifkan sepenuhnya.
             </AppText>
           </View>
 
@@ -92,7 +85,7 @@ const DeleteAccountScreen = ({ navigation }: Props) => {
             <AppText variant="medium" style={styles.promptLabel}>
               Ketik kalimat konfirmasi di bawah ini untuk melanjutkan:
             </AppText>
-            
+
             <View style={styles.targetPhraseBox}>
               <AppText variant="bold" style={styles.targetPhrase}>
                 HAPUS AKUN SAYA
@@ -111,10 +104,7 @@ const DeleteAccountScreen = ({ navigation }: Props) => {
               title="Hapus Akun Sekarang"
               onPress={handleDelete}
               disabled={!isValidConfirmation || isProcessing}
-              style={[
-                styles.deleteButton,
-                isValidConfirmation && !isProcessing ? { backgroundColor: color.tertiary } : null
-              ]}
+              style={[styles.deleteButton, isValidConfirmation && !isProcessing ? { backgroundColor: color.tertiary } : null]}
             />
           </View>
         </ScrollView>

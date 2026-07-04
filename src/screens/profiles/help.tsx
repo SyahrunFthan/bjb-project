@@ -56,7 +56,9 @@ const HelpScreen = ({ navigation }: Props) => {
           style={styles.contactCard}
           activeOpacity={0.8}
           onPress={() =>
-            handleOpenLink('https://wa.me/6282151077894?text=Halo%20Admin%20Koperasi%20Pinjaman%20PT.%20Bare%20Jaya%20Berdikari,%20saya%20butuh%20bantuan...')
+            handleOpenLink(
+              'https://wa.me/6282151077894?text=Halo%20Admin%20Koperasi%20Pinjaman%20PT.%20Bare%20Jaya%20Berdikari,%20saya%20butuh%20bantuan...',
+            )
           }>
           <View style={[styles.iconContainer, { backgroundColor: '#E6FDF4' }]}>
             <AppIcon name="chat" size={24} color="#10B981" />
@@ -66,23 +68,6 @@ const HelpScreen = ({ navigation }: Props) => {
               WhatsApp Support
             </AppText>
             <AppText style={styles.cardDesc}>Respon cepat via pesan instan chat WhatsApp</AppText>
-          </View>
-          <AppIcon name="chevron-right" size={20} color={color.neutral} />
-        </TouchableOpacity>
-
-        {/* Instagram Card */}
-        <TouchableOpacity
-          style={styles.contactCard}
-          activeOpacity={0.8}
-          onPress={() => handleOpenLink('https://www.instagram.com/barejayaberdikari')}>
-          <View style={[styles.iconContainer, { backgroundColor: '#FDF2F8' }]}>
-            <AppIcon name="photo-camera" size={24} color="#EC4899" />
-          </View>
-          <View style={styles.cardInfo}>
-            <AppText variant="bold" style={styles.cardTitle}>
-              Instagram Resmi
-            </AppText>
-            <AppText style={styles.cardDesc}>Ikuti berita terbaru & info layanan kami</AppText>
           </View>
           <AppIcon name="chevron-right" size={20} color={color.neutral} />
         </TouchableOpacity>

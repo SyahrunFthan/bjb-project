@@ -1,7 +1,10 @@
+import { authLogout } from '@/api/auth';
 import { color } from '@/assets/color';
 import AppLayout from '@/components/AppLayout';
 import { AppText } from '@/components/AppText';
 import AppIcon from '@/components/Icon';
+import { useAuth } from '@/contexts/AuthContext';
+import { useModal } from '@/hooks/useModal';
 import { getData } from '@/lib/storage';
 import { getInitials } from '@/lib/utils';
 import { User } from '@/model/user';
@@ -10,9 +13,6 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
-import { useAuth } from '@/contexts/AuthContext';
-import { useModal } from '@/hooks/useModal';
-import { authLogout } from '@/api/auth';
 
 const ProfileScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RouteParamList>>();
