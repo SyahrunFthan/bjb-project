@@ -16,6 +16,7 @@ export type CourierRouteParamList = {
 
 export type RouteParamList = {
   Splash: undefined;
+  Maintenance: undefined;
   Start: undefined;
   Auth: undefined;
   Customer: undefined;

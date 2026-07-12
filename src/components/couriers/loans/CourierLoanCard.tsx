@@ -2,6 +2,7 @@ import { loanDelete } from '@/api/loan';
 import { color } from '@/assets/color';
 import { AppText } from '@/components/AppText';
 import AppIcon from '@/components/Icon';
+import { loanStatusMap } from '@/constants/loanStatus';
 import { useModal } from '@/hooks/useModal';
 import { formatCurrency } from '@/lib/formatter';
 import { Loan } from '@/model/loan';
@@ -17,13 +18,6 @@ interface Props {
   onRefresh?: () => void;
 }
 
-const statusMap = {
-  draft: { label: 'Draft', color: '#4B5563', bg: '#F3F4F6' },
-  pending: { label: 'Menunggu', color: '#D97706', bg: '#FEF3C7' },
-  approved: { label: 'Disetujui', color: '#15803D', bg: '#DCFCE7' },
-  rejected: { label: 'Ditolak', color: '#B91C1C', bg: '#FEE2E2' },
-};
-
 const CourierLoanCard = ({ loan, onRefresh }: Props) => {
   const navigation = useNavigation<NativeStackNavigationProp<RouteParamList>>();
   const modal = useModal();
@@ -36,7 +30,7 @@ const CourierLoanCard = ({ loan, onRefresh }: Props) => {
     });
   };
 
-  const status = statusMap[loan.submission_status] || { label: loan.submission_status, color: color.neutral, bg: '#F3F4F6' };
+  const status = loanStatusMap[loan.submission_status] || { label: loan.submission_status, color: color.neutral, bg: '#F3F4F6' };
 
   const dateObj = new Date(loan.createdAt);
   const formattedDate = !isNaN(dateObj.getTime())

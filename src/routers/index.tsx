@@ -17,6 +17,7 @@ import LoanItemScreen from '@/screens/customers/history/item';
 import PaymentReceiptScreen from '@/screens/customers/history/receipt';
 import SplashScreen from '@/screens/splash';
 import StartScreen from '@/screens/start';
+import MaintenanceScreen from '@/screens/maintenance';
 import { RouteParamList } from '@/types/navigation';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
@@ -29,6 +30,7 @@ const Routes = () => {
   return (
     <Stack.Navigator initialRouteName="Splash" screenOptions={{ headerShown: false }}>
       <Stack.Screen name="Splash" component={SplashScreen} options={{ statusBarStyle: 'light' }} />
+      <Stack.Screen name="Maintenance" component={MaintenanceScreen} options={{ statusBarStyle: 'dark' }} />
       <Stack.Screen name="Start" component={StartScreen} options={{ statusBarStyle: 'dark' }} />
       <Stack.Screen name="Auth" component={AuthScreen} options={{ statusBarStyle: 'dark' }} />
       <Stack.Screen name="Customer" component={CustomerRouter} options={{ statusBarStyle: 'dark' }} />

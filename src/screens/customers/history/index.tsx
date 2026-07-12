@@ -58,6 +58,7 @@ const HistoryScreen = () => {
 
   const getLoanStatusLabel = (loan: CustomerLoanHistory) => {
     if (loan.submission_status === 'pending') return 'Pending Approval';
+    if (loan.submission_status === 'pimpinan_approved') return 'Disetujui Pimpinan';
     if (loan.submission_status === 'rejected') return 'Ditolak';
     if (loan.submission_status === 'draft') return 'Draft';
 
@@ -69,6 +70,7 @@ const HistoryScreen = () => {
 
   const getLoanStatusColor = (loan: CustomerLoanHistory) => {
     if (loan.submission_status === 'pending') return color.yellow;
+    if (loan.submission_status === 'pimpinan_approved') return color.blue;
     if (loan.submission_status === 'rejected') return color.tertiary;
     if (loan.submission_status === 'draft') return color.neutral;
 
