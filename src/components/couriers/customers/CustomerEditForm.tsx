@@ -1,8 +1,9 @@
-import { customerUpdate } from '@/api/customer';
+import { customerResetPassword, customerUpdate } from '@/api/customer';
 import { color } from '@/assets/color';
 import { AppText } from '@/components/AppText';
 import Button from '@/components/Button';
 import DatePicker from '@/components/DatePicker';
+import AppIcon from '@/components/Icon';
 import Input from '@/components/Input';
 import Select from '@/components/Select';
 import SectionCard from '@/components/ui/SectionCard';
@@ -13,10 +14,11 @@ import { Rules, useFormContext } from '@/contexts/FormContext';
 import { useModal } from '@/hooks/useModal';
 import { Customer } from '@/model/customer';
 import { RouteParamList } from '@/types/navigation';
+import Clipboard from '@react-native-clipboard/clipboard';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, Modal, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 interface Props {
   customer: Customer;
@@ -29,6 +31,8 @@ const CustomerEditForm = ({ customer }: Props) => {
   const modal = useModal();
 
   const [processing, setProcessing] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [resetResult, setResetResult] = useState<any>(null);
   const nikLength = ((values.national_id as string) || '').length;
 
   useEffect(() => {
@@ -82,6 +86,30 @@ const CustomerEditForm = ({ customer }: Props) => {
       setProcessing,
       record: customer,
       goBack: () => navigation.goBack(),
+    });
+  };
+
+  const handleConfirmReset = () => {
+    Alert.alert('Konfirmasi Reset', 'Apakah Anda yakin ingin mereset password nasabah ini kembali ke password bawaan (Nomor Anggota)?', [
+      { text: 'Batal', style: 'cancel' },
+      {
+        text: 'Ya, Reset',
+        style: 'destructive',
+        onPress: executeResetPassword,
+      },
+    ]);
+  };
+
+  const executeResetPassword = () => {
+    if (!customer?.id) return;
+    customerResetPassword({
+      modal,
+      customerId: customer.id,
+      setProcessing,
+      onSuccess: data => {
+        setResetResult(data);
+        setShowSuccessModal(true);
+      },
     });
   };
 
@@ -180,6 +208,16 @@ const CustomerEditForm = ({ customer }: Props) => {
             </View>
           </View>
         </SectionCard>
+
+        <SectionCard icon="security" iconBg="#FEE2E2" iconColor="#EF4444" title="Keamanan Akun">
+          <AppText style={styles.securityText}>
+            Fitur ini akan mengatur ulang password nasabah kembali ke password sementara bawaan (Nomor Anggota).
+          </AppText>
+          <TouchableOpacity style={styles.btnResetPassword} activeOpacity={0.8} disabled={processing} onPress={handleConfirmReset}>
+            <AppIcon name="lock-reset" size={16} color="#DC2626" />
+            <AppText style={styles.btnResetPasswordText}>Reset Password Nasabah</AppText>
+          </TouchableOpacity>
+        </SectionCard>
       </ScrollView>
 
       <View style={styles.footer}>
@@ -198,6 +236,61 @@ const CustomerEditForm = ({ customer }: Props) => {
         />
         <Button title="Simpan" type="default" size="medium" onPress={handleSave} loading={processing} style={styles.btnSave} />
       </View>
+
+      <Modal visible={showSuccessModal} transparent animationType="fade" onRequestClose={() => {}}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.successIconCircle}>
+              <AppIcon name="check-circle" size={44} color="#15803D" />
+            </View>
+
+            <AppText variant="bold" style={styles.modalTitle}>
+              Password Berhasil Di-reset
+            </AppText>
+            <AppText style={styles.modalSubtitle}>Gunakan informasi berikut untuk masuk ke akun nasabah:</AppText>
+
+            <View style={styles.infoBox}>
+              <View style={styles.infoRow}>
+                <AppText style={styles.infoLabel}>Username:</AppText>
+                <AppText variant="medium" style={styles.infoValue} numberOfLines={1}>
+                  {resetResult?.username}
+                </AppText>
+              </View>
+              <View style={styles.infoDivider} />
+              <View style={styles.infoRow}>
+                <AppText style={styles.infoLabel}>Password Baru:</AppText>
+                <AppText variant="bold" style={styles.passwordValue}>
+                  {resetResult?.temp_password}
+                </AppText>
+              </View>
+            </View>
+
+            <View style={styles.modalButtonRow}>
+              <TouchableOpacity
+                style={styles.btnCopy}
+                activeOpacity={0.8}
+                onPress={() => {
+                  if (resetResult?.temp_password) {
+                    Clipboard.setString(resetResult.temp_password);
+                    Alert.alert('Sukses', 'Password baru berhasil disalin');
+                  }
+                }}>
+                <AppIcon name="content-copy" size={16} color={color.primary} />
+                <AppText style={styles.btnCopyText}>Salin Password</AppText>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.btnClose}
+                activeOpacity={0.8}
+                onPress={() => {
+                  setShowSuccessModal(false);
+                }}>
+                <AppText style={styles.btnCloseText}>Tutup</AppText>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </>
   );
 };
@@ -295,5 +388,130 @@ const styles = StyleSheet.create({
   },
   btnSave: {
     flex: 2,
+  },
+  securityText: {
+    fontSize: 12,
+    color: color.neutral,
+    marginBottom: 16,
+  },
+  btnResetPassword: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    borderWidth: 1,
+    borderColor: '#DC2626',
+    borderRadius: 10,
+    height: 44,
+    backgroundColor: '#FEF2F2',
+  },
+  btnResetPasswordText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#DC2626',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  modalContent: {
+    backgroundColor: color.white,
+    borderRadius: 16,
+    width: '100%',
+    maxWidth: 340,
+    padding: 24,
+    alignItems: 'center',
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+  },
+  successIconCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: '#DCFCE7',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  modalTitle: {
+    fontSize: 16,
+    color: '#1E293B',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  modalSubtitle: {
+    fontSize: 12,
+    color: color.neutral,
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  infoBox: {
+    width: '100%',
+    backgroundColor: '#F8FAFC',
+    borderRadius: 10,
+    borderWidth: 0.5,
+    borderColor: color.border,
+    padding: 12,
+    marginBottom: 20,
+  },
+  infoRow: {
+    gap: 2,
+  },
+  infoLabel: {
+    fontSize: 10,
+    color: color.neutral,
+  },
+  infoValue: {
+    fontSize: 13,
+    color: '#0F172A',
+  },
+  infoDivider: {
+    height: 0.5,
+    backgroundColor: color.border,
+    marginVertical: 8,
+  },
+  passwordValue: {
+    fontSize: 14,
+    color: '#0F172A',
+  },
+  modalButtonRow: {
+    flexDirection: 'row',
+    width: '100%',
+    gap: 10,
+  },
+  btnCopy: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    borderWidth: 1,
+    borderColor: color.primary,
+    borderRadius: 10,
+    height: 40,
+  },
+  btnCopyText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: color.primary,
+  },
+  btnClose: {
+    flex: 1,
+    backgroundColor: color.primary,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 40,
+  },
+  btnCloseText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: color.white,
   },
 });

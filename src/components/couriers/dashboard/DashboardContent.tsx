@@ -42,6 +42,15 @@ const DashboardContent = ({ dashboardData, loading, navigation }: Props) => {
           </Card>
         </View>
 
+        <Card style={styles.fullStatCard}>
+          <SkeletonCircle size={24} />
+          <SkeletonText lines={3} style={{ marginTop: 5 }} />
+        </Card>
+        <Card style={styles.fullStatCard}>
+          <SkeletonCircle size={24} />
+          <SkeletonText lines={3} style={{ marginTop: 5 }} />
+        </Card>
+
         <View style={styles.section}>
           <AppText variant="bold" style={styles.sectionTitle}>
             Akses Cepat
@@ -132,7 +141,7 @@ const DashboardContent = ({ dashboardData, loading, navigation }: Props) => {
         <Card style={styles.statCard}>
           <AppIcon name="check-circle" size={24} color={color.success} />
           <AppText variant="regular" style={styles.statLabel}>
-            Tagihan Lunas Hari Ini
+            Lunas Hari Ini
           </AppText>
           <AppText variant="semiBold" style={styles.billValue}>
             Rp {formatCurrency(stats.totalDailyBillPaid ?? 0)}
@@ -141,7 +150,7 @@ const DashboardContent = ({ dashboardData, loading, navigation }: Props) => {
         <Card style={styles.statCard}>
           <AppIcon name="pending-actions" size={24} color={color.tertiary} />
           <AppText variant="regular" style={styles.statLabel}>
-            Tagihan Belum Bayar
+            Tagihan Hari Ini
           </AppText>
           <AppText variant="semiBold" style={styles.billValue}>
             Rp {formatCurrency(stats.totalDailyBillUnpaid ?? 0)}
@@ -202,6 +211,25 @@ const DashboardContent = ({ dashboardData, loading, navigation }: Props) => {
         </View>
       </View>
 
+      <Card style={styles.fullStatCard}>
+        <AppIcon name="calendar-month" size={24} color={color.blue} />
+        <AppText variant="regular" style={styles.statLabel}>
+          Tagihan Bulan Ini
+        </AppText>
+        <AppText variant="semiBold" style={styles.billValue}>
+          Rp {formatCurrency(stats.totalMonthlyBill ?? 0)}
+        </AppText>
+      </Card>
+      <Card style={styles.fullStatCard}>
+        <AppIcon name="event-available" size={24} color={color.success} />
+        <AppText variant="regular" style={styles.statLabel}>
+          Lunas Bulan Ini
+        </AppText>
+        <AppText variant="semiBold" style={styles.billValue}>
+          Rp {formatCurrency(stats.totalMonthlyBillPaid ?? 0)}
+        </AppText>
+      </Card>
+
       <Card>
         <View style={styles.activityHeader}>
           <AppText variant="semiBold" style={styles.activityTitle}>
@@ -251,6 +279,10 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
+  },
+  fullStatCard: {
+    width: '100%',
+    marginBottom: 15,
   },
   statLabel: {
     color: color.neutral,

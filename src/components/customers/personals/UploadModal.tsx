@@ -4,10 +4,10 @@ import { AppText } from '@/components/AppText';
 import AppIcon from '@/components/Icon';
 import { useModal } from '@/hooks/useModal';
 import { CustomerDocument, RequirementDocument } from '@/model/loan';
-import React, { useCallback } from 'react';
+import { errorCodes, isErrorWithCode, pick } from '@react-native-documents/picker';
+import React from 'react';
 import { Modal, PermissionsAndroid, Platform, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
-import { pick, isErrorWithCode, errorCodes } from '@react-native-documents/picker';
 
 interface Props {
   visible: boolean;
@@ -15,11 +15,6 @@ interface Props {
   customerId?: string;
   activeReqDoc: RequirementDocument | null;
   onUploadSuccess: (newDoc: CustomerDocument) => void;
-}
-
-interface SimulatedOption {
-  label: string;
-  file: string;
 }
 
 export const UploadModal = ({ visible, onClose, customerId, activeReqDoc, onUploadSuccess }: Props) => {
@@ -36,17 +31,9 @@ export const UploadModal = ({ visible, onClose, customerId, activeReqDoc, onUplo
 
       if (result && result.length > 0) {
         const file = result[0];
-        uploadCustomerDocument(
-          customerId,
-          activeReqDoc.id,
-          file.name || 'document.pdf',
-          file.uri,
-          file.type || 'application/pdf',
-          modal,
-          newDoc => {
-            onUploadSuccess(newDoc);
-          },
-        );
+        uploadCustomerDocument(customerId, activeReqDoc.id, file.name || 'document.pdf', file.uri, file.type || 'application/pdf', modal, newDoc => {
+          onUploadSuccess(newDoc);
+        });
       }
     } catch (err) {
       if (isErrorWithCode(err) && err.code === errorCodes.OPERATION_CANCELED) {
@@ -161,9 +148,7 @@ export const UploadModal = ({ visible, onClose, customerId, activeReqDoc, onUplo
           {activeReqDoc?.document_type === 'pdf' && (
             <View style={styles.pdfAlertBanner}>
               <AppIcon name="info" size={16} color="#DC2626" />
-              <AppText style={styles.pdfAlertText}>
-                PENTING: Dokumen ini wajib diunggah dalam format berkas PDF digital (bukan foto/kamera).
-              </AppText>
+              <AppText style={styles.pdfAlertText}>PENTING: Dokumen ini wajib diunggah dalam format berkas PDF digital (bukan foto/kamera).</AppText>
             </View>
           )}
 

@@ -1,11 +1,11 @@
+import { color } from '@/assets/color';
+import { AppText } from '@/components/AppText';
+import Input from '@/components/Input';
+import SectionCard from '@/components/ui/SectionCard';
+import { useFormContext } from '@/contexts/FormContext';
+import { formatCurrency } from '@/lib/formatter';
 import React from 'react';
 import { StyleSheet } from 'react-native';
-import { useFormContext } from '@/contexts/FormContext';
-import SectionCard from '@/components/ui/SectionCard';
-import Input from '@/components/Input';
-import { AppText } from '@/components/AppText';
-import { formatCurrency } from '@/lib/formatter';
-import { color } from '@/assets/color';
 
 const CustomerJobSection = () => {
   const { errors, setValue, getValue } = useFormContext();
@@ -13,8 +13,8 @@ const CustomerJobSection = () => {
   return (
     <SectionCard icon="work" iconBg="#FEF3C7" iconColor="#D97706" title="Lengkapi Pekerjaan Nasabah">
       <Input
-        label="Nama Perusahaan / Tempat Kerja"
-        placeholder="Masukkan nama perusahaan"
+        label="Nama Pekerjaan"
+        placeholder="Masukkan nama pekerjaan"
         value={(getValue('job.company_name') as string) || ''}
         onChangeText={val => setValue('job.company_name', val)}
         error={errors['job.company_name']}
@@ -29,7 +29,7 @@ const CustomerJobSection = () => {
       />
 
       <Input
-        label="Gaji Bulanan (Rp)"
+        label="Pendapatan Bulanan (RP)"
         placeholder="Masukkan nominal gaji bulanan"
         value={getValue('job.salary') ? formatCurrency(parseInt(getValue('job.salary') as string, 10)) : ''}
         onChangeText={val => {

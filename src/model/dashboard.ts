@@ -5,6 +5,8 @@ export interface DashboardStats {
   activeLoansCount: number;
   totalDailyBillPaid: number;
   totalDailyBillUnpaid: number;
+  totalMonthlyBill?: number;
+  totalMonthlyBillPaid?: number;
 }
 
 export interface RecentPayment {

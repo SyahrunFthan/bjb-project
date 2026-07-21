@@ -23,15 +23,19 @@ export const customerFetched = async ({ setCustomers, setLoading, queries, modal
     setLoading(true);
     const params = new URLSearchParams();
     Object.entries(queries).map(([key, value]) => {
-      if (value !== undefined || value !== null || value !== '') {
+      if (value !== undefined && value !== null && value !== '') {
         params.set(key, value);
       }
     });
 
-    const response = await api.get(`/mobile/employees/customers?${params.toString()}`);
-    console.log(response);
-
-    setCustomers(response.data);
+    let response;
+    if (queries.status === 'stagnant') {
+      response = await api.get(`/customers/stagnant?${params.toString()}`);
+      setCustomers(response.data.data || []);
+    } else {
+      response = await api.get(`/mobile/employees/customers?${params.toString()}`);
+      setCustomers(response.data || []);
+    }
   } catch (error) {
     const axiosError = error as AxiosError<Error>;
     processFail(modal, 'Error', axiosError.response?.data?.message || 'Network Error');
@@ -47,10 +51,10 @@ interface StoreProps {
   modal: ModalProps;
   form: FormContextProps;
   setProcessing: Dispatch<SetStateAction<boolean>>;
-  goBack: () => void;
+  onSuccess: (customer: any) => void;
 }
 
-export const customerStore = async ({ modal, form, setProcessing, goBack }: StoreProps) => {
+export const customerStore = async ({ modal, form, setProcessing, onSuccess }: StoreProps) => {
   try {
     setProcessing(true);
     processStart(modal, 'Sedang menyimpan data customer');
@@ -78,12 +82,9 @@ export const customerStore = async ({ modal, form, setProcessing, goBack }: Stor
     const response = await api.post('/customers', values);
 
     if (response.status === 201) {
-      processSuccess(modal, 'Berhasil', 'Customer berhasil ditambahkan', () => {
-        processFinish(modal);
-        setProcessing(false);
-        form.resetForm();
-        goBack();
-      });
+      processFinish(modal);
+      setProcessing(false);
+      onSuccess(response.data.customer);
     }
   } catch (error) {
     const axiosError = error as AxiosError;
@@ -400,6 +401,33 @@ export const customerJobDeleted = async ({ modal, setProcessing, onSuccess }: Jo
   } catch (error) {
     const axiosError = error as AxiosError<{ message?: string }>;
     processFail(modal, 'Gagal', axiosError.response?.data?.message || 'Gagal menghapus pekerjaan');
+  } finally {
+    processFinish(modal, () => {
+      setProcessing(false);
+    });
+  }
+};
+
+interface ResetPasswordProps {
+  modal: ModalProps;
+  customerId: string;
+  setProcessing: Dispatch<SetStateAction<boolean>>;
+  onSuccess: (data: { username: string; temp_password: string }) => void;
+}
+
+export const customerResetPassword = async ({ modal, customerId, setProcessing, onSuccess }: ResetPasswordProps) => {
+  try {
+    setProcessing(true);
+    processStart(modal, 'Sedang mereset password customer...');
+    const response = await api.put(`/customers/${customerId}/reset-password`);
+    if (response.status === 200) {
+      processFinish(modal);
+      setProcessing(false);
+      onSuccess(response.data);
+    }
+  } catch (error) {
+    const axiosError = error as AxiosError;
+    processFail(modal, 'Error', (axiosError.response?.data as any)?.message || 'Gagal mereset password');
   } finally {
     processFinish(modal, () => {
       setProcessing(false);

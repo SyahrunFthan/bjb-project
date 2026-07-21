@@ -4,10 +4,12 @@ export const customerStatusMap: Record<string, string> = {
   priority: 'Prioritas',
   normal: 'Biasa',
   blocked: 'Blokir',
+  stagnant: 'Macet',
 };
 
 export const customerStatusColor: Record<string, string> = {
   priority: color.primary,
   normal: color.secondary,
   blocked: color.tertiary,
+  stagnant: '#DC2626',
 };

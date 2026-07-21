@@ -20,6 +20,7 @@ const FILTER_OPTIONS = [
   { key: 'priority', label: 'Prioritas' },
   { key: 'normal', label: 'Biasa' },
   { key: 'blocked', label: 'Blokir' },
+  { key: 'stagnant', label: 'Macet' },
 ];
 
 const CustomerScreen = ({ navigation }: { navigation: NativeStackNavigationProp<RouteParamList, 'Customer'> }) => {
@@ -54,27 +55,30 @@ const CustomerScreen = ({ navigation }: { navigation: NativeStackNavigationProp<
     return unsubscribe;
   }, [navigation, fetchData]);
 
-  const handleEdit = useCallback((item: Customer) => {
-    navigation.navigate('CustomerEdit', { customer: item });
-  }, [navigation]);
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
-  const renderCustomerItem = useCallback(({ item, index }: { item: any; index: number }) => (
-    <CustomerList
-      onEdit={handleEdit}
-      loading={loading}
-      item={item as Customer}
-      index={index}
-    />
-  ), [loading, handleEdit]);
+  const handleEdit = useCallback(
+    (item: Customer) => {
+      navigation.navigate('CustomerEdit', { customer: item });
+    },
+    [navigation],
+  );
 
-  const renderFilterItem = useCallback(({ item: f }: { item: typeof FILTER_OPTIONS[0] }) => (
-    <TouchableOpacity
-      style={[styles.chip, activeFilter === f.key && styles.chipActive]}
-      onPress={() => setActiveFilter(f.key)}
-      activeOpacity={0.7}>
-      <AppText style={[styles.chipText, activeFilter === f.key && styles.chipTextActive]}>{f.label}</AppText>
-    </TouchableOpacity>
-  ), [activeFilter]);
+  const renderCustomerItem = useCallback(
+    ({ item, index }: { item: any; index: number }) => <CustomerList onEdit={handleEdit} loading={loading} item={item as Customer} index={index} />,
+    [loading, handleEdit],
+  );
+
+  const renderFilterItem = useCallback(
+    ({ item: f }: { item: (typeof FILTER_OPTIONS)[0] }) => (
+      <TouchableOpacity style={[styles.chip, activeFilter === f.key && styles.chipActive]} onPress={() => setActiveFilter(f.key)} activeOpacity={0.7}>
+        <AppText style={[styles.chipText, activeFilter === f.key && styles.chipTextActive]}>{f.label}</AppText>
+      </TouchableOpacity>
+    ),
+    [activeFilter],
+  );
 
   return (
     <AppLayout>

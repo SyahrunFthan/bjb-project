@@ -125,72 +125,16 @@ const TermsScreen = ({ navigation }: Props) => {
         {/* Section 4 */}
         <View style={styles.sectionCard}>
           <AppText variant="bold" style={styles.sectionHeader}>
-            4. Tenor, Suku Bunga & Kepatuhan Layanan Keuangan
+            4. Tenor, Suku Bunga & Ketentuan Pinjaman
           </AppText>
           <AppText style={styles.paragraph}>
-            Dalam operasional Koperasi Pinjaman PT. Bare Jaya Berdikari, produk keuangan kami diatur dengan ketentuan sebagai berikut:
+            Produk pinjaman yang disediakan oleh PT. Bare Jaya Berdikari memiliki pilihan jangka waktu (tenor) sesuai dengan kebijakan perusahaan dan kesepakatan yang tercantum dalam perjanjian pinjaman.
           </AppText>
-
-          {/* Simulation Box */}
-          <View style={styles.simulationBox}>
-            <View style={styles.simulationField}>
-              <AppText variant="semiBold" style={styles.simLabel}>
-                PILIHAN JANGKA WAKTU PEMBAYARAN (TENOR)
-              </AppText>
-              <AppText style={styles.simValue}>
-                Tersedia pilihan Tenor Harian yaitu 36 Hari, 42 Hari, 60 Hari, 90 Hari, 120 Hari, dan 150 Hari yang disepakati bersama dalam perjanjian fisik tertulis.
-              </AppText>
-            </View>
-
-            <View style={styles.simDivider} />
-
-            <View style={styles.simulationField}>
-              <AppText variant="semiBold" style={styles.simLabel}>
-                SUKU BUNGA KESELURUHAN (TOTAL INTEREST RATE)
-              </AppText>
-              <AppText style={styles.simValue}>
-                Total suku bunga keseluruhan adalah 26% untuk jangka waktu pinjaman yang disepakati.
-              </AppText>
-            </View>
-
-            <View style={styles.simDivider} />
-
-            <View style={styles.simulationField}>
-              <AppText variant="semiBold" style={styles.simLabel}>
-                SIMULASI CONTOH PERHITUNGAN TAGIHAN PINJAMAN
-              </AppText>
-              <AppText style={styles.simIntro}>
-                Jika Anggota memiliki Pinjaman sebesar <AppText variant="bold">Rp3.000.000</AppText> dengan tenor harian <AppText variant="bold">90 Hari</AppText> dan total suku bunga keseluruhan <AppText variant="bold">26%</AppText>:
-              </AppText>
-              <View style={styles.subBulletItem}>
-                <AppText style={styles.bulletSymbol}>•</AppText>
-                <AppText style={styles.subBulletText}>Pokok Pinjaman: Rp3.000.000</AppText>
-              </View>
-              <View style={styles.subBulletItem}>
-                <AppText style={styles.bulletSymbol}>•</AppText>
-                <AppText style={styles.subBulletText}>Total Bunga (26% keseluruhan): Rp3.000.000 x 26% = Rp780.000</AppText>
-              </View>
-              <View style={styles.subBulletItem}>
-                <AppText style={styles.bulletSymbol}>•</AppText>
-                <AppText style={styles.subBulletText}>Biaya Administrasi Transaksi (Dipotong saat pencairan): Rp30.000</AppText>
-              </View>
-              <View style={styles.subBulletItem}>
-                <AppText style={styles.bulletSymbol}>•</AppText>
-                <AppText style={styles.subBulletText}>Jumlah Dana Diterima Anggota: Rp3.000.000 - Rp30.000 = Rp2.970.000</AppText>
-              </View>
-              <View style={styles.subBulletItem}>
-                <AppText style={styles.bulletSymbol}>•</AppText>
-                <AppText style={styles.subBulletText}>Total Pengembalian (Pokok + Bunga): Rp3.000.000 + Rp780.000 = Rp3.780.000</AppText>
-              </View>
-              <View style={styles.subBulletItem}>
-                <AppText style={styles.bulletSymbol}>•</AppText>
-                <AppText style={styles.subBulletText}>Cicilan Harian: Rp3.780.000 / 90 Hari = Rp42.000 per hari</AppText>
-              </View>
-            </View>
-          </View>
-
           <AppText style={styles.paragraph}>
-            Aplikasi ini <AppText variant="bold">TIDAK MENAWARKAN</AppText> atau melakukan pencairan pinjaman online pribadi tanpa jaminan secara instan kepada masyarakat umum. Seluruh aktivitas kredit hanya dilakukan untuk anggota koperasi terdaftar yang disetujui secara luring oleh pengurus koperasi.
+            Besaran suku bunga, biaya administrasi, jumlah angsuran, serta total kewajiban pembayaran akan diinformasikan secara transparan kepada Anggota sebelum pinjaman disetujui dan dicantumkan dalam perjanjian pinjaman yang ditandatangani oleh kedua belah pihak.
+          </AppText>
+          <AppText style={styles.paragraph}>
+            Anggota menyatakan telah membaca, memahami, dan menyetujui seluruh rincian pinjaman yang telah disepakati bersama sebelum proses pencairan dilakukan.
           </AppText>
         </View>
 

@@ -150,10 +150,6 @@ const AuthScreen = ({ navigation }: { navigation: NativeStackNavigationProp<Rout
             autoCapitalize="none"
           />
 
-          <TouchableOpacity style={styles.forgotPassword}>
-            <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-          </TouchableOpacity>
-
           <Button title="Login" disabled={processing} size="large" style={styles.loginButton} onPress={handleLogin} />
 
           <View style={styles.dividerContainer}>

@@ -3,6 +3,7 @@ import { useTabBar } from '@/contexts/TabBarContext';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import React, { useRef } from 'react';
 import { Animated, Dimensions, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AppIcon from './Icon';
 
 const { width } = Dimensions.get('window');
@@ -10,10 +11,11 @@ const { width } = Dimensions.get('window');
 const TabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigation }) => {
   const { translateY } = useTabBar();
   const scaleAnim = useRef(new Animated.Value(1)).current;
+  const insets = useSafeAreaInsets();
 
   return (
     <Animated.View style={[styles.container, { transform: [{ translateY }] }]}>
-      <View style={styles.tabBar}>
+      <View style={[styles.tabBar, { height: 70 + insets.bottom, paddingBottom: insets.bottom }]}>
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
 

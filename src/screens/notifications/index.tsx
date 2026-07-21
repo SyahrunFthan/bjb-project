@@ -113,7 +113,7 @@ const NotificationScreen = ({ navigation }: Props) => {
           <AppIcon name="notifications-none" size={60} color={color.neutral} />
         </View>
         <Text style={styles.emptyTitle}>Belum Ada Notifikasi</Text>
-        <Text style={styles.emptySubtitle}>Seluruh aktivitas akun Anda seperti pembayaran atau pengajuan pinjaman akan muncul di sini.</Text>
+        <Text style={styles.emptySubtitle}>Seluruh aktivitas akun Anda seperti riwayat pembayaran atau tagihan akan muncul di sini.</Text>
       </View>
     );
   };
