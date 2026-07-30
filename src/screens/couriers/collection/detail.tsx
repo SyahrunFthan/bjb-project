@@ -3,6 +3,7 @@ import { color } from '@/assets/color';
 import { AppText } from '@/components/AppText';
 import CollectionBillCard from '@/components/couriers/collections/CollectionBillCard';
 import AppIcon from '@/components/Icon';
+import Input from '@/components/Input';
 import SectionCard from '@/components/ui/SectionCard';
 import { useModal } from '@/hooks/useModal';
 import { formatCurrency } from '@/lib/formatter';
@@ -12,7 +13,7 @@ import { RouteParamList } from '@/types/navigation';
 import { useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useCallback, useEffect, useState } from 'react';
-import { FlatList, RefreshControl, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { FlatList, Modal, RefreshControl, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const CourierCollectionDetailScreen = ({ navigation }: { navigation: NativeStackNavigationProp<RouteParamList, 'CourierCollectionDetail'> }) => {
@@ -24,6 +25,10 @@ const CourierCollectionDetailScreen = ({ navigation }: { navigation: NativeStack
   const [processing, setProcessing] = useState<boolean>(false);
   const [loan, setLoan] = useState<Loan | null>(null);
 
+  const [payModalVisible, setPayModalVisible] = useState<boolean>(false);
+  const [selectedInstallment, setSelectedInstallment] = useState<Installment | null>(null);
+  const [payAmountInput, setPayAmountInput] = useState<string>('');
+
   const fetchData = useCallback(() => {
     fetchLoanDetails(loanId, setLoan, setLoading, modal);
   }, [loanId, modal]);
@@ -33,21 +38,30 @@ const CourierCollectionDetailScreen = ({ navigation }: { navigation: NativeStack
   }, [fetchData]);
 
   const handlePay = (installment: Installment) => {
-    modal.confirm.show(
-      'Konfirmasi Pembayaran',
-      `Tandai pembayaran angsuran ke-${installment.sequence_number} senilai ${formatCurrency(installment.amount)} sudah dibayar tunai?`,
-      () => {
-        collectPayment(
-          {
-            installment_id: installment.id,
-            amount: installment.amount,
-            payment_method: 'courier',
-          },
-          modal,
-          setProcessing,
-          fetchData,
-        );
+    setSelectedInstallment(installment);
+    const sisa = Math.round(Number(installment.amount) - Number(installment.paid_amount || 0));
+    setPayAmountInput(String(sisa));
+    setPayModalVisible(true);
+  };
+
+  const submitPay = () => {
+    if (!selectedInstallment) return;
+    const amountVal = Number(payAmountInput);
+    if (isNaN(amountVal) || amountVal <= 0) {
+      modal.result.error('Input Tidak Valid', 'Nominal pembayaran harus lebih dari 0.');
+      return;
+    }
+    setPayModalVisible(false);
+
+    collectPayment(
+      {
+        installment_id: selectedInstallment.id,
+        amount: amountVal,
+        payment_method: 'courier',
       },
+      modal,
+      setProcessing,
+      fetchData,
     );
   };
 
@@ -101,6 +115,58 @@ const CourierCollectionDetailScreen = ({ navigation }: { navigation: NativeStack
         )}
         ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
       />
+
+      <Modal visible={payModalVisible} transparent animationType="fade" onRequestClose={() => setPayModalVisible(false)}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <AppText variant="bold" style={styles.modalTitle}>
+              Catat Pembayaran
+            </AppText>
+            <AppText style={styles.modalSubtitle}>Angsuran Ke-{selectedInstallment?.sequence_number}</AppText>
+
+            <View style={styles.modalInfoContainer}>
+              <View style={styles.modalInfoRow}>
+                <AppText style={styles.modalInfoLabel}>Total Tagihan:</AppText>
+                <AppText style={styles.modalInfoVal}>{selectedInstallment ? `Rp ${formatCurrency(selectedInstallment.amount)}` : 'Rp 0'}</AppText>
+              </View>
+              {selectedInstallment && selectedInstallment.paid_amount && selectedInstallment.paid_amount > 0 ? (
+                <View style={styles.modalInfoRow}>
+                  <AppText style={styles.modalInfoLabel}>Telah Dibayar:</AppText>
+                  <AppText style={styles.modalInfoVal}>Rp {formatCurrency(selectedInstallment.paid_amount)}</AppText>
+                </View>
+              ) : null}
+              <View style={styles.modalInfoRow}>
+                <AppText style={styles.modalInfoLabel}>Sisa Tagihan:</AppText>
+                <AppText variant="semiBold" style={[styles.modalInfoVal, { color: color.primary }]}>
+                  {selectedInstallment ? `Rp ${formatCurrency(Number(selectedInstallment.amount) - Number(selectedInstallment.paid_amount || 0))}` : 'Rp 0'}
+                </AppText>
+              </View>
+            </View>
+
+            <Input
+              label="Nominal Pembayaran"
+              value={payAmountInput ? formatCurrency(Number(payAmountInput)) : ''}
+              onChangeText={val => {
+                const cleanNum = val.replace(/[^0-9]/g, '');
+                setPayAmountInput(cleanNum);
+              }}
+              keyboardType="numeric"
+              placeholder="Masukkan nominal bayar"
+              leftIcon={<AppText style={styles.prefixText}>Rp</AppText>}
+            />
+
+            <View style={styles.modalActions}>
+              <TouchableOpacity style={[styles.modalBtn, styles.modalBtnCancel]} onPress={() => setPayModalVisible(false)} activeOpacity={0.7}>
+                <AppText style={styles.modalBtnCancelText}>Batal</AppText>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={[styles.modalBtn, styles.modalBtnConfirm]} onPress={submitPay} activeOpacity={0.7}>
+                <AppText style={styles.modalBtnConfirmText}>Bayar</AppText>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -185,6 +251,87 @@ const styles = StyleSheet.create({
   },
   totalVal: {
     fontSize: 14,
+    color: color.black,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  modalContent: {
+    backgroundColor: color.white,
+    borderRadius: 16,
+    padding: 20,
+    width: '100%',
+    maxWidth: 340,
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: 18,
+    color: color.black,
+    textAlign: 'center',
+  },
+  modalSubtitle: {
+    fontSize: 13,
+    color: color.neutral,
+    textAlign: 'center',
+    marginTop: 2,
+    marginBottom: 16,
+  },
+  modalInfoContainer: {
+    backgroundColor: '#F0F4FA',
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 16,
+    gap: 6,
+  },
+  modalInfoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  modalInfoLabel: {
+    fontSize: 12,
+    color: color.neutral,
+  },
+  modalInfoVal: {
+    fontSize: 12,
+    color: color.black,
+  },
+  modalActions: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 8,
+  },
+  modalBtn: {
+    flex: 1,
+    height: 40,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalBtnCancel: {
+    backgroundColor: '#F0F4FA',
+    borderWidth: 0.5,
+    borderColor: color.border,
+  },
+  modalBtnCancelText: {
+    color: color.neutral,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  modalBtnConfirm: {
+    backgroundColor: color.primary,
+  },
+  modalBtnConfirmText: {
+    color: color.white,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  prefixText: {
+    fontSize: 16,
+    fontWeight: '600',
     color: color.black,
   },
 });

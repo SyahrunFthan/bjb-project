@@ -35,6 +35,12 @@ const LoanItemScreen = ({ route, navigation }: Props) => {
           text: '#097939',
           label: 'Lunas',
         };
+      case 'partially_paid':
+        return {
+          bg: '#EBF5FF',
+          text: '#1D4ED8',
+          label: 'Sebagian',
+        };
       case 'overdue':
         return {
           bg: '#FDF2F2',
@@ -65,6 +71,7 @@ const LoanItemScreen = ({ route, navigation }: Props) => {
 
   const renderInstallmentItem = ({ item }: { item: any }) => {
     const statusStyle = getStatusStyle(item.status);
+    const sisa = Number(item.amount) - Number(item.paid_amount || 0);
 
     return (
       <View style={styles.installmentCard}>
@@ -86,10 +93,21 @@ const LoanItemScreen = ({ route, navigation }: Props) => {
 
         <View style={styles.installmentDetails}>
           <View style={styles.detailItem}>
-            <AppText style={styles.detailLabel}>Nominal</AppText>
-            <AppText variant="semiBold" style={styles.detailValue}>
-              Rp {formatCurrency(item.amount)}
+            <AppText style={styles.detailLabel}>
+              {item.status === 'paid' || (item.paid_amount && Number(item.paid_amount) > 0) ? 'Sisa Tagihan' : 'Nominal'}
             </AppText>
+            <AppText variant="semiBold" style={styles.detailValue}>
+              Rp {item.status === 'paid' ? '0' : formatCurrency(sisa)}
+            </AppText>
+            {item.status === 'paid' ? (
+              <AppText style={{ fontSize: 9, color: color.neutral, marginTop: 2 }}>
+                Dibayar: Rp {formatCurrency(item.amount)} / Rp {formatCurrency(item.amount)}
+              </AppText>
+            ) : item.paid_amount && Number(item.paid_amount) > 0 ? (
+              <AppText style={{ fontSize: 9, color: color.neutral, marginTop: 2 }}>
+                Dibayar: Rp {formatCurrency(item.paid_amount)} / Rp {formatCurrency(item.amount)}
+              </AppText>
+            ) : null}
           </View>
           <View style={styles.detailItem}>
             <AppText style={styles.detailLabel}>Jatuh Tempo</AppText>

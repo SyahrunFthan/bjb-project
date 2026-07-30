@@ -33,14 +33,23 @@
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
 	<key>NSCameraUsageDescription</key>
 	<string>Aplikasi ini memerlukan akses kamera untuk memfoto dokumen persyaratan nasabah.</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Aplikasi ini memerlukan akses galeri foto untuk mengunggah dokumen persyaratan nasabah.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string/>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Aplikasi ini memerlukan akses menyimpan foto ke galeri.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Aplikasi ini memerlukan akses galeri foto untuk mengunggah dokumen persyaratan nasabah.</string>
+	<key>RCTNewArchEnabled</key>
+	<true/>
+	<key>UIAppFonts</key>
+	<array>
+		<string>Poppins-Bold.ttf</string>
+		<string>Poppins-Medium.ttf</string>
+		<string>Poppins-Regular.ttf</string>
+		<string>Poppins-SemiBold.ttf</string>
+	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIRequiredDeviceCapabilities</key>
@@ -60,12 +69,5 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
-	<key>UIAppFonts</key>
-	<array>
-		<string>Poppins-Bold.ttf</string>
-		<string>Poppins-Medium.ttf</string>
-		<string>Poppins-Regular.ttf</string>
-		<string>Poppins-SemiBold.ttf</string>
-	</array>
 </dict>
 </plist>

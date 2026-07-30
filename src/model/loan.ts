@@ -36,8 +36,9 @@ export interface Installment {
   invoice_number: string;
   sequence_number: number;
   amount: number;
+  paid_amount?: number;
   due_date: string;
-  status: 'unpaid' | 'paid' | 'overdue';
+  status: 'unpaid' | 'paid' | 'overdue' | 'partially_paid';
 }
 
 export interface LoanModel {
@@ -51,6 +52,7 @@ export interface LoanModel {
   total_amount: number;
   installment_amount: number;
   remaining_amount: number;
+  savings_balance?: number;
   submission_status: 'draft' | 'pending' | 'approved' | 'rejected';
   loan_status: 'active' | 'closed' | 'done';
   start_date: string;

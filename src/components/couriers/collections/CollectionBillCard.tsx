@@ -45,11 +45,31 @@ const CollectionBillCard = ({ item, loading, onPay, processing }: Props) => {
       <View style={styles.divider} />
 
       <View style={styles.cardBody}>
-        <View>
-          <AppText style={styles.amountLabel}>Jumlah Pembayaran</AppText>
-          <AppText variant="bold" style={styles.amountVal}>
-            {formatCurrency(item.amount)}
-          </AppText>
+        <View style={{ flex: 1 }}>
+          <AppText style={styles.amountLabel}>Sisa Tagihan</AppText>
+          {item.status === 'paid' ? (
+            <View>
+              <AppText variant="bold" style={styles.amountVal}>
+                Rp 0
+              </AppText>
+              <AppText style={styles.paidText}>
+                Telah dibayar: Rp {formatCurrency(item.amount)} / Rp {formatCurrency(item.amount)}
+              </AppText>
+            </View>
+          ) : item.paid_amount && Number(item.paid_amount) > 0 ? (
+            <View>
+              <AppText variant="bold" style={styles.amountVal}>
+                Rp {formatCurrency(Number(item.amount) - Number(item.paid_amount))}
+              </AppText>
+              <AppText style={styles.paidText}>
+                Telah dibayar: Rp {formatCurrency(item.paid_amount)} / Rp {formatCurrency(item.amount)}
+              </AppText>
+            </View>
+          ) : (
+            <AppText variant="bold" style={styles.amountVal}>
+              Rp {formatCurrency(item.amount)}
+            </AppText>
+          )}
         </View>
 
         {item.status !== 'paid' && (
@@ -107,6 +127,11 @@ const styles = StyleSheet.create({
   amountVal: {
     fontSize: 16,
     color: color.primary,
+  },
+  paidText: {
+    fontSize: 10,
+    color: color.neutral,
+    marginTop: 2,
   },
   payBtn: {
     minWidth: 100,

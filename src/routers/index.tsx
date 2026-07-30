@@ -29,28 +29,28 @@ const Routes = () => {
 
   return (
     <Stack.Navigator initialRouteName="Splash" screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="Splash" component={SplashScreen} options={{ statusBarStyle: 'light' }} />
-      <Stack.Screen name="Maintenance" component={MaintenanceScreen} options={{ statusBarStyle: 'dark' }} />
-      <Stack.Screen name="Start" component={StartScreen} options={{ statusBarStyle: 'dark' }} />
-      <Stack.Screen name="Auth" component={AuthScreen} options={{ statusBarStyle: 'dark' }} />
-      <Stack.Screen name="Customer" component={CustomerRouter} options={{ statusBarStyle: 'dark' }} />
-      <Stack.Screen name="Courier" component={CourierRouter} options={{ statusBarStyle: 'dark' }} />
-      <Stack.Screen name="CustomerCreate" component={CustomerCreateScreen} options={{ statusBarStyle: 'dark' }} />
-      <Stack.Screen name="CustomerEdit" component={CustomerEditScreen} options={{ statusBarStyle: 'dark' }} />
-      <Stack.Screen name="CourierLoanCreate" component={CourierLoanCreateScreen} options={{ statusBarStyle: 'dark' }} />
-      <Stack.Screen name="CourierLoanEdit" component={CourierLoanEditScreen} options={{ statusBarStyle: 'dark' }} />
-      <Stack.Screen name="CourierCollection" component={CourierCollectionScreen} options={{ statusBarStyle: 'dark' }} />
-      <Stack.Screen name="CourierCollectionDetail" component={CourierCollectionDetailScreen} options={{ statusBarStyle: 'dark' }} />
-      <Stack.Screen name="Boarding" component={BoardingScreen} options={{ statusBarStyle: 'dark' }} />
-      <Stack.Screen name="Terms" component={TermsScreen} options={{ statusBarStyle: 'dark' }} />
-      <Stack.Screen name="Help" component={HelpScreen} options={{ statusBarStyle: 'dark' }} />
-      <Stack.Screen name="DeleteAccount" component={DeleteAccountScreen} options={{ statusBarStyle: 'dark' }} />
-      <Stack.Screen name="Secure" component={SecureScreen} options={{ statusBarStyle: 'dark' }} />
-      <Stack.Screen name="Personal" component={PersonalScreen} options={{ statusBarStyle: 'dark' }} />
-      <Stack.Screen name="CourierProfile" component={CourierProfileScreen} options={{ statusBarStyle: 'dark' }} />
-      <Stack.Screen name="Notification" component={NotificationScreen} options={{ statusBarStyle: 'dark' }} />
-      <Stack.Screen name="LoanItem" component={LoanItemScreen} options={{ statusBarStyle: 'dark' }} />
-      <Stack.Screen name="PaymentReceipt" component={PaymentReceiptScreen} options={{ statusBarStyle: 'dark' }} />
+      <Stack.Screen name="Splash" component={SplashScreen} />
+      <Stack.Screen name="Maintenance" component={MaintenanceScreen} />
+      <Stack.Screen name="Start" component={StartScreen} />
+      <Stack.Screen name="Auth" component={AuthScreen} />
+      <Stack.Screen name="Customer" component={CustomerRouter} />
+      <Stack.Screen name="Courier" component={CourierRouter} />
+      <Stack.Screen name="CustomerCreate" component={CustomerCreateScreen} />
+      <Stack.Screen name="CustomerEdit" component={CustomerEditScreen} />
+      <Stack.Screen name="CourierLoanCreate" component={CourierLoanCreateScreen} />
+      <Stack.Screen name="CourierLoanEdit" component={CourierLoanEditScreen} />
+      <Stack.Screen name="CourierCollection" component={CourierCollectionScreen} />
+      <Stack.Screen name="CourierCollectionDetail" component={CourierCollectionDetailScreen} />
+      <Stack.Screen name="Boarding" component={BoardingScreen} />
+      <Stack.Screen name="Terms" component={TermsScreen} />
+      <Stack.Screen name="Help" component={HelpScreen} />
+      <Stack.Screen name="DeleteAccount" component={DeleteAccountScreen} />
+      <Stack.Screen name="Secure" component={SecureScreen} />
+      <Stack.Screen name="Personal" component={PersonalScreen} />
+      <Stack.Screen name="CourierProfile" component={CourierProfileScreen} />
+      <Stack.Screen name="Notification" component={NotificationScreen} />
+      <Stack.Screen name="LoanItem" component={LoanItemScreen} />
+      <Stack.Screen name="PaymentReceipt" component={PaymentReceiptScreen} />
     </Stack.Navigator>
   );
 };
