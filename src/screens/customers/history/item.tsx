@@ -97,7 +97,7 @@ const LoanItemScreen = ({ route, navigation }: Props) => {
               {item.status === 'paid' || (item.paid_amount && Number(item.paid_amount) > 0) ? 'Sisa Tagihan' : 'Nominal'}
             </AppText>
             <AppText variant="semiBold" style={styles.detailValue}>
-              Rp {item.status === 'paid' ? '0' : formatCurrency(sisa)}
+              Rp {item.status === 'paid' ? formatCurrency(item.amount) : formatCurrency(sisa)}
             </AppText>
             {item.status === 'paid' ? (
               <AppText style={{ fontSize: 9, color: color.neutral, marginTop: 2 }}>
@@ -111,9 +111,7 @@ const LoanItemScreen = ({ route, navigation }: Props) => {
           </View>
           <View style={styles.detailItem}>
             <AppText style={styles.detailLabel}>Jatuh Tempo</AppText>
-            <AppText style={styles.detailValue}>
-              {formatDueDate(item.due_date)}
-            </AppText>
+            <AppText style={styles.detailValue}>{formatDueDate(item.due_date)}</AppText>
           </View>
         </View>
       </View>

@@ -350,6 +350,8 @@ export const fetchLoanDetails = async (
     setLoading(true);
     const response = await api.get(`/mobile/loans/${id}`);
     const loanData = response.data as Loan;
+    console.log(loanData);
+
     setLoan(loanData);
   } catch (error) {
     const axiosError = error as AxiosError<ErrorResponse>;

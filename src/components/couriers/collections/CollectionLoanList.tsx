@@ -45,13 +45,13 @@ const CollectionLoanList = ({ navigation, item, loading }: Props) => {
         <View style={styles.detailCol}>
           <AppText style={styles.detailLabel}>Sisa Tagihan</AppText>
           <AppText variant="semiBold" style={styles.remainingText}>
-            {formatCurrency(item.remaining_amount)}
+            Rp {formatCurrency(item.remaining_amount)}
           </AppText>
         </View>
         <View style={styles.detailCol}>
           <AppText style={styles.detailLabel}>Total Pinjaman</AppText>
           <AppText variant="medium" style={styles.totalText}>
-            {formatCurrency(item.amount)}
+            Rp {formatCurrency(item.amount)}
           </AppText>
         </View>
       </View>

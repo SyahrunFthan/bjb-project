@@ -13,8 +13,17 @@ import { RouteParamList } from '@/types/navigation';
 import { useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useCallback, useEffect, useState } from 'react';
-import { FlatList, Modal, RefreshControl, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { FlatList, Modal, RefreshControl, ScrollView, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+type FilterType = 'all' | 'unpaid' | 'partially_paid' | 'paid';
+
+const FILTER_OPTIONS: { key: FilterType; label: string }[] = [
+  { key: 'all', label: 'Semua' },
+  { key: 'unpaid', label: 'Belum Bayar' },
+  { key: 'partially_paid', label: 'Sebagian' },
+  { key: 'paid', label: 'Lunas' },
+];
 
 const CourierCollectionDetailScreen = ({ navigation }: { navigation: NativeStackNavigationProp<RouteParamList, 'CourierCollectionDetail'> }) => {
   const route = useRoute();
@@ -24,6 +33,7 @@ const CourierCollectionDetailScreen = ({ navigation }: { navigation: NativeStack
   const [loading, setLoading] = useState<boolean>(true);
   const [processing, setProcessing] = useState<boolean>(false);
   const [loan, setLoan] = useState<Loan | null>(null);
+  const [activeFilter, setActiveFilter] = useState<FilterType>('all');
 
   const [payModalVisible, setPayModalVisible] = useState<boolean>(false);
   const [selectedInstallment, setSelectedInstallment] = useState<Installment | null>(null);
@@ -65,6 +75,19 @@ const CourierCollectionDetailScreen = ({ navigation }: { navigation: NativeStack
     );
   };
 
+  const filteredInstallments = (loan?.installments || []).filter(item => {
+    const instAmount = Number(item.amount || 0);
+    const instPaidAmount = Number(item.paid_amount || 0);
+    const isFullyPaid =
+      item.status === 'paid' ||
+      (instAmount > 0 && (instAmount - instPaidAmount < 1.0 || instPaidAmount >= instAmount));
+
+    if (activeFilter === 'paid') return isFullyPaid;
+    if (activeFilter === 'partially_paid') return !isFullyPaid && instPaidAmount > 0;
+    if (activeFilter === 'unpaid') return !isFullyPaid && instPaidAmount <= 0;
+    return true;
+  });
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar backgroundColor={color.white} barStyle="dark-content" />
@@ -77,37 +100,58 @@ const CourierCollectionDetailScreen = ({ navigation }: { navigation: NativeStack
       </View>
 
       <FlatList
-        data={loading ? skeletonData : loan?.installments}
+        data={loading ? skeletonData : filteredInstallments}
         keyExtractor={item => item.id}
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={loading} onRefresh={fetchData} colors={[color.primary]} />}
         contentContainerStyle={styles.listContent}
         ListHeaderComponent={
           loan ? (
-            <SectionCard icon="person" iconBg="#DBEAFE" iconColor="#1D4ED8" title="Informasi Nasabah">
-              <View style={styles.customerDetail}>
-                <AppText variant="bold" style={styles.custName}>
-                  {loan.customer?.full_name}
-                </AppText>
-                <AppText style={styles.custMeta}>No. Anggota: {loan.customer?.member_number}</AppText>
-                <AppText style={styles.custMeta}>No. HP: {loan.customer?.phone_number}</AppText>
-                <View style={styles.divider} />
-                <View style={styles.row}>
-                  <View>
-                    <AppText style={styles.label}>Sisa Pinjaman</AppText>
-                    <AppText variant="semiBold" style={styles.remainingVal}>
-                      {formatCurrency(loan.remaining_amount)}
-                    </AppText>
-                  </View>
-                  <View style={{ alignItems: 'flex-end' }}>
-                    <AppText style={styles.label}>Total Pinjaman</AppText>
-                    <AppText variant="medium" style={styles.totalVal}>
-                      {formatCurrency(loan.total_amount)}
-                    </AppText>
+            <View style={styles.headerComponent}>
+              <SectionCard icon="person" iconBg="#DBEAFE" iconColor="#1D4ED8" title="Informasi Nasabah">
+                <View style={styles.customerDetail}>
+                  <AppText variant="bold" style={styles.custName}>
+                    {loan.customer?.full_name}
+                  </AppText>
+                  <AppText style={styles.custMeta}>No. Anggota: {loan.customer?.member_number}</AppText>
+                  <AppText style={styles.custMeta}>No. HP: {loan.customer?.phone_number}</AppText>
+                  <View style={styles.divider} />
+                  <View style={styles.row}>
+                    <View>
+                      <AppText style={styles.label}>Sisa Pinjaman</AppText>
+                      <AppText variant="semiBold" style={styles.remainingVal}>
+                        Rp {formatCurrency(loan.remaining_amount)}
+                      </AppText>
+                    </View>
+                    <View style={{ alignItems: 'flex-end' }}>
+                      <AppText style={styles.label}>Total Pinjaman</AppText>
+                      <AppText variant="medium" style={styles.totalVal}>
+                        Rp {formatCurrency(loan.total_amount)}
+                      </AppText>
+                    </View>
                   </View>
                 </View>
-              </View>
-            </SectionCard>
+              </SectionCard>
+
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterRow}>
+                {FILTER_OPTIONS.map(f => (
+                  <TouchableOpacity
+                    key={f.key}
+                    style={[styles.chip, activeFilter === f.key && styles.chipActive]}
+                    onPress={() => setActiveFilter(f.key)}
+                    activeOpacity={0.7}>
+                    <AppText style={[styles.chipText, activeFilter === f.key && styles.chipTextActive]}>{f.label}</AppText>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+          ) : null
+        }
+        ListEmptyComponent={
+          !loading ? (
+            <View style={styles.emptyContainer}>
+              <AppText style={styles.emptyText}>Tidak ada data angsuran untuk filter ini.</AppText>
+            </View>
           ) : null
         }
         renderItem={({ item }) => (
@@ -138,7 +182,9 @@ const CourierCollectionDetailScreen = ({ navigation }: { navigation: NativeStack
               <View style={styles.modalInfoRow}>
                 <AppText style={styles.modalInfoLabel}>Sisa Tagihan:</AppText>
                 <AppText variant="semiBold" style={[styles.modalInfoVal, { color: color.primary }]}>
-                  {selectedInstallment ? `Rp ${formatCurrency(Number(selectedInstallment.amount) - Number(selectedInstallment.paid_amount || 0))}` : 'Rp 0'}
+                  {selectedInstallment
+                    ? `Rp ${formatCurrency(Number(selectedInstallment.amount) - Number(selectedInstallment.paid_amount || 0))}`
+                    : 'Rp 0'}
                 </AppText>
               </View>
             </View>
@@ -252,6 +298,48 @@ const styles = StyleSheet.create({
   totalVal: {
     fontSize: 14,
     color: color.black,
+  },
+  headerComponent: {
+    gap: 12,
+    marginBottom: 12,
+  },
+  filterRow: {
+    flexDirection: 'row',
+    gap: 8,
+    paddingVertical: 2,
+  },
+  chip: {
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 0.5,
+    borderColor: color.border,
+    backgroundColor: color.white,
+  },
+  chipActive: {
+    backgroundColor: color.primary,
+    borderColor: color.primary,
+  },
+  chipText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: color.neutral,
+  },
+  chipTextActive: {
+    color: color.white,
+  },
+  emptyContainer: {
+    padding: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: color.white,
+    borderRadius: 12,
+    borderWidth: 0.5,
+    borderColor: color.border,
+  },
+  emptyText: {
+    fontSize: 13,
+    color: color.neutral,
   },
   modalOverlay: {
     flex: 1,

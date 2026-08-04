@@ -16,7 +16,11 @@ interface Props {
 }
 
 const CollectionBillCard = ({ item, loading, onPay, processing }: Props) => {
-  const status = getStatusBadge(item.status);
+  const instAmount = Number(item.amount || 0);
+  const instPaidAmount = Number(item.paid_amount || 0);
+  const isFullyPaid = item.status === 'paid' || (instAmount > 0 && (instAmount - instPaidAmount < 1.0 || instPaidAmount >= instAmount));
+
+  const status = getStatusBadge(isFullyPaid ? 'paid' : item.status);
   const dateObj = new Date(item.due_date);
   const formattedDueDate = !isNaN(dateObj.getTime())
     ? `${dateObj.getDate()} ${
@@ -47,10 +51,10 @@ const CollectionBillCard = ({ item, loading, onPay, processing }: Props) => {
       <View style={styles.cardBody}>
         <View style={{ flex: 1 }}>
           <AppText style={styles.amountLabel}>Sisa Tagihan</AppText>
-          {item.status === 'paid' ? (
+          {isFullyPaid ? (
             <View>
               <AppText variant="bold" style={styles.amountVal}>
-                Rp 0
+                Rp {formatCurrency(item.amount)}
               </AppText>
               <AppText style={styles.paidText}>
                 Telah dibayar: Rp {formatCurrency(item.amount)} / Rp {formatCurrency(item.amount)}
@@ -72,7 +76,7 @@ const CollectionBillCard = ({ item, loading, onPay, processing }: Props) => {
           )}
         </View>
 
-        {item.status !== 'paid' && (
+        {!isFullyPaid && (
           <Button disabled={processing} title="Catat Bayar" type="default" size="small" onPress={() => onPay(item)} style={styles.payBtn} />
         )}
       </View>
