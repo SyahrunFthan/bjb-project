@@ -67,7 +67,6 @@ export const fetchCustomerDocuments = async (
     setCustomerDocs((response.data || []) as CustomerDocument[]);
   } catch (error) {
     const axiosError = error as AxiosError<ErrorResponse>;
-    console.error('Error fetching customer documents:', error);
     processFail(modal, 'Gagal', axiosError.response?.data?.message || 'Gagal mengambil dokumen nasabah.');
   } finally {
     processFinish(modal, () => {
@@ -271,7 +270,6 @@ export const fetchCustomerDetails = async (customerId: string): Promise<Customer
     const list = (response.data || []) as Customer[];
     return list.find(c => c.id === customerId) || null;
   } catch (error) {
-    console.warn('Error fetching customer details:', error);
     return null;
   }
 };
@@ -305,6 +303,8 @@ export const fetchLoans = async (
     setLoans(loanData);
   } catch (error) {
     const axiosError = error as AxiosError<ErrorResponse>;
+    console.log(axiosError.response);
+
     processFail(modal, 'Gagal', axiosError.response?.data?.message || 'Gagal mengambil data pengajuan.');
   } finally {
     processFinish(modal, () => {

@@ -45,6 +45,10 @@ const CourierCollectionScreen = ({ navigation }: { navigation: NativeStackNaviga
     return unsubscribe;
   }, [navigation, fetchData]);
 
+  useEffect(() => {
+    fetchData();
+  }, [debounceSearch, fetchData]);
+
   const activeLoans = loans.filter(l => l.loan_status === 'active');
 
   return (

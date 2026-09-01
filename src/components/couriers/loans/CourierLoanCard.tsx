@@ -15,10 +15,11 @@ import { StyleSheet, TouchableOpacity, View } from 'react-native';
 interface Props {
   loan: Loan;
   loading?: boolean;
+  isDisabled: boolean;
   onRefresh?: () => void;
 }
 
-const CourierLoanCard = ({ loan, onRefresh }: Props) => {
+const CourierLoanCard = ({ loan, onRefresh, isDisabled = false }: Props) => {
   const navigation = useNavigation<NativeStackNavigationProp<RouteParamList>>();
   const modal = useModal();
 
@@ -40,7 +41,7 @@ const CourierLoanCard = ({ loan, onRefresh }: Props) => {
     : loan.createdAt;
 
   return (
-    <View style={styles.card}>
+    <TouchableOpacity onPress={() => navigation.navigate('CourierCollectionDetail', { loanId: loan.id })} disabled={isDisabled} style={styles.card}>
       <View style={styles.cardHeader}>
         <View style={styles.customerInfo}>
           <AppIcon name="person" size={16} color={color.primary} />
@@ -105,7 +106,7 @@ const CourierLoanCard = ({ loan, onRefresh }: Props) => {
           </View>
         </>
       )}
-    </View>
+    </TouchableOpacity>
   );
 };
 

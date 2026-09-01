@@ -67,8 +67,6 @@ const CourierLoanScreen = ({ navigation }: { navigation: NativeStackNavigationPr
     fetchData();
   }, [fetchData]);
 
-  console.log(loans);
-
   return (
     <AppLayout scrollable={true}>
       <StatusBar backgroundColor={color.primary} barStyle="light-content" />
@@ -120,7 +118,9 @@ const CourierLoanScreen = ({ navigation }: { navigation: NativeStackNavigationPr
           showsVerticalScrollIndicator={false}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchData(true)} colors={[color.primary]} />}
           contentContainerStyle={styles.listContent}
-          renderItem={({ item }) => <CourierLoanCard loan={item} loading={loading} onRefresh={fetchData} />}
+          renderItem={({ item }) => (
+            <CourierLoanCard isDisabled={item.submission_status !== 'approved'} loan={item} loading={loading} onRefresh={fetchData} />
+          )}
           ListEmptyComponent={<EmptyData />}
           ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
         />

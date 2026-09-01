@@ -1,12 +1,12 @@
-import React from 'react';
-import { View, StyleSheet } from 'react-native';
-import { useFormContext } from '@/contexts/FormContext';
+import { fetchCustomerOptions } from '@/api/loan';
+import { color } from '@/assets/color';
+import { AppText } from '@/components/AppText';
 import DebounceSelect from '@/components/DebounceSelect';
 import SectionCard from '@/components/ui/SectionCard';
-import { AppText } from '@/components/AppText';
+import { useFormContext } from '@/contexts/FormContext';
 import { Customer } from '@/model/customer';
-import { color } from '@/assets/color';
-import { fetchCustomerOptions } from '@/api/loan';
+import React from 'react';
+import { StyleSheet, View } from 'react-native';
 
 interface Props {
   selectedCustomer: Customer | null;

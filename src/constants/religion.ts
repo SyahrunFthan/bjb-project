@@ -2,6 +2,7 @@ import { Option } from '@/types/global';
 
 export const religionOptions: Option[] = [
   { label: 'Islam', value: 'islam' },
+  { label: 'Kristen', value: 'christian' },
   { label: 'Protestan', value: 'protestant' },
   { label: 'Katolik', value: 'catholic' },
   { label: 'Hindu', value: 'hindu' },
