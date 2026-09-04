@@ -58,6 +58,8 @@ const TabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigation })
                 return '3p';
               case 'CustomerCourier':
                 return 'group';
+              case 'Monitoring':
+                return 'insights';
               default:
                 return 'help';
             }

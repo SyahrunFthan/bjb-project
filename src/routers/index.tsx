@@ -1,23 +1,24 @@
 import AuthScreen from '@/screens/auth';
 import BoardingScreen from '@/screens/boarding';
-import TermsScreen from '@/screens/profiles/terms';
-import HelpScreen from '@/screens/profiles/help';
-import DeleteAccountScreen from '@/screens/profiles/delete-account';
-import SecureScreen from '@/screens/profiles/secure';
-import PersonalScreen from '@/screens/profiles/personal';
-import CourierProfileScreen from '@/screens/profiles/courier';
+import ActivityScreen from '@/screens/couriers/activities';
 import CourierCollectionScreen from '@/screens/couriers/collection';
 import CourierCollectionDetailScreen from '@/screens/couriers/collection/detail';
 import CustomerCreateScreen from '@/screens/couriers/customers/create';
 import CustomerEditScreen from '@/screens/couriers/customers/edit';
 import CourierLoanCreateScreen from '@/screens/couriers/loans/create';
 import CourierLoanEditScreen from '@/screens/couriers/loans/edit';
-import NotificationScreen from '@/screens/notifications';
 import LoanItemScreen from '@/screens/customers/history/item';
 import PaymentReceiptScreen from '@/screens/customers/history/receipt';
+import MaintenanceScreen from '@/screens/maintenance';
+import NotificationScreen from '@/screens/notifications';
+import CourierProfileScreen from '@/screens/profiles/courier';
+import DeleteAccountScreen from '@/screens/profiles/delete-account';
+import HelpScreen from '@/screens/profiles/help';
+import PersonalScreen from '@/screens/profiles/personal';
+import SecureScreen from '@/screens/profiles/secure';
+import TermsScreen from '@/screens/profiles/terms';
 import SplashScreen from '@/screens/splash';
 import StartScreen from '@/screens/start';
-import MaintenanceScreen from '@/screens/maintenance';
 import { RouteParamList } from '@/types/navigation';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
@@ -51,6 +52,7 @@ const Routes = () => {
       <Stack.Screen name="Notification" component={NotificationScreen} />
       <Stack.Screen name="LoanItem" component={LoanItemScreen} />
       <Stack.Screen name="PaymentReceipt" component={PaymentReceiptScreen} />
+      <Stack.Screen name="Activity" component={ActivityScreen} />
     </Stack.Navigator>
   );
 };

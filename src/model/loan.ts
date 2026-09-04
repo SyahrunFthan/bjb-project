@@ -1,4 +1,5 @@
 import { Customer } from './customer';
+import { Payment } from './payment';
 import { TenorModel } from './tenor';
 
 export interface Tenor {
@@ -30,7 +31,7 @@ export interface CustomerDocument {
   requirement_document?: RequirementDocument;
 }
 
-export interface Installment {
+export interface InstallmentModel {
   id: string;
   loan_id: string;
   invoice_number: string;
@@ -39,6 +40,11 @@ export interface Installment {
   paid_amount?: number;
   due_date: string;
   status: 'unpaid' | 'paid' | 'overdue' | 'partially_paid';
+}
+
+export interface Installment extends InstallmentModel {
+  loan: Loan;
+  payments: Payment[];
 }
 
 export interface LoanModel {

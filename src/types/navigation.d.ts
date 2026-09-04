@@ -12,6 +12,7 @@ export type CourierRouteParamList = {
   CourierLoan: undefined;
   CustomerCourier: undefined;
   Profile: undefined;
+  Monitoring: undefined;
 };
 
 export type RouteParamList = {
@@ -47,6 +48,7 @@ export type RouteParamList = {
   PaymentReceipt: {
     paymentId: string;
   };
+  Activity: undefined;
 };
 
 declare global {

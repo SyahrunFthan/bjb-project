@@ -141,7 +141,7 @@ const DashboardContent = ({ dashboardData, loading, navigation }: Props) => {
         <Card style={styles.statCard}>
           <AppIcon name="check-circle" size={24} color={color.success} />
           <AppText variant="regular" style={styles.statLabel}>
-            Lunas Hari Ini
+            Tagihan Hari Ini
           </AppText>
           <AppText variant="semiBold" style={styles.billValue}>
             Rp {formatCurrency(stats.totalDailyBillPaid ?? 0)}
@@ -150,7 +150,7 @@ const DashboardContent = ({ dashboardData, loading, navigation }: Props) => {
         <Card style={styles.statCard}>
           <AppIcon name="pending-actions" size={24} color={color.tertiary} />
           <AppText variant="regular" style={styles.statLabel}>
-            Tagihan Hari Ini
+            Target Hari Ini
           </AppText>
           <AppText variant="semiBold" style={styles.billValue}>
             Rp {formatCurrency(stats.totalDailyBillUnpaid ?? 0)}
@@ -214,7 +214,7 @@ const DashboardContent = ({ dashboardData, loading, navigation }: Props) => {
       <Card style={styles.fullStatCard}>
         <AppIcon name="calendar-month" size={24} color={color.blue} />
         <AppText variant="regular" style={styles.statLabel}>
-          Tagihan Bulan Ini
+          Target Bulan Ini
         </AppText>
         <AppText variant="semiBold" style={styles.billValue}>
           Rp {formatCurrency(stats.totalMonthlyBill ?? 0)}
@@ -223,7 +223,7 @@ const DashboardContent = ({ dashboardData, loading, navigation }: Props) => {
       <Card style={styles.fullStatCard}>
         <AppIcon name="event-available" size={24} color={color.success} />
         <AppText variant="regular" style={styles.statLabel}>
-          Lunas Bulan Ini
+          Tagihan Bulan Ini
         </AppText>
         <AppText variant="semiBold" style={styles.billValue}>
           Rp {formatCurrency(stats.totalMonthlyBillPaid ?? 0)}
@@ -235,7 +235,7 @@ const DashboardContent = ({ dashboardData, loading, navigation }: Props) => {
           <AppText variant="semiBold" style={styles.activityTitle}>
             Aktivitas Terbaru
           </AppText>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate('Activity')}>
             <AppText style={styles.seeAllText}>Lihat Semua</AppText>
           </TouchableOpacity>
         </View>
