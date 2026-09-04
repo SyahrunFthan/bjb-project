@@ -12,6 +12,7 @@ import { Installment, Loan } from '@/model/loan';
 import { RouteParamList } from '@/types/navigation';
 import { useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import dayjs from 'dayjs';
 import React, { useCallback, useEffect, useState } from 'react';
 import { FlatList, Modal, RefreshControl, ScrollView, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -38,6 +39,7 @@ const CourierCollectionDetailScreen = ({ navigation }: { navigation: NativeStack
   const [payModalVisible, setPayModalVisible] = useState<boolean>(false);
   const [selectedInstallment, setSelectedInstallment] = useState<Installment | null>(null);
   const [payAmountInput, setPayAmountInput] = useState<string>('');
+  const [payDate, setPayDate] = useState<string>(dayjs().format('YYYY-MM-DD'));
 
   const fetchData = useCallback(() => {
     fetchLoanDetails(loanId, setLoan, setLoading, modal);
@@ -51,6 +53,7 @@ const CourierCollectionDetailScreen = ({ navigation }: { navigation: NativeStack
     setSelectedInstallment(installment);
     const sisa = Math.round(Number(installment.amount) - Number(installment.paid_amount || 0));
     setPayAmountInput(String(sisa));
+    setPayDate(dayjs().format('YYYY-MM-DD'));
     setPayModalVisible(true);
   };
 
@@ -68,6 +71,7 @@ const CourierCollectionDetailScreen = ({ navigation }: { navigation: NativeStack
         installment_id: selectedInstallment.id,
         amount: amountVal,
         payment_method: 'courier',
+        payment_date: payDate,
       },
       modal,
       setProcessing,
@@ -186,6 +190,28 @@ const CourierCollectionDetailScreen = ({ navigation }: { navigation: NativeStack
                     ? `Rp ${formatCurrency(Number(selectedInstallment.amount) - Number(selectedInstallment.paid_amount || 0))}`
                     : 'Rp 0'}
                 </AppText>
+              </View>
+            </View>
+
+            <View style={styles.dateSelectionContainer}>
+              <AppText style={styles.dateSelectionLabel}>Tanggal Penagihan:</AppText>
+              <View style={styles.dateChipRow}>
+                <TouchableOpacity
+                  style={[styles.dateChip, payDate === dayjs().format('YYYY-MM-DD') && styles.dateChipActive]}
+                  onPress={() => setPayDate(dayjs().format('YYYY-MM-DD'))}
+                  activeOpacity={0.7}>
+                  <AppText style={[styles.dateChipText, payDate === dayjs().format('YYYY-MM-DD') && styles.dateChipTextActive]}>
+                    Hari Ini ({dayjs().format('DD/MM')})
+                  </AppText>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.dateChip, payDate === dayjs().subtract(1, 'day').format('YYYY-MM-DD') && styles.dateChipActive]}
+                  onPress={() => setPayDate(dayjs().subtract(1, 'day').format('YYYY-MM-DD'))}
+                  activeOpacity={0.7}>
+                  <AppText style={[styles.dateChipText, payDate === dayjs().subtract(1, 'day').format('YYYY-MM-DD') && styles.dateChipTextActive]}>
+                    Kemarin ({dayjs().subtract(1, 'day').format('DD/MM')})
+                  </AppText>
+                </TouchableOpacity>
               </View>
             </View>
 
@@ -421,5 +447,38 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: color.black,
+  },
+  dateSelectionContainer: {
+    marginBottom: 14,
+  },
+  dateSelectionLabel: {
+    fontSize: 12,
+    color: color.neutral,
+    marginBottom: 6,
+  },
+  dateChipRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  dateChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: color.border,
+    backgroundColor: '#F8FAFC',
+  },
+  dateChipActive: {
+    backgroundColor: color.primary,
+    borderColor: color.primary,
+  },
+  dateChipText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: color.neutral,
+  },
+  dateChipTextActive: {
+    color: color.white,
+    fontWeight: '600',
   },
 });

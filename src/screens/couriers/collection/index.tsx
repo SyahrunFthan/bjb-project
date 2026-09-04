@@ -5,54 +5,117 @@ import CollectionLoanList from '@/components/couriers/collections/CollectionLoan
 import AppIcon from '@/components/Icon';
 import Input from '@/components/Input';
 import EmptyData from '@/components/ui/EmptyData';
-import { useDebounce } from '@/hooks/useDebounce';
+import { SkeletonCard } from '@/components/ui/Skeleton';
 import { useModal } from '@/hooks/useModal';
 import { skeletonData } from '@/lib/utils';
 import { Loan } from '@/model/loan';
 import { RouteParamList } from '@/types/navigation';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
-import { FlatList, RefreshControl, StatusBar, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, FlatList, RefreshControl, StatusBar, StyleSheet, Text, View } from 'react-native';
+
+const PAGE_LIMIT = 20;
 
 const CourierCollectionScreen = ({ navigation }: { navigation: NativeStackNavigationProp<RouteParamList, 'CourierCollection'> }) => {
   const modal = useModal();
   const [search, setSearch] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [loadingMore, setLoadingMore] = useState<boolean>(false);
+  const [hasMore, setHasMore] = useState<boolean>(true);
+  const [page, setPage] = useState<number>(1);
   const [loans, setLoans] = useState<Loan[]>([]);
-  const debounceSearch = useDebounce(search);
 
-  const fetchData = useCallback(
-    (isRefresh = false) => {
-      if (isRefresh) {
-        setRefreshing(true);
-      }
-      const queries: Record<string, string> = {
-        search: debounceSearch,
-        status: 'approved',
-      };
-      fetchLoans(setLoans, setLoading, queries, modal).then(() => {
-        setRefreshing(false);
+  const fetchData = async (isRefresh = false) => {
+    if (isRefresh) {
+      setRefreshing(true);
+    } else {
+      setLoading(true);
+    }
+
+    setPage(1);
+    setHasMore(true);
+
+    try {
+      await fetchLoans({
+        modal,
+        queries: { search, status: 'approved' },
+        page: 1,
+        limit: PAGE_LIMIT,
+        setDataList: (resData: Loan[]) => {
+          setLoans(resData.filter(l => l.loan_status === 'active'));
+          if (resData.length < PAGE_LIMIT) {
+            setHasMore(false);
+          }
+        },
       });
-    },
-    [debounceSearch, modal],
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  const handleLoadMore = async () => {
+    if (loadingMore || !hasMore || loading) return;
+
+    setLoadingMore(true);
+    const nextPage = page + 1;
+
+    try {
+      await fetchLoans({
+        modal,
+        queries: { search, status: 'approved' },
+        page: nextPage,
+        limit: PAGE_LIMIT,
+        setDataList: (resData: Loan[]) => {
+          if (resData.length === 0) {
+            setHasMore(false);
+          } else {
+            setLoans(prev => {
+              const existingIds = new Set(prev.map(item => item.id));
+              const newUniqueItems = resData.filter((item: Loan) => !existingIds.has(item.id) && item.loan_status === 'active');
+              return [...prev, ...newUniqueItems];
+            });
+            setPage(nextPage);
+            if (resData.length < PAGE_LIMIT) {
+              setHasMore(false);
+            }
+          }
+        },
+      });
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchData();
+    }, []),
   );
 
+  // Debounce search
   useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', () => {
+    const delayDebounceFn = setTimeout(() => {
       fetchData();
-    });
-    return unsubscribe;
-  }, [navigation, fetchData]);
+    }, 400);
 
-  useEffect(() => {
-    fetchData();
-  }, [debounceSearch, fetchData]);
+    return () => clearTimeout(delayDebounceFn);
+  }, [search]);
 
-  const activeLoans = loans.filter(l => l.loan_status === 'active');
+  const renderFooter = () => {
+    if (!loadingMore) return null;
+    return (
+      <View style={styles.footerLoader}>
+        <ActivityIndicator size="small" color={color.primary} />
+        <Text style={styles.footerText}>Memuat halaman berikutnya...</Text>
+      </View>
+    );
+  };
 
   return (
-    <AppLayout>
+    <AppLayout scrollable={false}>
       <StatusBar backgroundColor={color.primary} barStyle="light-content" />
 
       <Input
@@ -63,16 +126,27 @@ const CourierCollectionScreen = ({ navigation }: { navigation: NativeStackNaviga
         containerStyle={styles.searchInput}
       />
 
-      <FlatList
-        data={loading ? skeletonData : activeLoans}
-        keyExtractor={item => item.id}
-        showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchData(true)} colors={[color.primary]} />}
-        contentContainerStyle={styles.listContent}
-        renderItem={({ item }) => <CollectionLoanList item={item as Loan} key={item.id} loading={loading} navigation={navigation} />}
-        ListEmptyComponent={<EmptyData />}
-        ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
-      />
+      {loading ? (
+        <View style={styles.skeletonContainer}>
+          {skeletonData.map((_, index) => (
+            <SkeletonCard style={styles.skeleton} key={index} />
+          ))}
+        </View>
+      ) : (
+        <FlatList
+          data={loans}
+          keyExtractor={(item, index) => `${item.id}-${index}`}
+          showsVerticalScrollIndicator={false}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchData(true)} colors={[color.primary]} />}
+          contentContainerStyle={styles.listContent}
+          renderItem={({ item }) => <CollectionLoanList item={item as Loan} key={item.id} loading={loading} navigation={navigation} />}
+          ListEmptyComponent={<EmptyData />}
+          ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.4}
+          ListFooterComponent={renderFooter}
+        />
+      )}
     </AppLayout>
   );
 };
@@ -125,5 +199,23 @@ const styles = StyleSheet.create({
   listContent: {
     paddingBottom: 24,
     marginTop: 16,
+  },
+  skeletonContainer: {
+    paddingTop: 16,
+    paddingHorizontal: 4,
+  },
+  skeleton: {
+    marginBottom: 12,
+  },
+  footerLoader: {
+    paddingVertical: 16,
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  footerText: {
+    fontSize: 12,
+    color: color.neutral,
   },
 });

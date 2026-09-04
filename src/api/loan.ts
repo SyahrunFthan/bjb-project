@@ -283,32 +283,54 @@ export const fetchCustomerOptions = async (query: string): Promise<{ label: stri
   }));
 };
 
-export const fetchLoans = async (
-  setLoans: Dispatch<SetStateAction<Loan[]>>,
-  setLoading: Dispatch<SetStateAction<boolean>>,
-  queries: Record<string, string>,
-  modal: ModalProps,
-): Promise<void> => {
+interface FetchLoansProps {
+  modal: ModalProps;
+  queries: Record<string, string>;
+  page?: number;
+  limit?: number;
+  setDataList: (list: Loan[], meta?: { total?: number; page?: number; limit?: number; has_more?: boolean }) => void;
+  setLoading?: Dispatch<SetStateAction<boolean>>;
+  setRefreshing?: Dispatch<SetStateAction<boolean>>;
+}
+
+export const fetchLoans = async ({
+  modal,
+  queries,
+  page = 1,
+  limit = 20,
+  setDataList,
+  setLoading,
+  setRefreshing,
+}: FetchLoansProps): Promise<void> => {
   try {
-    setLoading(true);
     const params = new URLSearchParams();
     Object.entries(queries).forEach(([key, value]) => {
       if (value !== undefined && value !== null && value !== '') {
         params.set(key, value);
       }
     });
+    params.set('page', String(page));
+    params.set('page_size', String(limit));
 
     const response = await api.get(`/mobile/loans?${params.toString()}`);
-    const loanData = (response.data?.data || response.data || []) as Loan[];
-    setLoans(loanData);
+    const loanData = (response.data?.data || []) as Loan[];
+    const meta = response.data?.meta
+      ? {
+          total: response.data.meta.total,
+          page: response.data.meta.page,
+          limit: response.data.meta.page_size,
+          has_more: response.data.meta.page < response.data.meta.total_pages,
+        }
+      : undefined;
+    setDataList(loanData, meta);
   } catch (error) {
     const axiosError = error as AxiosError<ErrorResponse>;
     console.log(axiosError.response);
-
     processFail(modal, 'Gagal', axiosError.response?.data?.message || 'Gagal mengambil data pengajuan.');
   } finally {
     processFinish(modal, () => {
-      setLoading(false);
+      setLoading?.(false);
+      setRefreshing?.(false);
     });
   }
 };
@@ -390,6 +412,7 @@ export const collectPayment = async (
     installment_id: string;
     amount: number;
     payment_method: string;
+    payment_date?: string;
   },
   modal: ModalProps,
   setProcessing: Dispatch<SetStateAction<boolean>>,

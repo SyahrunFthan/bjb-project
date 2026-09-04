@@ -6,20 +6,31 @@ import { Installment } from '@/model/loan';
 import { AxiosError } from 'axios';
 import { Dispatch, SetStateAction } from 'react';
 
+interface PaymentMeta {
+  total?: number;
+  page?: number;
+  limit?: number;
+  has_more?: boolean;
+}
+
 interface PaymentActivityProps {
   modal: ModalProps;
   search: string;
-  setRecentPayments: Dispatch<SetStateAction<RecentPayment[]>>;
+  page?: number;
+  limit?: number;
+  setRecentPayments: (list: RecentPayment[], meta?: PaymentMeta) => void;
   setLoading: Dispatch<SetStateAction<boolean>>;
   setRefreshing: Dispatch<SetStateAction<boolean>>;
 }
 
-export const recentPaymentGet = async ({ modal, search, setLoading, setRecentPayments, setRefreshing }: PaymentActivityProps) => {
+export const recentPaymentGet = async ({ modal, search, page = 1, limit = 20, setLoading, setRecentPayments, setRefreshing }: PaymentActivityProps) => {
   try {
     setLoading(true);
-    const response = await api.get(`/mobile/payments/activity?search=${search}`);
+    const response = await api.get(`/mobile/payments/activity`, {
+      params: { search, page, limit },
+    });
     if (response.status === 200) {
-      setRecentPayments(response.data);
+      setRecentPayments(response.data.data, response.data.meta);
     }
   } catch (error) {
     const axiosError = error as AxiosError<Error>;
@@ -37,29 +48,41 @@ interface PaymentMonitoringProps {
   status: string;
   search: string;
   month: string;
-  setDataList: Dispatch<SetStateAction<Installment[]>>;
-  setLoading: Dispatch<SetStateAction<boolean>>;
-  setRefreshing: Dispatch<SetStateAction<boolean>>;
+  page?: number;
+  limit?: number;
+  setDataList: (list: Installment[], meta?: { total?: number; page?: number; limit?: number; has_more?: boolean }) => void;
+  setLoading?: Dispatch<SetStateAction<boolean>>;
+  setRefreshing?: Dispatch<SetStateAction<boolean>>;
 }
 
-export const monitoringGetItems = async ({ modal, month, search, setDataList, status, setLoading, setRefreshing }: PaymentMonitoringProps) => {
+export const monitoringGetItems = async ({
+  modal,
+  month,
+  search,
+  page = 1,
+  limit = 20,
+  setDataList,
+  status,
+  setLoading,
+  setRefreshing,
+}: PaymentMonitoringProps) => {
   try {
-    setLoading(true);
     const response = await api.get(`/mobile/payments/monitoring`, {
       params: {
         search,
         status: status !== 'ALL' ? status : undefined,
         month,
+        page,
+        limit,
       },
     });
-    setDataList(response.data.data);
+
+    setDataList(response.data.data, response.data.meta);
   } catch (error) {
-    const axiosError = error as AxiosError<Error>;
-    processFail(modal, 'Gagal', axiosError.response?.data.message || 'Ada kesalahan saat mengambil data');
+    const axiosError = error as AxiosError<{ message: string }>;
+    processFail(modal, 'Gagal', axiosError.response?.data?.message || 'Ada kesalahan saat mengambil data');
   } finally {
-    setTimeout(() => {
-      setLoading(false);
-      setRefreshing(false);
-    }, 200);
+    setLoading?.(false);
+    setRefreshing?.(false);
   }
 };

@@ -7,47 +7,106 @@ import { useModal } from '@/hooks/useModal';
 import { formatActivityDate } from '@/lib/formatter';
 import { skeletonData } from '@/lib/utils';
 import { RecentPayment } from '@/model/dashboard';
-import React, { useEffect, useState } from 'react';
-import { FlatList, RefreshControl, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, TextInput, View } from 'react-native';
 
-interface PaymentItem {
-  id: string;
-  amount: number;
-  createdAt: string;
-  installment?: {
-    installment_number: number;
-    loan?: {
-      loan_number: string;
-      customer?: {
-        name: string;
-        phone?: string;
-      };
-    };
-  };
-}
+const PAGE_LIMIT = 20;
 
 const ActivityScreen = () => {
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState(1);
   const [payments, setPayments] = useState<RecentPayment[]>([]);
   const modal = useModal();
 
-  const fetchRecentPayments = async (searchTerm = '') => {
-    recentPaymentGet({ modal, search, setLoading, setRecentPayments: setPayments, setRefreshing });
+  // Fetch awal / reset ke halaman 1
+  const fetchRecentPayments = async (isRefresh = false) => {
+    if (isRefresh) {
+      setRefreshing(true);
+    } else {
+      setLoading(true);
+    }
+
+    setPage(1);
+    setHasMore(true);
+
+    try {
+      await recentPaymentGet({
+        modal,
+        search,
+        page: 1,
+        limit: PAGE_LIMIT,
+        setRecentPayments: (resData: RecentPayment[]) => {
+          setPayments(resData);
+          if (resData.length < PAGE_LIMIT) {
+            setHasMore(false);
+          }
+        },
+        setLoading: () => {},
+        setRefreshing: () => {},
+      });
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
   };
 
+  const handleLoadMore = async () => {
+    if (loadingMore || !hasMore || loading) return;
+
+    setLoadingMore(true);
+    const nextPage = page + 1;
+
+    try {
+      await recentPaymentGet({
+        modal,
+        search,
+        page: nextPage,
+        limit: PAGE_LIMIT,
+        setRecentPayments: (resData: RecentPayment[]) => {
+          if (resData.length === 0) {
+            setHasMore(false);
+          } else {
+            setPayments(prev => {
+              const existingIds = new Set(prev.map(item => item.id));
+              const newUniqueItems = resData.filter(item => !existingIds.has(item.id));
+              return [...prev, ...newUniqueItems];
+            });
+            setPage(nextPage);
+            if (resData.length < PAGE_LIMIT) {
+              setHasMore(false);
+            }
+          }
+        },
+        setLoading: () => {},
+        setRefreshing: () => {},
+      });
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchRecentPayments();
+    }, []),
+  );
+
+  // Debounce search
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
-      fetchRecentPayments(search);
-    }, 500);
+      fetchRecentPayments();
+    }, 400);
 
     return () => clearTimeout(delayDebounceFn);
   }, [search]);
 
   const onRefresh = () => {
-    setRefreshing(true);
-    fetchRecentPayments(search);
+    fetchRecentPayments(true);
   };
 
   const renderPaymentCard = ({ item }: { item: RecentPayment }) => {
@@ -70,8 +129,18 @@ const ActivityScreen = () => {
     );
   };
 
+  const renderFooter = () => {
+    if (!loadingMore) return null;
+    return (
+      <View style={styles.footerLoader}>
+        <ActivityIndicator size="small" color={color.primary} />
+        <Text style={styles.footerText}>Memuat halaman berikutnya...</Text>
+      </View>
+    );
+  };
+
   return (
-    <AppLayout>
+    <AppLayout scrollable={false}>
       <View style={styles.container}>
         <Text style={styles.title}>Riwayat Pembayaran</Text>
 
@@ -93,12 +162,15 @@ const ActivityScreen = () => {
         ) : (
           <FlatList
             data={payments}
-            keyExtractor={item => item.id}
+            keyExtractor={(item, index) => `${item.id}-${index}`}
             renderItem={renderPaymentCard}
             contentContainerStyle={styles.listContainer}
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[color.primary]} tintColor={color.primary} />}
             ListEmptyComponent={<EmptyData />}
             showsVerticalScrollIndicator={false}
+            onEndReached={handleLoadMore}
+            onEndReachedThreshold={0.4}
+            ListFooterComponent={renderFooter}
           />
         )}
       </View>
@@ -187,5 +259,16 @@ const styles = StyleSheet.create({
   },
   skeleton: {
     marginBottom: 8,
+  },
+  footerLoader: {
+    paddingVertical: 16,
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  footerText: {
+    fontSize: 12,
+    color: color.neutral,
   },
 });

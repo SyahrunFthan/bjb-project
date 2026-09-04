@@ -9,11 +9,13 @@ import { skeletonData } from '@/lib/utils';
 import { Installment } from '@/model/loan';
 import { useFocusEffect } from '@react-navigation/native';
 import dayjs from 'dayjs';
-import 'dayjs/locale/id'; // Impor bahasa Indonesia
+import 'dayjs/locale/id';
 import React, { useCallback, useEffect, useState } from 'react';
-import { FlatList, RefreshControl, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 dayjs.locale('id');
+
+const PAGE_LIMIT = 20;
 
 const MonitoringScreen = () => {
   const [search, setSearch] = useState('');
@@ -21,43 +23,110 @@ const MonitoringScreen = () => {
   const [selectedMonth, setSelectedMonth] = useState(dayjs().format('YYYY-MM'));
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState(1);
   const [dataList, setDataList] = useState<Installment[]>([]);
   const modal = useModal();
 
-  const fetchMonitoringData = async () => {
-    monitoringGetItems({
-      modal,
-      month: selectedMonth,
-      search,
-      setDataList,
-      setLoading,
-      setRefreshing,
-      status: selectedStatus,
-    });
+  // 1. Fetch data awal / Reset Ke Halaman 1
+  const fetchMonitoringData = async (isRefresh = false) => {
+    if (isRefresh) {
+      setRefreshing(true);
+    } else {
+      setLoading(true);
+    }
+
+    setPage(1);
+    setHasMore(true);
+
+    try {
+      await monitoringGetItems({
+        modal,
+        month: selectedMonth,
+        search,
+        page: 1,
+        limit: PAGE_LIMIT,
+        setDataList: (resData: Installment[]) => {
+          setDataList(resData);
+          if (resData.length < PAGE_LIMIT) {
+            setHasMore(false);
+          }
+        },
+        setLoading: () => {},
+        setRefreshing: () => {},
+        status: selectedStatus,
+      });
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
   };
 
+  const handleLoadMore = async () => {
+    if (loadingMore || !hasMore || loading) return;
+
+    setLoadingMore(true);
+    const nextPage = page + 1;
+
+    try {
+      await monitoringGetItems({
+        modal,
+        month: selectedMonth,
+        search,
+        page: nextPage,
+        limit: PAGE_LIMIT,
+        setDataList: (resData: Installment[]) => {
+          if (resData.length === 0) {
+            setHasMore(false);
+          } else {
+            // FIX: Filter agar hanya memasukkan item yang ID-nya belum ada di state sebelumnya
+            setDataList(prev => {
+              const existingIds = new Set(prev.map(item => item.id));
+              const newUniqueItems = resData.filter(item => !existingIds.has(item.id));
+              return [...prev, ...newUniqueItems];
+            });
+
+            setPage(nextPage);
+
+            if (resData.length < PAGE_LIMIT) {
+              setHasMore(false);
+            }
+          }
+        },
+        setLoading: () => {},
+        setRefreshing: () => {},
+        status: selectedStatus,
+      });
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
+  // Trigger saat screen di-focus atau status/bulan berubah
   useFocusEffect(
     useCallback(() => {
       fetchMonitoringData();
     }, [selectedMonth, selectedStatus]),
   );
 
+  // Trigger Debounce Search (Akan memanggil API baik saat mengetik maupun saat input dihapus/kosong)
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
-      if (search) {
-        fetchMonitoringData();
-      }
+      fetchMonitoringData();
     }, 400);
 
     return () => clearTimeout(delayDebounceFn);
   }, [search]);
 
   const onRefresh = () => {
-    setRefreshing(true);
-    fetchMonitoringData();
+    fetchMonitoringData(true);
   };
 
-  // Fungsi navigasi ubah bulan
   const handlePrevMonth = () => {
     setSelectedMonth(prev => dayjs(prev, 'YYYY-MM').subtract(1, 'month').format('YYYY-MM'));
   };
@@ -67,7 +136,7 @@ const MonitoringScreen = () => {
   };
 
   const renderCard = ({ item }: { item: Installment }) => {
-    const isPaid = item.payments && item.payments.length > 0;
+    const isPaid = item.status === 'paid' || (item.payments && item.payments.length > 0);
     const customerName = item.loan?.customer?.full_name || 'Tanpa Nama';
     const loanNumber = item.loan?.loan_sequence_number || '-';
 
@@ -82,17 +151,27 @@ const MonitoringScreen = () => {
 
         <View style={styles.cardBody}>
           <Text style={styles.metaText}>Pinjaman Ke: {loanNumber}</Text>
-          <Text style={styles.amountText}>Tagihan: Rp {formatCurrency(item.paid_amount ?? 0)}</Text>
+          <Text style={styles.amountText}>Tagihan: Rp {formatCurrency(item.amount ?? 0)}</Text>
         </View>
         <Text style={styles.metaText}>Cicilan Ke: {item.sequence_number}</Text>
-
         <Text style={styles.dateText}>Jatuh Tempo: {dayjs(item.due_date).format('DD MMMM YYYY')}</Text>
       </View>
     );
   };
 
+  // Indicator Loader di bagian paling bawah FlatList saat memuat halaman baru
+  const renderFooter = () => {
+    if (!loadingMore) return null;
+    return (
+      <View style={styles.footerLoader}>
+        <ActivityIndicator size="small" color={color.primary} />
+        <Text style={styles.footerText}>Memuat halaman berikutnya...</Text>
+      </View>
+    );
+  };
+
   return (
-    <AppLayout scrollable>
+    <AppLayout scrollable={false}>
       <View style={styles.container}>
         <Text style={styles.title}>Monitoring Pembayaran Nasabah</Text>
 
@@ -137,21 +216,25 @@ const MonitoringScreen = () => {
           </TouchableOpacity>
         </View>
 
-        {/* List Data */}
+        {/* List Data dengan Pagination / Infinite Scroll */}
         {loading ? (
-          skeletonData.map((_, index) => {
-            return <SkeletonCard style={styles.skeleton} key={index} />;
-          })
+          <View>
+            {skeletonData.map((_, index) => (
+              <SkeletonCard style={styles.skeleton} key={index} />
+            ))}
+          </View>
         ) : (
           <FlatList
             data={dataList}
-            keyExtractor={item => item.id}
+            keyExtractor={(item, index) => `${item.id}-${index}`}
             renderItem={renderCard}
             contentContainerStyle={styles.listContainer}
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[color.primary]} tintColor={color.primary} />}
             ListEmptyComponent={<EmptyData />}
             showsVerticalScrollIndicator={false}
-            scrollEnabled={false}
+            onEndReached={handleLoadMore}
+            onEndReachedThreshold={0.4}
+            ListFooterComponent={renderFooter}
           />
         )}
       </View>
@@ -163,6 +246,7 @@ export default MonitoringScreen;
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     paddingHorizontal: 16,
     paddingTop: 12,
   },
@@ -236,9 +320,6 @@ const styles = StyleSheet.create({
     color: color.white,
     fontWeight: '700',
   },
-  loader: {
-    marginTop: 32,
-  },
   listContainer: {
     paddingBottom: 24,
   },
@@ -290,15 +371,18 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: color.neutral,
   },
-  emptyContainer: {
-    paddingVertical: 40,
-    alignItems: 'center',
-  },
-  emptyText: {
-    fontSize: 14,
-    color: color.neutral,
-  },
   skeleton: {
     marginBottom: 8,
+  },
+  footerLoader: {
+    paddingVertical: 16,
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  footerText: {
+    fontSize: 12,
+    color: color.neutral,
   },
 });
