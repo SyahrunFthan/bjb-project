@@ -325,7 +325,6 @@ export const fetchLoans = async ({
     setDataList(loanData, meta);
   } catch (error) {
     const axiosError = error as AxiosError<ErrorResponse>;
-    console.log(axiosError.response);
     processFail(modal, 'Gagal', axiosError.response?.data?.message || 'Gagal mengambil data pengajuan.');
   } finally {
     processFinish(modal, () => {
@@ -372,7 +371,6 @@ export const fetchLoanDetails = async (
     setLoading(true);
     const response = await api.get(`/mobile/loans/${id}`);
     const loanData = response.data as Loan;
-    console.log(loanData);
 
     setLoan(loanData);
   } catch (error) {
