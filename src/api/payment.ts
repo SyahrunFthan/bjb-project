@@ -2,7 +2,7 @@ import { ModalProps } from '@/contexts/ModalContext';
 import api from '@/lib/api';
 import { processFail } from '@/lib/process';
 import { RecentPayment } from '@/model/dashboard';
-import { Installment } from '@/model/loan';
+import { CustomerMonitoringItem, Installment, MonitoringSummary } from '@/model/loan';
 import { AxiosError } from 'axios';
 import { Dispatch, SetStateAction } from 'react';
 
@@ -48,9 +48,15 @@ interface PaymentMonitoringProps {
   status: string;
   search: string;
   month: string;
+  date?: string;
   page?: number;
   limit?: number;
-  setDataList: (list: Installment[], meta?: { total?: number; page?: number; limit?: number; has_more?: boolean }) => void;
+  setDataList: (
+    list: CustomerMonitoringItem[],
+    meta?: { total?: number; page?: number; limit?: number; has_more?: boolean },
+    summary?: MonitoringSummary
+  ) => void;
+  setSummary?: (summary: MonitoringSummary) => void;
   setLoading?: Dispatch<SetStateAction<boolean>>;
   setRefreshing?: Dispatch<SetStateAction<boolean>>;
 }
@@ -58,10 +64,12 @@ interface PaymentMonitoringProps {
 export const monitoringGetItems = async ({
   modal,
   month,
+  date,
   search,
   page = 1,
   limit = 20,
   setDataList,
+  setSummary,
   status,
   setLoading,
   setRefreshing,
@@ -72,12 +80,16 @@ export const monitoringGetItems = async ({
         search,
         status: status !== 'ALL' ? status : undefined,
         month,
+        date,
         page,
         limit,
       },
     });
 
-    setDataList(response.data.data, response.data.meta);
+    if (response.data.summary && setSummary) {
+      setSummary(response.data.summary);
+    }
+    setDataList(response.data.data, response.data.meta, response.data.summary);
   } catch (error) {
     const axiosError = error as AxiosError<{ message: string }>;
     processFail(modal, 'Gagal', axiosError.response?.data?.message || 'Ada kesalahan saat mengambil data');

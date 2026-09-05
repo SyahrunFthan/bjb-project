@@ -71,3 +71,48 @@ export interface Loan extends LoanModel {
   tenor?: TenorModel;
   installments?: Installment[];
 }
+
+export interface CustomerMonitoringItem {
+  loan_id: string;
+  loan_sequence_number: number;
+  customer: {
+    id: string;
+    full_name: string;
+    member_number: string;
+    phone_number: string;
+  };
+  remaining_amount: number;
+  total_amount: number;
+  installment_amount: number;
+  loan_status: string;
+  today_status: {
+    is_paid: boolean;
+    paid_amount: number;
+    target_amount: number;
+    due_date: string;
+    installment_number: number | null;
+    installment_status: string;
+  };
+  month_progress: {
+    month: string;
+    days_paid: number;
+    total_days: number;
+    total_paid: number;
+    target_amount: number;
+  };
+  overall_progress: {
+    paid_installments: number;
+    total_installments: number;
+    percentage: number;
+  };
+}
+
+export interface MonitoringSummary {
+  total_customers: number;
+  paid_today_count: number;
+  unpaid_today_count: number;
+  total_collected_today: number;
+  total_target_today: number;
+  total_remaining_receivable: number;
+}
+
