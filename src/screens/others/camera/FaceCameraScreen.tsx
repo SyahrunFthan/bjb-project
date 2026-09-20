@@ -34,13 +34,12 @@ Geolocation.setRNConfiguration({
 });
 
 const { width, height } = Dimensions.get('window');
-const OVAL_WIDTH = width * 0.72;
 const OVAL_HEIGHT = height * 0.44;
 
 type Props = NativeStackScreenProps<RouteParamList, 'FaceCamera'>;
 
 const FaceCameraScreen: React.FC<Props> = ({ navigation, route }) => {
-  const { mode = 'clock-in', onSuccess } = route.params || {};
+  const { mode = 'clock-in', isSimulated = false, onSuccess } = route.params || {};
 
   const modal = useModal();
   const cameraRef = useRef<CameraApi>(null);
@@ -344,13 +343,13 @@ const FaceCameraScreen: React.FC<Props> = ({ navigation, route }) => {
           navigation.goBack();
         });
       } else if (mode === 'clock-in') {
-        const res = await clockIn(capturedUri, coords!.latitude, coords!.longitude);
+        const res = await clockIn(capturedUri, coords!.latitude, coords!.longitude, isSimulated);
         modal.result.success('Presensi Berhasil', res.message || 'Presensi masuk berhasil dicatat.', () => {
           onSuccess?.();
           navigation.goBack();
         });
       } else if (mode === 'clock-out') {
-        const res = await clockOut(capturedUri, coords!.latitude, coords!.longitude);
+        const res = await clockOut(capturedUri, coords!.latitude, coords!.longitude, isSimulated);
         modal.result.success('Presensi Berhasil', res.message || 'Presensi pulang berhasil dicatat.', () => {
           onSuccess?.();
           navigation.goBack();
@@ -359,10 +358,7 @@ const FaceCameraScreen: React.FC<Props> = ({ navigation, route }) => {
     } catch (error: unknown) {
       const axiosError = error as AxiosError<{ message?: string }>;
       const errorObj = error as Error;
-      const msg =
-        axiosError.response?.data?.message ||
-        errorObj?.message ||
-        'Terjadi kesalahan saat memproses data wajah.';
+      const msg = axiosError.response?.data?.message || errorObj?.message || 'Terjadi kesalahan saat memproses data wajah.';
 
       const title = mode === 'register' ? 'Pendaftaran Wajah Gagal' : 'Presensi Gagal';
       modal.result.error(title, msg, () => {

@@ -29,6 +29,7 @@ interface Props {
 const DashboardContent = ({ dashboardData, loading, navigation }: Props) => {
   const modal = useModal();
   const [todayAttendance, setTodayAttendance] = useState<TodayAttendanceResponse | null>(null);
+  const isSimulated = false;
 
   const fetchTodayAttendance = useCallback(async () => {
     try {
@@ -52,21 +53,49 @@ const DashboardContent = ({ dashboardData, loading, navigation }: Props) => {
 
   const workEndTime = todayAttendance?.branch?.work_end_time || '17:00';
   const isClockOutAllowed = (() => {
+    if (isSimulated) return true;
     const [endH, endM] = workEndTime.split(':').map(Number);
     const minTime = dayjs().hour(endH).minute(endM).second(0);
     return dayjs().isAfter(minTime) || dayjs().isSame(minTime);
   })();
 
+  const handleClockInPress = () => {
+    if (!isSimulated) {
+      const [endH, endM] = workEndTime.split(':').map(Number);
+      const endTime = dayjs().hour(endH).minute(endM).second(0);
+      if (dayjs().isAfter(endTime)) {
+        modal.result.error(
+          'Jam Masuk Berakhir',
+          `Waktu presensi masuk telah berakhir karena jam pulang operasional kantor cabang Anda adalah pukul ${workEndTime}. Anda tercatat Tidak Hadir (Alpa).`,
+        );
+        fetchTodayAttendance();
+        return;
+      }
+    }
+
+    navigation.navigate('FaceCamera', {
+      mode: 'clock-in',
+      isSimulated,
+      onSuccess: fetchTodayAttendance,
+    });
+  };
+
   const handleClockOutPress = () => {
-    const [endH, endM] = workEndTime.split(':').map(Number);
-    const minTime = dayjs().hour(endH).minute(endM).second(0);
-    if (dayjs().isBefore(minTime)) {
-      modal.result.error('Belum Jam Pulang', `Presensi pulang belum dibuka. Jam pulang operasional kantor cabang Anda adalah pukul ${workEndTime}.`);
-      return;
+    if (!isSimulated) {
+      const [endH, endM] = workEndTime.split(':').map(Number);
+      const minTime = dayjs().hour(endH).minute(endM).second(0);
+      if (dayjs().isBefore(minTime)) {
+        modal.result.error(
+          'Belum Jam Pulang',
+          `Presensi pulang belum dibuka. Jam pulang operasional kantor cabang Anda adalah pukul ${workEndTime}.`,
+        );
+        return;
+      }
     }
 
     navigation.navigate('FaceCamera', {
       mode: 'clock-out',
+      isSimulated,
       onSuccess: fetchTodayAttendance,
     });
   };
@@ -380,7 +409,7 @@ const DashboardContent = ({ dashboardData, loading, navigation }: Props) => {
             </AppText>
           </View>
         </View>
-        {todayAttendance?.is_holiday ? (
+        {!isSimulated && todayAttendance?.is_holiday ? (
           <View
             style={{ backgroundColor: '#F1F5F9', borderRadius: 10, padding: 10, marginTop: 10, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
             <AppIcon name="event" size={20} color="#64748B" />
@@ -391,7 +420,10 @@ const DashboardContent = ({ dashboardData, loading, navigation }: Props) => {
               <AppText style={{ color: '#64748B', fontSize: 11 }}>Hari ini operasional libur, tidak ada kewajiban presensi.</AppText>
             </View>
           </View>
-        ) : todayAttendance?.is_absent || todayAttendance?.attendance?.status === 'absent' ? (
+        ) : !isSimulated &&
+          (todayAttendance?.is_absent ||
+            todayAttendance?.attendance?.status === 'absent' ||
+            (!todayAttendance?.attendance?.clock_in_at && isClockOutAllowed)) ? (
           <View
             style={{ backgroundColor: '#FEE2E2', borderRadius: 10, padding: 10, marginTop: 10, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
             <AppIcon name="error-outline" size={20} color="#DC2626" />
@@ -405,14 +437,7 @@ const DashboardContent = ({ dashboardData, loading, navigation }: Props) => {
         ) : (
           <View style={{ alignItems: 'center', flex: 1, marginTop: 10 }}>
             {!todayAttendance?.attendance?.clock_in_at ? (
-              <TouchableOpacity
-                style={styles.attendanceBtn}
-                onPress={() =>
-                  navigation.navigate('FaceCamera', {
-                    mode: 'clock-in',
-                    onSuccess: fetchTodayAttendance,
-                  })
-                }>
+              <TouchableOpacity style={styles.attendanceBtn} onPress={handleClockInPress}>
                 <AppIcon name="photo-camera" size={16} color={color.white} />
                 <AppText variant="bold" style={styles.attendanceBtnText}>
                   Absen Masuk

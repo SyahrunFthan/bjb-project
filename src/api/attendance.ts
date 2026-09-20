@@ -61,6 +61,7 @@ export const clockIn = async (
   imageUri: string,
   latitude?: number | null,
   longitude?: number | null,
+  isSimulated?: boolean,
 ): Promise<{ message: string; data: AttendanceRecord }> => {
   const formData = createPhotoFormData(imageUri);
   if (latitude != null) {
@@ -68,6 +69,9 @@ export const clockIn = async (
   }
   if (longitude != null) {
     formData.append('longitude', String(longitude));
+  }
+  if (isSimulated) {
+    formData.append('is_simulated', 'true');
   }
   const res = await api.post('/mobile/attendances/clock-in', formData, {
     headers: {
@@ -84,6 +88,7 @@ export const clockOut = async (
   imageUri: string,
   latitude?: number | null,
   longitude?: number | null,
+  isSimulated?: boolean,
 ): Promise<{ message: string; data: AttendanceRecord }> => {
   const formData = createPhotoFormData(imageUri);
   if (latitude != null) {
@@ -91,6 +96,9 @@ export const clockOut = async (
   }
   if (longitude != null) {
     formData.append('longitude', String(longitude));
+  }
+  if (isSimulated) {
+    formData.append('is_simulated', 'true');
   }
   const res = await api.post('/mobile/attendances/clock-out', formData, {
     headers: {

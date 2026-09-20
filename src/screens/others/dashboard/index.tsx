@@ -95,6 +95,19 @@ const OtherDashboardScreen: React.FC = () => {
       return;
     }
 
+    if (mode === 'clock-in') {
+      const [endH, endM] = workEndTime.split(':').map(Number);
+      const minTime = dayjs().hour(endH).minute(endM).second(0);
+      if (dayjs().isAfter(minTime)) {
+        modal.result.error(
+          'Jam Masuk Berakhir',
+          `Waktu presensi masuk telah berakhir karena jam pulang operasional kantor cabang Anda adalah pukul ${workEndTime}. Anda tercatat Tidak Hadir (Alpa).`,
+        );
+        fetchTodayData();
+        return;
+      }
+    }
+
     if (mode === 'clock-out') {
       const [endH, endM] = workEndTime.split(':').map(Number);
       const minTime = dayjs().hour(endH).minute(endM).second(0);
@@ -289,7 +302,7 @@ const OtherDashboardScreen: React.FC = () => {
               Periode: {dayjs(todayData.active_leave.start_date).format('DD MMM')} - {dayjs(todayData.active_leave.end_date).format('DD MMM YYYY')}
             </AppText>
           </View>
-        ) : todayData?.is_absent || todayData?.attendance?.status === 'absent' ? (
+        ) : todayData?.is_absent || todayData?.attendance?.status === 'absent' || (!todayData?.attendance?.clock_in_at && isClockOutAllowed) ? (
           <View style={{ backgroundColor: '#fef2f2', borderRadius: 12, padding: 14, borderWidth: 1, borderColor: '#fecaca', alignItems: 'center' }}>
             <AppIcon name="error-outline" size={28} color="#dc2626" style={{ marginBottom: 6 }} />
             <AppText style={{ fontSize: 15, fontWeight: '700', color: '#b91c1c' }}>Tidak Hadir (Alpa)</AppText>

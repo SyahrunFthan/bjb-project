@@ -32,6 +32,7 @@ export type RouteParamList = {
   Attendance: undefined;
   FaceCamera: {
     mode: 'register' | 'clock-in' | 'clock-out';
+    isSimulated?: boolean;
     onSuccess?: () => void;
   };
   CustomerCreate: undefined;
