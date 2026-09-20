@@ -1,3 +1,10 @@
+import { useEffect, useState } from 'react';
+
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
+
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
 import { authLogout } from '@/api/auth';
 import { color } from '@/assets/color';
 import AppLayout from '@/components/AppLayout';
@@ -9,10 +16,6 @@ import { getData } from '@/lib/storage';
 import { getInitials } from '@/lib/utils';
 import { User } from '@/model/user';
 import { RouteParamList } from '@/types/navigation';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
 
 const ProfileScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RouteParamList>>();
@@ -69,6 +72,48 @@ const ProfileScreen = () => {
           )}
         </View>
       </View>
+
+      {profile?.employee && (
+        <>
+          <AppText variant="medium" style={styles.sectionTitle}>
+            Kepegawaian
+          </AppText>
+
+          <View style={styles.menuContainer}>
+            <TouchableOpacity
+              onPress={() => navigation.navigate('Attendance')}
+              style={styles.menuItem}>
+              <View style={styles.menuLeft}>
+                <View style={styles.iconPrimaryContainer}>
+                  <AppIcon name="photo-camera" color={color.primary} size={20} />
+                </View>
+
+                <View style={styles.menuTextWrapper}>
+                  <AppText variant="medium">Presensi & Kehadiran</AppText>
+                </View>
+              </View>
+
+              <AppIcon name="chevron-right" size={24} color={color.primary} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => navigation.navigate('LeaveRequestList')}
+              style={styles.menuItemNoBorder}>
+              <View style={styles.menuLeft}>
+                <View style={styles.iconPrimaryContainer}>
+                  <AppIcon name="event-note" color={color.primary} size={20} />
+                </View>
+
+                <View style={styles.menuTextWrapper}>
+                  <AppText variant="medium">Pengajuan Cuti & Izin</AppText>
+                </View>
+              </View>
+
+              <AppIcon name="chevron-right" size={24} color={color.primary} />
+            </TouchableOpacity>
+          </View>
+        </>
+      )}
 
       <AppText variant="medium" style={styles.sectionTitle}>
         Pengaturan Akun

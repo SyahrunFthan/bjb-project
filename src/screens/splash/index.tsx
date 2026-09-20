@@ -31,7 +31,7 @@ const SplashScreen = ({ navigation }: NativeStackScreenProps<RouteParamList, 'Sp
               } else if (role === 4) {
                 navigation.replace('Customer');
               } else {
-                navigation.replace('Start');
+                navigation.replace('Other');
               }
             }
           } else {

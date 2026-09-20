@@ -9,6 +9,9 @@ import CourierLoanCreateScreen from '@/screens/couriers/loans/create';
 import CourierLoanEditScreen from '@/screens/couriers/loans/edit';
 import LoanItemScreen from '@/screens/customers/history/item';
 import PaymentReceiptScreen from '@/screens/customers/history/receipt';
+import LeaveRequestListScreen from '@/screens/leaves';
+import LeaveRequestCreateScreen from '@/screens/leaves/create';
+import LeaveRequestDetailScreen from '@/screens/leaves/detail';
 import MaintenanceScreen from '@/screens/maintenance';
 import NotificationScreen from '@/screens/notifications';
 import CourierProfileScreen from '@/screens/profiles/courier';
@@ -24,6 +27,9 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
 import CourierRouter from './courier';
 import CustomerRouter from './customer';
+import OtherRouter from './other';
+import FaceCameraScreen from '@/screens/others/camera/FaceCameraScreen';
+import AttendanceScreen from '@/screens/others/attendances';
 
 const Routes = () => {
   const Stack = createNativeStackNavigator<RouteParamList>();
@@ -36,6 +42,9 @@ const Routes = () => {
       <Stack.Screen name="Auth" component={AuthScreen} />
       <Stack.Screen name="Customer" component={CustomerRouter} />
       <Stack.Screen name="Courier" component={CourierRouter} />
+      <Stack.Screen name="Other" component={OtherRouter} />
+      <Stack.Screen name="Attendance" component={AttendanceScreen} />
+      <Stack.Screen name="FaceCamera" component={FaceCameraScreen} />
       <Stack.Screen name="CustomerCreate" component={CustomerCreateScreen} />
       <Stack.Screen name="CustomerEdit" component={CustomerEditScreen} />
       <Stack.Screen name="CourierLoanCreate" component={CourierLoanCreateScreen} />
@@ -53,6 +62,9 @@ const Routes = () => {
       <Stack.Screen name="LoanItem" component={LoanItemScreen} />
       <Stack.Screen name="PaymentReceipt" component={PaymentReceiptScreen} />
       <Stack.Screen name="Activity" component={ActivityScreen} />
+      <Stack.Screen name="LeaveRequestList" component={LeaveRequestListScreen} />
+      <Stack.Screen name="LeaveRequestCreate" component={LeaveRequestCreateScreen} />
+      <Stack.Screen name="LeaveRequestDetail" component={LeaveRequestDetailScreen} />
     </Stack.Navigator>
   );
 };

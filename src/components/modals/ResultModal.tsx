@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Modal, StyleSheet, Text, View } from 'react-native';
+import { Modal, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import AppIcon from '../Icon';
 
 type ResultType = 'success' | 'error';
@@ -39,7 +39,7 @@ const ResultModal = ({ visible, onClose, title, message, type, autoClose = true,
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <View style={styles.overlay}>
+      <TouchableOpacity style={styles.overlay} activeOpacity={1} onPress={onClose}>
         <View style={styles.modalContainer}>
           <View style={[styles.iconCircle, { backgroundColor: current.bg }]}>
             <AppIcon name={current.icon} size={40} color={current.color} />
@@ -50,7 +50,7 @@ const ResultModal = ({ visible, onClose, title, message, type, autoClose = true,
             <Text style={styles.message}>{message}</Text>
           </View>
         </View>
-      </View>
+      </TouchableOpacity>
     </Modal>
   );
 };
@@ -63,7 +63,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'flex-start',
     alignItems: 'center',
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingTop: Platform.OS === 'android' ? 52 : 56,
   },
   modalContainer: {
     backgroundColor: '#FFFFFF',

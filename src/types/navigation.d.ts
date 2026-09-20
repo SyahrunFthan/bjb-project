@@ -15,6 +15,12 @@ export type CourierRouteParamList = {
   Monitoring: undefined;
 };
 
+export type OtherRouteParamList = {
+  Dashboard: undefined;
+  Attendance: undefined;
+  Profile: undefined;
+};
+
 export type RouteParamList = {
   Splash: undefined;
   Maintenance: undefined;
@@ -22,6 +28,12 @@ export type RouteParamList = {
   Auth: undefined;
   Customer: undefined;
   Courier: undefined;
+  Other: undefined;
+  Attendance: undefined;
+  FaceCamera: {
+    mode: 'register' | 'clock-in' | 'clock-out';
+    onSuccess?: () => void;
+  };
   CustomerCreate: undefined;
   Boarding: undefined;
   CustomerEdit: {
@@ -49,6 +61,11 @@ export type RouteParamList = {
     paymentId: string;
   };
   Activity: undefined;
+  LeaveRequestList: undefined;
+  LeaveRequestCreate: undefined;
+  LeaveRequestDetail: {
+    id: string;
+  };
 };
 
 declare global {

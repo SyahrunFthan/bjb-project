@@ -60,6 +60,8 @@ const TabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigation })
                 return 'group';
               case 'Monitoring':
                 return 'insights';
+              case 'Attendance':
+                return 'photo-camera';
               default:
                 return 'help';
             }

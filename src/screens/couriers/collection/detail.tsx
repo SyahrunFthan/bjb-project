@@ -297,32 +297,36 @@ const CourierCollectionDetailScreen = ({
 
                 {/* Financial Summary Grid (2x2 / 4-box) */}
                 <View style={styles.financialGrid}>
-                  <View style={styles.financialItem}>
-                    <AppText style={styles.financialLabel}>Plafon Pokok</AppText>
-                    <AppText variant="semiBold" style={styles.financialVal}>
-                      Rp {formatCurrency(principalAmount)}
-                    </AppText>
+                  <View style={styles.financialRow}>
+                    <View style={styles.financialItem}>
+                      <AppText style={styles.financialLabel}>Plafon Pokok</AppText>
+                      <AppText variant="semiBold" style={styles.financialVal}>
+                        Rp {formatCurrency(principalAmount)}
+                      </AppText>
+                    </View>
+
+                    <View style={styles.financialItem}>
+                      <AppText style={styles.financialLabel}>Total Tagihan</AppText>
+                      <AppText variant="semiBold" style={styles.financialVal}>
+                        Rp {formatCurrency(totalAmount)}
+                      </AppText>
+                    </View>
                   </View>
 
-                  <View style={styles.financialItem}>
-                    <AppText style={styles.financialLabel}>Total Tagihan</AppText>
-                    <AppText variant="semiBold" style={styles.financialVal}>
-                      Rp {formatCurrency(totalAmount)}
-                    </AppText>
-                  </View>
+                  <View style={styles.financialRow}>
+                    <View style={styles.financialItem}>
+                      <AppText style={styles.financialLabel}>Sisa Pinjaman</AppText>
+                      <AppText variant="bold" style={[styles.financialVal, { color: '#B91C1C' }]}>
+                        Rp {formatCurrency(remainingAmount)}
+                      </AppText>
+                    </View>
 
-                  <View style={styles.financialItem}>
-                    <AppText style={styles.financialLabel}>Sisa Pinjaman</AppText>
-                    <AppText variant="bold" style={[styles.financialVal, { color: '#B91C1C' }]}>
-                      Rp {formatCurrency(remainingAmount)}
-                    </AppText>
-                  </View>
-
-                  <View style={styles.financialItem}>
-                    <AppText style={styles.financialLabel}>Sudah Terbayar</AppText>
-                    <AppText variant="bold" style={[styles.financialVal, { color: '#059669' }]}>
-                      Rp {formatCurrency(totalPaid)}
-                    </AppText>
+                    <View style={styles.financialItem}>
+                      <AppText style={styles.financialLabel}>Sudah Terbayar</AppText>
+                      <AppText variant="bold" style={[styles.financialVal, { color: '#059669' }]}>
+                        Rp {formatCurrency(totalPaid)}
+                      </AppText>
+                    </View>
                   </View>
                 </View>
 
@@ -693,12 +697,14 @@ const styles = StyleSheet.create({
     marginVertical: 14,
   },
   financialGrid: {
+    gap: 8,
+  },
+  financialRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     gap: 8,
   },
   financialItem: {
-    width: '48.5%',
+    flex: 1,
     backgroundColor: '#F8FAFC',
     padding: 10,
     borderRadius: 10,

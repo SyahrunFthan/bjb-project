@@ -25,9 +25,19 @@ const CollectionLoanList = ({ navigation, item, loading }: Props) => {
       <View style={styles.cardHeader}>
         <View style={styles.customerInfo}>
           <AppIcon name="person" size={16} color={color.primary} />
-          <AppText variant="bold" style={styles.customerName}>
-            {item.customer?.full_name || 'Nasabah'}
-          </AppText>
+          <View style={{ gap: 2 }}>
+            <AppText variant="bold" style={styles.customerName}>
+              {item.customer?.full_name || 'Nasabah'}
+            </AppText>
+            {item.is_delegated && (
+              <View style={styles.delegatedBadge}>
+                <AppIcon name="swap-horiz" size={10} color="#0369a1" />
+                <AppText style={styles.delegatedBadgeText}>
+                  Titipan: {item.original_employee?.full_name || 'Cuti'}
+                </AppText>
+              </View>
+            )}
+          </View>
         </View>
         <View style={styles.badge}>
           <AppText style={styles.badgeText}>AKTIF</AppText>
@@ -134,5 +144,22 @@ const styles = StyleSheet.create({
   totalText: {
     fontSize: 13,
     color: color.black,
+  },
+  delegatedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    backgroundColor: '#E0F2FE',
+    borderWidth: 0.5,
+    borderColor: '#7DD3FC',
+    paddingHorizontal: 6,
+    paddingVertical: 1.5,
+    borderRadius: 4,
+    alignSelf: 'flex-start',
+  },
+  delegatedBadgeText: {
+    fontSize: 9.5,
+    fontWeight: '700',
+    color: '#0369a1',
   },
 });

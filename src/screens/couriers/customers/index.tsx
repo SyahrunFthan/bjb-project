@@ -16,16 +16,23 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { FlatList, RefreshControl, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 const FILTER_OPTIONS = [
-  { key: 'all', label: 'Semua' },
+  { key: 'all', label: 'Semua Status' },
   { key: 'priority', label: 'Prioritas' },
   { key: 'normal', label: 'Biasa' },
   { key: 'blocked', label: 'Blokir' },
   { key: 'stagnant', label: 'Macet' },
 ];
 
+const DELEGATION_OPTIONS = [
+  { key: 'all', label: 'Semua' },
+  { key: 'mine', label: 'Nasabah Saya' },
+  { key: 'delegated', label: 'Titipan Cuti' },
+];
+
 const CustomerScreen = ({ navigation }: { navigation: NativeStackNavigationProp<RouteParamList, 'Customer'> }) => {
   const [search, setSearch] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
+  const [delegationFilter, setDelegationFilter] = useState('all');
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -41,11 +48,12 @@ const CustomerScreen = ({ navigation }: { navigation: NativeStackNavigationProp<
       const queries: Record<string, string> = {
         search: debounceSearch,
         status: activeFilter,
+        delegation_type: delegationFilter,
       };
 
       customerFetched({ modal, queries, setCustomers, setLoading, setRefreshing });
     },
-    [activeFilter, debounceSearch],
+    [activeFilter, debounceSearch, delegationFilter],
   );
 
   useEffect(() => {
@@ -99,6 +107,21 @@ const CustomerScreen = ({ navigation }: { navigation: NativeStackNavigationProp<
         contentContainerStyle={styles.listContent}
         ListHeaderComponent={
           <>
+            <View style={styles.delegationRow}>
+              {DELEGATION_OPTIONS.map(d => (
+                <TouchableOpacity
+                  key={d.key}
+                  style={[styles.delegationTab, delegationFilter === d.key && styles.delegationTabActive]}
+                  onPress={() => setDelegationFilter(d.key)}
+                  activeOpacity={0.7}
+                >
+                  <AppText style={[styles.delegationTabText, delegationFilter === d.key && styles.delegationTabTextActive]}>
+                    {d.label}
+                  </AppText>
+                </TouchableOpacity>
+              ))}
+            </View>
+
             <FlatList
               horizontal
               data={FILTER_OPTIONS}
@@ -127,6 +150,40 @@ const CustomerScreen = ({ navigation }: { navigation: NativeStackNavigationProp<
 export default CustomerScreen;
 
 const styles = StyleSheet.create({
+  delegationRow: {
+    flexDirection: 'row',
+    marginHorizontal: 14,
+    marginTop: 10,
+    marginBottom: 2,
+    backgroundColor: '#F1F5F9',
+    borderRadius: 10,
+    padding: 3,
+    gap: 4,
+  },
+  delegationTab: {
+    flex: 1,
+    paddingVertical: 7,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 8,
+  },
+  delegationTabActive: {
+    backgroundColor: color.white,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  delegationTabText: {
+    fontSize: 11.5,
+    fontWeight: '500',
+    color: color.neutral,
+  },
+  delegationTabTextActive: {
+    color: color.primary,
+    fontWeight: '700',
+  },
   statsRow: {
     flexDirection: 'row',
     gap: 8,

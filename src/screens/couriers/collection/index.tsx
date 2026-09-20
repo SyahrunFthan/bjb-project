@@ -1,6 +1,7 @@
 import { fetchLoans } from '@/api/loan';
 import { color } from '@/assets/color';
 import AppLayout from '@/components/AppLayout';
+import { AppText } from '@/components/AppText';
 import CollectionLoanList from '@/components/couriers/collections/CollectionLoanList';
 import AppIcon from '@/components/Icon';
 import Input from '@/components/Input';
@@ -13,13 +14,20 @@ import { RouteParamList } from '@/types/navigation';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, RefreshControl, StatusBar, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, RefreshControl, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const PAGE_LIMIT = 20;
+
+const DELEGATION_OPTIONS = [
+  { key: 'all', label: 'Semua' },
+  { key: 'mine', label: 'Tagihan Saya' },
+  { key: 'delegated', label: 'Titipan Cuti' },
+];
 
 const CourierCollectionScreen = ({ navigation }: { navigation: NativeStackNavigationProp<RouteParamList, 'CourierCollection'> }) => {
   const modal = useModal();
   const [search, setSearch] = useState<string>('');
+  const [delegationFilter, setDelegationFilter] = useState<string>('all');
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [loadingMore, setLoadingMore] = useState<boolean>(false);
@@ -40,7 +48,7 @@ const CourierCollectionScreen = ({ navigation }: { navigation: NativeStackNaviga
     try {
       await fetchLoans({
         modal,
-        queries: { search, status: 'approved' },
+        queries: { search, status: 'approved', delegation_type: delegationFilter },
         page: 1,
         limit: PAGE_LIMIT,
         setDataList: (resData: Loan[]) => {
@@ -65,7 +73,7 @@ const CourierCollectionScreen = ({ navigation }: { navigation: NativeStackNaviga
     try {
       await fetchLoans({
         modal,
-        queries: { search, status: 'approved' },
+        queries: { search, status: 'approved', delegation_type: delegationFilter },
         page: nextPage,
         limit: PAGE_LIMIT,
         setDataList: (resData: Loan[]) => {
@@ -104,6 +112,10 @@ const CourierCollectionScreen = ({ navigation }: { navigation: NativeStackNaviga
     return () => clearTimeout(delayDebounceFn);
   }, [search]);
 
+  useEffect(() => {
+    fetchData();
+  }, [delegationFilter]);
+
   const renderFooter = () => {
     if (!loadingMore) return null;
     return (
@@ -125,6 +137,21 @@ const CourierCollectionScreen = ({ navigation }: { navigation: NativeStackNaviga
         onChangeText={val => setSearch(val)}
         containerStyle={styles.searchInput}
       />
+
+      <View style={styles.delegationRow}>
+        {DELEGATION_OPTIONS.map(d => (
+          <TouchableOpacity
+            key={d.key}
+            style={[styles.delegationTab, delegationFilter === d.key && styles.delegationTabActive]}
+            onPress={() => setDelegationFilter(d.key)}
+            activeOpacity={0.7}
+          >
+            <AppText style={[styles.delegationTabText, delegationFilter === d.key && styles.delegationTabTextActive]}>
+              {d.label}
+            </AppText>
+          </TouchableOpacity>
+        ))}
+      </View>
 
       {loading ? (
         <View style={styles.skeletonContainer}>
@@ -195,6 +222,40 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 6,
     elevation: 3,
+  },
+  delegationRow: {
+    flexDirection: 'row',
+    marginHorizontal: 14,
+    marginTop: 10,
+    marginBottom: -4,
+    backgroundColor: '#F1F5F9',
+    borderRadius: 10,
+    padding: 3,
+    gap: 4,
+  },
+  delegationTab: {
+    flex: 1,
+    paddingVertical: 7,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 8,
+  },
+  delegationTabActive: {
+    backgroundColor: color.white,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  delegationTabText: {
+    fontSize: 11.5,
+    fontWeight: '500',
+    color: color.neutral,
+  },
+  delegationTabTextActive: {
+    color: color.primary,
+    fontWeight: '700',
   },
   listContent: {
     paddingBottom: 24,

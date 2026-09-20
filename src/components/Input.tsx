@@ -9,9 +9,22 @@ interface Props extends TextInputProps {
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
   containerStyle?: ViewStyle;
+  inputContainerStyle?: ViewStyle;
 }
 
-const Input = ({ label, error, leftIcon, rightIcon, containerStyle, onFocus, onBlur, style, ...rest }: Props) => {
+const Input = ({
+  label,
+  error,
+  leftIcon,
+  rightIcon,
+  containerStyle,
+  inputContainerStyle,
+  onFocus,
+  onBlur,
+  style,
+  multiline,
+  ...rest
+}: Props) => {
   const [isFocused, setIsFocused] = useState(false);
 
   const handleFocus = (e: Parameters<NonNullable<TextInputProps['onFocus']>>[0]) => {
@@ -28,12 +41,26 @@ const Input = ({ label, error, leftIcon, rightIcon, containerStyle, onFocus, onB
     <View style={[styles.container, containerStyle]}>
       {label && <Text style={styles.label}>{label}</Text>}
 
-      <View style={[styles.inputContainer, isFocused && styles.inputFocused, error ? styles.inputError : null]}>
-        {leftIcon && <View style={styles.iconLeft}>{leftIcon}</View>}
+      <View
+        style={[
+          styles.inputContainer,
+          multiline ? styles.inputContainerMultiline : null,
+          isFocused ? styles.inputFocused : null,
+          error ? styles.inputError : null,
+          inputContainerStyle,
+        ]}>
+        {leftIcon && <View style={[styles.iconLeft, multiline ? styles.iconLeftMultiline : null]}>{leftIcon}</View>}
 
-        <TextInput style={[styles.input, style]} placeholderTextColor={color.border} onFocus={handleFocus} onBlur={handleBlur} {...rest} />
+        <TextInput
+          style={[styles.input, multiline ? styles.inputMultiline : null, style]}
+          placeholderTextColor={color.border}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+          multiline={multiline}
+          {...rest}
+        />
 
-        {rightIcon && <View style={styles.iconRight}>{rightIcon}</View>}
+        {rightIcon && <View style={[styles.iconRight, multiline ? styles.iconRightMultiline : null]}>{rightIcon}</View>}
       </View>
 
       {error && <Text style={styles.errorText}>{error}</Text>}
@@ -65,6 +92,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     height: verticalScale(45),
   },
+  inputContainerMultiline: {
+    height: undefined,
+    minHeight: verticalScale(90),
+    alignItems: 'flex-start',
+    paddingVertical: 10,
+  },
   inputFocused: {
     borderColor: color.primary,
   },
@@ -78,6 +111,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     paddingVertical: 0,
   },
+  inputMultiline: {
+    height: undefined,
+    minHeight: verticalScale(70),
+    textAlignVertical: 'top',
+  },
   errorText: {
     color: color.tertiary,
     fontSize: 12,
@@ -87,7 +125,13 @@ const styles = StyleSheet.create({
   iconLeft: {
     marginRight: 10,
   },
+  iconLeftMultiline: {
+    marginTop: 2,
+  },
   iconRight: {
     marginLeft: 10,
+  },
+  iconRightMultiline: {
+    marginTop: 2,
   },
 });

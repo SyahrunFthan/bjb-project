@@ -70,6 +70,12 @@ export interface Loan extends LoanModel {
   customer?: Customer;
   tenor?: TenorModel;
   installments?: Installment[];
+  is_delegated?: boolean;
+  original_employee?: {
+    id: string;
+    full_name: string;
+    employee_id: string;
+  } | null;
 }
 
 export interface CustomerMonitoringItem {

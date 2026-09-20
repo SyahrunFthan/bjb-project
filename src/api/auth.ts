@@ -46,6 +46,8 @@ export const authLogin = async ({ modal, setProcessing, values, resetForm, setEr
             navigation.replace('Courier');
           } else if (userData.role_level == 4) {
             navigation.replace('Customer');
+          } else {
+            navigation.replace('Other');
           }
         }
       });
@@ -105,6 +107,8 @@ export const authLoginWithBiometric = async ({ modal, navigation, setAuth, setPr
           navigation.replace('Courier');
         } else if (userData.role_level === 4) {
           navigation.replace('Customer');
+        } else {
+          navigation.replace('Other');
         }
       });
     }
@@ -156,7 +160,7 @@ export const authChangePasswordBoarding = async ({ modal, values, userId, setPro
         } else if (role === 4) {
           navigation.replace('Customer');
         } else {
-          navigation.replace('Start');
+          navigation.replace('Other');
         }
       });
     }

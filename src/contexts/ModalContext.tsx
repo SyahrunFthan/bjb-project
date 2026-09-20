@@ -109,7 +109,7 @@ export const ModalProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         message={resultMessage}
         type={resultType}
         autoClose
-        autoCloseDuration={2000}
+        autoCloseDuration={resultType === 'error' ? 3500 : 2200}
         onClose={() => {
           setResultVisible(false);
           resultAction?.();

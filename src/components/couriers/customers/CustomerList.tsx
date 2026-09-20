@@ -49,9 +49,19 @@ const CustomerList = ({ item, index, loading, onEdit }: Props) => {
       </View>
 
       <View style={styles.cardBody}>
-        <AppText style={[styles.cardName, { color: customerStatusColor[item.status] }]} numberOfLines={1}>
-          {item.full_name}
-        </AppText>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+          <AppText style={[styles.cardName, { color: customerStatusColor[item.status] }]} numberOfLines={1}>
+            {item.full_name}
+          </AppText>
+          {item.is_delegated && (
+            <View style={styles.delegatedBadge}>
+              <AppIcon name="swap-horiz" size={10} color="#0369a1" />
+              <AppText style={styles.delegatedBadgeText}>
+                Titipan: {item.original_employee?.full_name || 'Cuti'}
+              </AppText>
+            </View>
+          )}
+        </View>
         <AppText style={styles.cardMember}>No. Anggota · {item.member_number}</AppText>
         <View style={styles.cardMeta}>
           <AppIcon name="call" size={11} color={color.neutral} />
@@ -152,5 +162,21 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '600',
     color: color.primary,
+  },
+  delegatedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    backgroundColor: '#E0F2FE',
+    borderWidth: 0.5,
+    borderColor: '#7DD3FC',
+    paddingHorizontal: 6,
+    paddingVertical: 1.5,
+    borderRadius: 4,
+  },
+  delegatedBadgeText: {
+    fontSize: 9.5,
+    fontWeight: '700',
+    color: '#0369a1',
   },
 });

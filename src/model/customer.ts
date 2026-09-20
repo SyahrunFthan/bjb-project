@@ -1,6 +1,7 @@
 import { Branch } from './branch';
 import { CustomerAddress } from './customerAddress';
 import { CustomerJob } from './customerJob';
+import { Employee } from './employee';
 import { UserModel } from './user';
 
 export interface CustomerModel {
@@ -28,4 +29,6 @@ export interface Customer extends CustomerModel {
   branches?: Branch[];
   address?: CustomerAddress | null;
   job?: CustomerJob | null;
+  is_delegated?: boolean;
+  original_employee?: Employee | null;
 }

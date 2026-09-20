@@ -17,9 +17,19 @@ export interface RecentPayment {
   customerName: string;
 }
 
+export interface ActiveDelegation {
+  id: string;
+  original_employee_id: string;
+  original_employee_name: string;
+  start_date: string;
+  end_date: string;
+  reason: string;
+}
+
 export interface CourierDashboard {
   stats: DashboardStats;
   recentPayments: RecentPayment[];
+  active_delegations?: ActiveDelegation[];
 }
 
 export interface CourierDashboardResponse {

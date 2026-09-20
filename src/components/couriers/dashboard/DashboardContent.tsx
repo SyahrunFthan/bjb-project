@@ -1,26 +1,104 @@
+import { useCallback, useEffect, useState } from 'react';
+
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
+
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import dayjs from 'dayjs';
+
+import { getTodayAttendance } from '@/api/attendance';
 import { color } from '@/assets/color';
 import { AppText } from '@/components/AppText';
 import Card from '@/components/Card';
 import AppIcon from '@/components/Icon';
-import EmptyState from '@/components/ui/EmptyState';
 import { SkeletonCircle, SkeletonText } from '@/components/ui/Skeleton';
+import { useModal } from '@/hooks/useModal';
 import { formatActivityDate, formatCurrency } from '@/lib/formatter';
+import { TodayAttendanceResponse } from '@/model/attendance';
+import { CourierDashboard } from '@/model/dashboard';
 import { RouteParamList } from '@/types/navigation';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import dayjs from 'dayjs';
 import 'dayjs/locale/id';
-import React from 'react';
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
 
 dayjs.locale('id');
 
 interface Props {
   loading: boolean;
-  dashboardData: any;
+  dashboardData: CourierDashboard | null;
   navigation: NativeStackNavigationProp<RouteParamList, 'Courier'>;
 }
 
 const DashboardContent = ({ dashboardData, loading, navigation }: Props) => {
+  const modal = useModal();
+  const [todayAttendance, setTodayAttendance] = useState<TodayAttendanceResponse | null>(null);
+
+  const fetchTodayAttendance = useCallback(async () => {
+    try {
+      const res = await getTodayAttendance();
+      setTodayAttendance(res);
+    } catch (e) {
+      console.log('Error fetching today attendance for courier:', e);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchTodayAttendance();
+  }, [fetchTodayAttendance, dashboardData]);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      fetchTodayAttendance();
+    });
+    return unsubscribe;
+  }, [fetchTodayAttendance, navigation]);
+
+  const workEndTime = todayAttendance?.branch?.work_end_time || '17:00';
+  const isClockOutAllowed = (() => {
+    const [endH, endM] = workEndTime.split(':').map(Number);
+    const minTime = dayjs().hour(endH).minute(endM).second(0);
+    return dayjs().isAfter(minTime) || dayjs().isSame(minTime);
+  })();
+
+  const handleClockOutPress = () => {
+    const [endH, endM] = workEndTime.split(':').map(Number);
+    const minTime = dayjs().hour(endH).minute(endM).second(0);
+    if (dayjs().isBefore(minTime)) {
+      modal.result.error('Belum Jam Pulang', `Presensi pulang belum dibuka. Jam pulang operasional kantor cabang Anda adalah pukul ${workEndTime}.`);
+      return;
+    }
+
+    navigation.navigate('FaceCamera', {
+      mode: 'clock-out',
+      onSuccess: fetchTodayAttendance,
+    });
+  };
+
+  const handleRegisterFacePress = () => {
+    if (todayAttendance?.is_face_registered && !todayAttendance?.can_update_face) {
+      modal.result.error(
+        'Master Wajah Terkunci',
+        'Wajah master biometrik Anda sudah terdaftar dan dikunci secara aman. Anda tidak dapat mengubah wajah sendiri tanpa izin Admin. Hubungi Admin kantor cabang Anda jika memerlukan pembaruan.',
+      );
+      return;
+    }
+
+    if (todayAttendance?.is_face_registered && todayAttendance?.can_update_face) {
+      modal.confirm.show(
+        'Izin Ubah Wajah Aktif',
+        'Admin telah memberikan izin untuk memperbarui wajah master. Anda memiliki kesempatan 1 kali untuk memindai wajah baru. Lanjutkan pemindaian sekarang?',
+        () => {
+          navigation.navigate('FaceCamera', {
+            mode: 'register',
+            onSuccess: fetchTodayAttendance,
+          });
+        },
+      );
+      return;
+    }
+
+    navigation.navigate('FaceCamera', {
+      mode: 'register',
+      onSuccess: fetchTodayAttendance,
+    });
+  };
   if (loading) {
     return (
       <View style={styles.container}>
@@ -71,16 +149,20 @@ const DashboardContent = ({ dashboardData, loading, navigation }: Props) => {
         <View style={styles.section}>
           <SkeletonText lines={1} style={{ width: 120, height: 16, marginBottom: 12 }} />
           <View style={styles.quickGrid}>
-            {Array.from({ length: 4 }).map((_, idx) => (
-              <Card key={idx} style={styles.quickGridItem}>
-                <View style={styles.quickItemInner}>
-                  <SkeletonCircle size={38} />
-                  <View style={{ marginTop: 10, gap: 4, width: '100%' }}>
-                    <SkeletonText lines={1} style={{ width: 65, height: 12 }} />
-                    <SkeletonText lines={1} style={{ width: 45, height: 10 }} />
-                  </View>
-                </View>
-              </Card>
+            {[0, 2, 4].map(startIndex => (
+              <View key={startIndex} style={styles.quickGridRow}>
+                {[0, 1].map(offset => (
+                  <Card key={startIndex + offset} style={styles.quickGridItem}>
+                    <View style={styles.quickItemInner}>
+                      <SkeletonCircle size={38} />
+                      <View style={{ marginTop: 10, gap: 4, width: '100%' }}>
+                        <SkeletonText lines={1} style={{ width: 65, height: 12 }} />
+                        <SkeletonText lines={1} style={{ width: 45, height: 10 }} />
+                      </View>
+                    </View>
+                  </Card>
+                ))}
+              </View>
             ))}
           </View>
         </View>
@@ -106,25 +188,48 @@ const DashboardContent = ({ dashboardData, loading, navigation }: Props) => {
     );
   }
 
-  const stats = dashboardData?.stats || {};
+  const stats = dashboardData?.stats;
   const recentPayments = dashboardData?.recentPayments || [];
+  const activeDelegations = dashboardData?.active_delegations || [];
 
-  const dailyPaid = Number(stats.totalDailyBillPaid || 0);
-  const dailyTarget = Number(stats.totalDailyBillUnpaid || 0);
-  const dailyProgress =
-    dailyTarget > 0 ? Math.min(100, Math.round((dailyPaid / dailyTarget) * 100)) : dailyPaid > 0 ? 100 : 0;
+  const dailyPaid = Number(stats?.totalDailyBillPaid || 0);
+  const dailyTarget = Number(stats?.totalDailyBillUnpaid || 0);
+  const dailyProgress = dailyTarget > 0 ? Math.min(100, Math.round((dailyPaid / dailyTarget) * 100)) : dailyPaid > 0 ? 100 : 0;
   const dailyRemaining = Math.max(0, dailyTarget - dailyPaid);
 
-  const monthlyPaid = Number(stats.totalMonthlyBillPaid || 0);
-  const monthlyTarget = Number(stats.totalMonthlyBill || 0);
-  const monthlyProgress =
-    monthlyTarget > 0 ? Math.min(100, Math.round((monthlyPaid / monthlyTarget) * 100)) : monthlyPaid > 0 ? 100 : 0;
+  const monthlyPaid = Number(stats?.totalMonthlyBillPaid || 0);
+  const monthlyTarget = Number(stats?.totalMonthlyBill || 0);
+  const monthlyProgress = monthlyTarget > 0 ? Math.min(100, Math.round((monthlyPaid / monthlyTarget) * 100)) : monthlyPaid > 0 ? 100 : 0;
 
   const todayFormatted = dayjs().locale('id').format('dddd, D MMM YYYY');
   const monthFormatted = dayjs().locale('id').format('MMMM YYYY');
 
   return (
     <View style={styles.container}>
+      {/* 🌟 BANNER TITIPAN CUTI AKTIF */}
+      {activeDelegations.length > 0 && (
+        <View style={styles.delegationBanner}>
+          <View style={styles.delegationBannerHeader}>
+            <View style={styles.delegationBannerBadge}>
+              <AppIcon name="swap-horiz" size={14} color="#0369A1" />
+              <AppText variant="bold" style={styles.delegationBannerTitle}>
+                Tugas Titipan Cuti Aktif
+              </AppText>
+            </View>
+            <AppText variant="medium" style={styles.delegationBannerCount}>
+              {activeDelegations.length} Rekan
+            </AppText>
+          </View>
+          <AppText style={styles.delegationBannerDesc}>
+            Anda sedang menggantikan tugas penagihan untuk:{' '}
+            <AppText variant="bold" style={styles.delegationBannerHighlight}>
+              {activeDelegations.map(d => d.original_employee_name).join(', ')}
+            </AppText>
+            . Nasabah & tagihan titipan ditandai dengan badge khusus.
+          </AppText>
+        </View>
+      )}
+
       {/* 🌟 1. HERO CARD - DAILY COLLECTION PERFORMANCE */}
       <View style={styles.heroCard}>
         {/* Top Header Badge */}
@@ -157,7 +262,10 @@ const DashboardContent = ({ dashboardData, loading, navigation }: Props) => {
         <View style={styles.heroProgressSection}>
           <View style={styles.heroProgressHeader}>
             <AppText style={styles.heroTargetText}>
-              Target: <AppText variant="semiBold" style={{ color: '#FFFFFF' }}>Rp {formatCurrency(dailyTarget)}</AppText>
+              Target:{' '}
+              <AppText variant="semiBold" style={{ color: '#FFFFFF' }}>
+                Rp {formatCurrency(dailyTarget)}
+              </AppText>
             </AppText>
             <View style={styles.percentPill}>
               <AppText variant="bold" style={styles.percentPillText}>
@@ -179,7 +287,7 @@ const DashboardContent = ({ dashboardData, loading, navigation }: Props) => {
           <View style={styles.heroMetricItem}>
             <AppIcon name="people" size={16} color="#93C5FD" />
             <AppText variant="bold" style={styles.heroMetricValue}>
-              {stats.totalCustomers?.toLocaleString('id-ID') ?? '0'}
+              {stats?.totalCustomers?.toLocaleString('id-ID') ?? '0'}
             </AppText>
             <AppText style={styles.heroMetricLabel}>Nasabah</AppText>
           </View>
@@ -189,7 +297,7 @@ const DashboardContent = ({ dashboardData, loading, navigation }: Props) => {
           <View style={styles.heroMetricItem}>
             <AppIcon name="credit-card" size={16} color="#93C5FD" />
             <AppText variant="bold" style={styles.heroMetricValue}>
-              {stats.activeLoansCount?.toLocaleString('id-ID') ?? '0'}
+              {stats?.activeLoansCount?.toLocaleString('id-ID') ?? '0'}
             </AppText>
             <AppText style={styles.heroMetricLabel}>Pinjaman Aktif</AppText>
           </View>
@@ -241,7 +349,74 @@ const DashboardContent = ({ dashboardData, loading, navigation }: Props) => {
         </View>
       </Card>
 
-      {/* ⚡ 3. QUICK ACTIONS GRID (2x2) */}
+      {/* 📸 2.5 ATTENDANCE CARD */}
+      <Card style={styles.attendanceCard} variant="elevated">
+        <View style={styles.attendanceCardHeader}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <View style={[styles.quickIconCircle, { backgroundColor: '#E0F2FE', width: 36, height: 36, borderRadius: 18 }]}>
+              <AppIcon name="photo-camera" size={18} color="#0284C7" />
+            </View>
+            <View>
+              <AppText variant="bold" style={styles.attendanceTitle}>
+                Presensi Hari Ini
+              </AppText>
+              <AppText style={styles.attendanceSubtitle}>{dayjs().format('dddd, DD MMMM YYYY')}</AppText>
+            </View>
+          </View>
+        </View>
+
+        <View style={styles.attendanceContentRow}>
+          <View style={styles.attendanceTimeCol}>
+            <AppText style={styles.attendanceLabel}>Masuk</AppText>
+            <AppText variant="bold" style={styles.attendanceTime}>
+              {todayAttendance?.attendance?.clock_in_at ? dayjs(todayAttendance.attendance.clock_in_at).format('HH:mm') : '--:--'}
+            </AppText>
+          </View>
+          <View style={styles.attendanceDivider} />
+          <View style={styles.attendanceTimeCol}>
+            <AppText style={styles.attendanceLabel}>Pulang</AppText>
+            <AppText variant="bold" style={styles.attendanceTime}>
+              {todayAttendance?.attendance?.clock_out_at ? dayjs(todayAttendance.attendance.clock_out_at).format('HH:mm') : '--:--'}
+            </AppText>
+          </View>
+        </View>
+        <View style={{ alignItems: 'center', flex: 1, marginTop: 10 }}>
+          {!todayAttendance?.attendance?.clock_in_at ? (
+            <TouchableOpacity
+              style={styles.attendanceBtn}
+              onPress={() =>
+                navigation.navigate('FaceCamera', {
+                  mode: 'clock-in',
+                  onSuccess: fetchTodayAttendance,
+                })
+              }>
+              <AppIcon name="photo-camera" size={16} color={color.white} />
+              <AppText variant="bold" style={styles.attendanceBtnText}>
+                Absen Masuk
+              </AppText>
+            </TouchableOpacity>
+          ) : !todayAttendance?.attendance?.clock_out_at ? (
+            <TouchableOpacity
+              style={[styles.attendanceBtn, { backgroundColor: isClockOutAllowed ? '#EA580C' : '#64748B' }]}
+              onPress={handleClockOutPress}
+              activeOpacity={0.8}>
+              <AppIcon name={isClockOutAllowed ? 'photo-camera' : 'schedule'} size={16} color={color.white} />
+              <AppText variant="bold" style={styles.attendanceBtnText}>
+                {isClockOutAllowed ? 'Absen Pulang' : `Absen Pulang (${workEndTime})`}
+              </AppText>
+            </TouchableOpacity>
+          ) : (
+            <View style={styles.attendanceDoneBadge}>
+              <AppIcon name="check-circle" size={16} color="#16A34A" />
+              <AppText variant="bold" style={{ color: '#16A34A', fontSize: 12 }}>
+                Selesai
+              </AppText>
+            </View>
+          )}
+        </View>
+      </Card>
+
+      {/* ⚡ 3. QUICK ACTIONS GRID (2x4) */}
       <View style={styles.section}>
         <View style={styles.sectionTitleRow}>
           <AppText variant="bold" style={styles.sectionTitle}>
@@ -251,61 +426,105 @@ const DashboardContent = ({ dashboardData, loading, navigation }: Props) => {
         </View>
 
         <View style={styles.quickGrid}>
-          {/* Action 1: Penagihan Angsuran */}
-          <TouchableOpacity
-            activeOpacity={0.8}
-            style={styles.quickGridItem}
-            onPress={() => navigation.navigate('CourierCollection')}>
-            <View style={[styles.quickIconCircle, { backgroundColor: '#ECFDF5' }]}>
-              <AppIcon name="receipt-long" size={22} color="#059669" />
-            </View>
-            <AppText variant="semiBold" style={styles.quickGridTitle}>
-              Penagihan
-            </AppText>
-            <AppText style={styles.quickGridSubtitle}>Setor Angsuran</AppText>
-          </TouchableOpacity>
+          {/* Baris 1 */}
+          <View style={styles.quickGridRow}>
+            {/* Action 1: Penagihan Angsuran */}
+            <TouchableOpacity activeOpacity={0.8} style={styles.quickGridItem} onPress={() => navigation.navigate('CourierCollection')}>
+              <View style={[styles.quickIconCircle, { backgroundColor: '#ECFDF5' }]}>
+                <AppIcon name="receipt-long" size={22} color="#059669" />
+              </View>
+              <AppText variant="semiBold" style={styles.quickGridTitle}>
+                Penagihan
+              </AppText>
+              <AppText style={styles.quickGridSubtitle}>Setor Angsuran</AppText>
+            </TouchableOpacity>
 
-          {/* Action 2: Monitoring Setoran */}
-          <TouchableOpacity
-            activeOpacity={0.8}
-            style={styles.quickGridItem}
-            onPress={() => (navigation as any).navigate('Monitoring')}>
-            <View style={[styles.quickIconCircle, { backgroundColor: '#EFF6FF' }]}>
-              <AppIcon name="insights" size={22} color="#2563EB" />
-            </View>
-            <AppText variant="semiBold" style={styles.quickGridTitle}>
-              Monitoring
-            </AppText>
-            <AppText style={styles.quickGridSubtitle}>Status Nasabah</AppText>
-          </TouchableOpacity>
+            {/* Action 2: Monitoring Setoran */}
+            <TouchableOpacity activeOpacity={0.8} style={styles.quickGridItem} onPress={() => (navigation as any).navigate('Monitoring')}>
+              <View style={[styles.quickIconCircle, { backgroundColor: '#EFF6FF' }]}>
+                <AppIcon name="insights" size={22} color="#2563EB" />
+              </View>
+              <AppText variant="semiBold" style={styles.quickGridTitle}>
+                Monitoring
+              </AppText>
+              <AppText style={styles.quickGridSubtitle}>Status Nasabah</AppText>
+            </TouchableOpacity>
+          </View>
 
-          {/* Action 3: Ajukan Pinjaman */}
-          <TouchableOpacity
-            activeOpacity={0.8}
-            style={styles.quickGridItem}
-            onPress={() => navigation.navigate('CourierLoanCreate')}>
-            <View style={[styles.quickIconCircle, { backgroundColor: '#FFFBEB' }]}>
-              <AppIcon name="add-card" size={22} color="#D97706" />
-            </View>
-            <AppText variant="semiBold" style={styles.quickGridTitle}>
-              Pengajuan
-            </AppText>
-            <AppText style={styles.quickGridSubtitle}>Pinjaman Baru</AppText>
-          </TouchableOpacity>
+          {/* Baris 2 */}
+          <View style={styles.quickGridRow}>
+            {/* Action 3: Ajukan Pinjaman */}
+            <TouchableOpacity activeOpacity={0.8} style={styles.quickGridItem} onPress={() => navigation.navigate('CourierLoanCreate')}>
+              <View style={[styles.quickIconCircle, { backgroundColor: '#FFFBEB' }]}>
+                <AppIcon name="add-card" size={22} color="#D97706" />
+              </View>
+              <AppText variant="semiBold" style={styles.quickGridTitle}>
+                Pengajuan
+              </AppText>
+              <AppText style={styles.quickGridSubtitle}>Pinjaman Baru</AppText>
+            </TouchableOpacity>
 
-          {/* Action 4: Tambah Nasabah */}
-          <TouchableOpacity
-            activeOpacity={0.8}
-            style={styles.quickGridItem}
-            onPress={() => navigation.navigate('CustomerCreate')}>
-            <View style={[styles.quickIconCircle, { backgroundColor: '#F5F3FF' }]}>
-              <AppIcon name="person-add-alt-1" size={22} color="#7C3AED" />
-            </View>
-            <AppText variant="semiBold" style={styles.quickGridTitle}>
-              Nasabah Baru
-            </AppText>
-            <AppText style={styles.quickGridSubtitle}>Registrasi</AppText>
-          </TouchableOpacity>
+            {/* Action 4: Tambah Nasabah */}
+            <TouchableOpacity activeOpacity={0.8} style={styles.quickGridItem} onPress={() => navigation.navigate('CustomerCreate')}>
+              <View style={[styles.quickIconCircle, { backgroundColor: '#F5F3FF' }]}>
+                <AppIcon name="person-add-alt-1" size={22} color="#7C3AED" />
+              </View>
+              <AppText variant="semiBold" style={styles.quickGridTitle}>
+                Nasabah Baru
+              </AppText>
+              <AppText style={styles.quickGridSubtitle}>Registrasi</AppText>
+            </TouchableOpacity>
+          </View>
+
+          {/* Baris 3 */}
+          <View style={styles.quickGridRow}>
+            {/* Action 5: Presensi Wajah */}
+            <TouchableOpacity activeOpacity={0.8} style={styles.quickGridItem} onPress={() => navigation.navigate('Attendance')}>
+              <View style={[styles.quickIconCircle, { backgroundColor: '#E0F2FE' }]}>
+                <AppIcon name="photo-camera" size={22} color="#0284C7" />
+              </View>
+              <AppText variant="semiBold" style={styles.quickGridTitle}>
+                Presensi Wajah
+              </AppText>
+              <AppText style={styles.quickGridSubtitle}>Masuk & Pulang</AppText>
+            </TouchableOpacity>
+
+            {/* Action 6: Izin & Cuti */}
+            <TouchableOpacity activeOpacity={0.8} style={styles.quickGridItem} onPress={() => navigation.navigate('LeaveRequestList')}>
+              <View style={[styles.quickIconCircle, { backgroundColor: '#FEF3C7' }]}>
+                <AppIcon name="event-note" size={22} color="#D97706" />
+              </View>
+              <AppText variant="semiBold" style={styles.quickGridTitle}>
+                Izin & Cuti
+              </AppText>
+              <AppText style={styles.quickGridSubtitle}>Pengajuan & Izin</AppText>
+            </TouchableOpacity>
+          </View>
+
+          {/* Baris 4 */}
+          <View style={styles.quickGridRow}>
+            {/* Action 7: Riwayat Aktivitas */}
+            <TouchableOpacity activeOpacity={0.8} style={styles.quickGridItem} onPress={() => navigation.navigate('Activity')}>
+              <View style={[styles.quickIconCircle, { backgroundColor: '#F0FDF4' }]}>
+                <AppIcon name="history" size={22} color="#16A34A" />
+              </View>
+              <AppText variant="semiBold" style={styles.quickGridTitle}>
+                Riwayat
+              </AppText>
+              <AppText style={styles.quickGridSubtitle}>Semua Aktivitas</AppText>
+            </TouchableOpacity>
+
+            {/* Action 8: Master Wajah */}
+            <TouchableOpacity activeOpacity={0.8} style={styles.quickGridItem} onPress={handleRegisterFacePress}>
+              <View style={[styles.quickIconCircle, { backgroundColor: '#F3E8FF' }]}>
+                <AppIcon name="face" size={22} color="#7C3AED" />
+              </View>
+              <AppText variant="semiBold" style={styles.quickGridTitle}>
+                Master Wajah
+              </AppText>
+              <AppText style={styles.quickGridSubtitle}>Biometrik</AppText>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
 
@@ -333,9 +552,7 @@ const DashboardContent = ({ dashboardData, loading, navigation }: Props) => {
             <AppText variant="medium" style={styles.emptyTitle}>
               Belum Ada Setoran Hari Ini
             </AppText>
-            <AppText style={styles.emptySubtitle}>
-              Transaksi pembayaran angsuran dari nasabah akan langsung tercatat di sini.
-            </AppText>
+            <AppText style={styles.emptySubtitle}>Transaksi pembayaran angsuran dari nasabah akan langsung tercatat di sini.</AppText>
           </View>
         ) : (
           recentPayments.map((item: any) => {
@@ -605,12 +822,14 @@ const styles = StyleSheet.create({
     marginTop: 1,
   },
   quickGrid: {
+    gap: 10,
+  },
+  quickGridRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     gap: 10,
   },
   quickGridItem: {
-    width: '48.5%',
+    flex: 1,
     backgroundColor: color.white,
     borderRadius: 16,
     padding: 14,
@@ -758,5 +977,115 @@ const styles = StyleSheet.create({
   quickItemInner: {
     alignItems: 'flex-start',
     width: '100%',
+  },
+  delegationBanner: {
+    backgroundColor: '#F0F9FF',
+    borderWidth: 1,
+    borderColor: '#BAE6FD',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 14,
+    gap: 6,
+  },
+  delegationBannerHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  delegationBannerBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  delegationBannerTitle: {
+    fontSize: 12.5,
+    color: '#0369A1',
+  },
+  delegationBannerCount: {
+    fontSize: 10.5,
+    color: '#0284C7',
+    backgroundColor: '#E0F2FE',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  delegationBannerDesc: {
+    fontSize: 11,
+    color: '#334155',
+    lineHeight: 16,
+  },
+  delegationBannerHighlight: {
+    color: '#0369A1',
+  },
+  attendanceCard: {
+    backgroundColor: color.white,
+    borderRadius: 16,
+    padding: 14,
+    marginBottom: 16,
+  },
+  attendanceCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+  },
+  attendanceTitle: {
+    fontSize: 13,
+    color: '#0F172A',
+  },
+  attendanceSubtitle: {
+    fontSize: 10.5,
+    color: '#64748B',
+    marginTop: 1,
+  },
+  attendanceContentRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  attendanceTimeCol: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  attendanceLabel: {
+    fontSize: 10.5,
+    color: '#64748B',
+  },
+  attendanceTime: {
+    fontSize: 16,
+    color: '#0F172A',
+    marginTop: 2,
+  },
+  attendanceDivider: {
+    width: 1,
+    height: 28,
+    backgroundColor: '#E2E8F0',
+    marginHorizontal: 8,
+  },
+  attendanceBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: color.primary,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 10,
+    gap: 6,
+    width: '100%',
+  },
+  attendanceBtnText: {
+    color: color.white,
+    fontSize: 12,
+  },
+  attendanceDoneBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#DCFCE7',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    gap: 4,
   },
 });
