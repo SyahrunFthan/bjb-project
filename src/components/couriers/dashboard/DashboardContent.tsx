@@ -380,40 +380,64 @@ const DashboardContent = ({ dashboardData, loading, navigation }: Props) => {
             </AppText>
           </View>
         </View>
-        <View style={{ alignItems: 'center', flex: 1, marginTop: 10 }}>
-          {!todayAttendance?.attendance?.clock_in_at ? (
-            <TouchableOpacity
-              style={styles.attendanceBtn}
-              onPress={() =>
-                navigation.navigate('FaceCamera', {
-                  mode: 'clock-in',
-                  onSuccess: fetchTodayAttendance,
-                })
-              }>
-              <AppIcon name="photo-camera" size={16} color={color.white} />
-              <AppText variant="bold" style={styles.attendanceBtnText}>
-                Absen Masuk
+        {todayAttendance?.is_holiday ? (
+          <View
+            style={{ backgroundColor: '#F1F5F9', borderRadius: 10, padding: 10, marginTop: 10, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <AppIcon name="event" size={20} color="#64748B" />
+            <View style={{ flex: 1 }}>
+              <AppText variant="bold" style={{ color: '#475569', fontSize: 13 }}>
+                Kantor Libur ({todayAttendance.holiday_name || 'Hari Libur'})
               </AppText>
-            </TouchableOpacity>
-          ) : !todayAttendance?.attendance?.clock_out_at ? (
-            <TouchableOpacity
-              style={[styles.attendanceBtn, { backgroundColor: isClockOutAllowed ? '#EA580C' : '#64748B' }]}
-              onPress={handleClockOutPress}
-              activeOpacity={0.8}>
-              <AppIcon name={isClockOutAllowed ? 'photo-camera' : 'schedule'} size={16} color={color.white} />
-              <AppText variant="bold" style={styles.attendanceBtnText}>
-                {isClockOutAllowed ? 'Absen Pulang' : `Absen Pulang (${workEndTime})`}
-              </AppText>
-            </TouchableOpacity>
-          ) : (
-            <View style={styles.attendanceDoneBadge}>
-              <AppIcon name="check-circle" size={16} color="#16A34A" />
-              <AppText variant="bold" style={{ color: '#16A34A', fontSize: 12 }}>
-                Selesai
-              </AppText>
+              <AppText style={{ color: '#64748B', fontSize: 11 }}>Hari ini operasional libur, tidak ada kewajiban presensi.</AppText>
             </View>
-          )}
-        </View>
+          </View>
+        ) : todayAttendance?.is_absent || todayAttendance?.attendance?.status === 'absent' ? (
+          <View
+            style={{ backgroundColor: '#FEE2E2', borderRadius: 10, padding: 10, marginTop: 10, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <AppIcon name="error-outline" size={20} color="#DC2626" />
+            <View style={{ flex: 1 }}>
+              <AppText variant="bold" style={{ color: '#DC2626', fontSize: 13 }}>
+                Tidak Hadir (Alpa)
+              </AppText>
+              <AppText style={{ color: '#B91C1C', fontSize: 11 }}>Jam kantor berakhir ({workEndTime}), Anda tercatat Alpa.</AppText>
+            </View>
+          </View>
+        ) : (
+          <View style={{ alignItems: 'center', flex: 1, marginTop: 10 }}>
+            {!todayAttendance?.attendance?.clock_in_at ? (
+              <TouchableOpacity
+                style={styles.attendanceBtn}
+                onPress={() =>
+                  navigation.navigate('FaceCamera', {
+                    mode: 'clock-in',
+                    onSuccess: fetchTodayAttendance,
+                  })
+                }>
+                <AppIcon name="photo-camera" size={16} color={color.white} />
+                <AppText variant="bold" style={styles.attendanceBtnText}>
+                  Absen Masuk
+                </AppText>
+              </TouchableOpacity>
+            ) : !todayAttendance?.attendance?.clock_out_at ? (
+              <TouchableOpacity
+                style={[styles.attendanceBtn, { backgroundColor: isClockOutAllowed ? '#EA580C' : '#64748B' }]}
+                onPress={handleClockOutPress}
+                activeOpacity={0.8}>
+                <AppIcon name={isClockOutAllowed ? 'photo-camera' : 'schedule'} size={16} color={color.white} />
+                <AppText variant="bold" style={styles.attendanceBtnText}>
+                  {isClockOutAllowed ? 'Absen Pulang' : `Absen Pulang (${workEndTime})`}
+                </AppText>
+              </TouchableOpacity>
+            ) : (
+              <View style={styles.attendanceDoneBadge}>
+                <AppIcon name="check-circle" size={16} color="#16A34A" />
+                <AppText variant="bold" style={{ color: '#16A34A', fontSize: 12 }}>
+                  Selesai
+                </AppText>
+              </View>
+            )}
+          </View>
+        )}
       </Card>
 
       {/* ⚡ 3. QUICK ACTIONS GRID (2x4) */}

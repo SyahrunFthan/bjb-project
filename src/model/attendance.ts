@@ -33,6 +33,10 @@ export interface TodayAttendanceResponse {
   today_date: string;
   is_face_registered: boolean;
   can_update_face?: boolean;
+  is_holiday?: boolean;
+  holiday_name?: string | null;
+  is_past_work_hours?: boolean;
+  is_absent?: boolean;
   branch: BranchWorkInfo | null;
   active_leave: ActiveLeaveInfo | null;
   attendance: AttendanceRecord | null;

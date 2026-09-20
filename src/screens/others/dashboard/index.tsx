@@ -116,6 +116,15 @@ const OtherDashboardScreen: React.FC = () => {
   const getStatusBadge = () => {
     if (!todayData) return null;
 
+    if (todayData.is_holiday) {
+      return (
+        <View style={[styles.badgeContainer, { backgroundColor: '#f1f5f9' }]}>
+          <AppIcon name="event" size={16} color="#64748b" style={{ marginRight: 4 }} />
+          <AppText style={[styles.badgeText, { color: '#64748b' }]}>Libur Kantor</AppText>
+        </View>
+      );
+    }
+
     if (todayData.active_leave) {
       const typeLabel = todayData.active_leave.type === 'sick' ? 'Izin Sakit' : todayData.active_leave.type === 'permit' ? 'Izin' : 'Sedang Cuti';
       return (
@@ -127,11 +136,20 @@ const OtherDashboardScreen: React.FC = () => {
     }
 
     const att = todayData.attendance;
-    if (!att || !att.clock_in_at) {
+    if (att?.status === 'absent' || todayData.is_absent) {
       return (
         <View style={[styles.badgeContainer, { backgroundColor: '#fee2e2' }]}>
-          <AppIcon name="schedule" size={16} color="#b91c1c" style={{ marginRight: 4 }} />
-          <AppText style={[styles.badgeText, { color: '#b91c1c' }]}>Belum Presensi</AppText>
+          <AppIcon name="cancel" size={16} color="#dc2626" style={{ marginRight: 4 }} />
+          <AppText style={[styles.badgeText, { color: '#dc2626' }]}>Tidak Hadir (Alpa)</AppText>
+        </View>
+      );
+    }
+
+    if (!att || !att.clock_in_at) {
+      return (
+        <View style={[styles.badgeContainer, { backgroundColor: '#fef3c7' }]}>
+          <AppIcon name="schedule" size={16} color="#b45309" style={{ marginRight: 4 }} />
+          <AppText style={[styles.badgeText, { color: '#b45309' }]}>Belum Presensi</AppText>
         </View>
       );
     }
@@ -247,6 +265,16 @@ const OtherDashboardScreen: React.FC = () => {
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="small" color={color.primary} />
           </View>
+        ) : todayData?.is_holiday ? (
+          <View style={{ backgroundColor: '#f8fafc', borderRadius: 12, padding: 14, borderWidth: 1, borderColor: '#e2e8f0', alignItems: 'center' }}>
+            <AppIcon name="celebration" size={28} color="#64748b" style={{ marginBottom: 6 }} />
+            <AppText style={{ fontSize: 15, fontWeight: '700', color: '#334155' }}>
+              {todayData.holiday_name ? `Libur (${todayData.holiday_name})` : 'Hari Libur Kantor'}
+            </AppText>
+            <AppText style={{ fontSize: 12, color: '#64748b', textAlign: 'center', marginTop: 4 }}>
+              Hari ini kantor operasional libur. Anda tidak memiliki kewajiban presensi hari ini.
+            </AppText>
+          </View>
         ) : todayData?.active_leave ? (
           <View style={styles.leaveNotice}>
             <AppText style={styles.leaveNoticeTitle}>
@@ -259,6 +287,14 @@ const OtherDashboardScreen: React.FC = () => {
             <AppText style={styles.leaveNoticeSubtitle}>Alasan: {todayData.active_leave.reason}</AppText>
             <AppText style={styles.leaveNoticeDate}>
               Periode: {dayjs(todayData.active_leave.start_date).format('DD MMM')} - {dayjs(todayData.active_leave.end_date).format('DD MMM YYYY')}
+            </AppText>
+          </View>
+        ) : todayData?.is_absent || todayData?.attendance?.status === 'absent' ? (
+          <View style={{ backgroundColor: '#fef2f2', borderRadius: 12, padding: 14, borderWidth: 1, borderColor: '#fecaca', alignItems: 'center' }}>
+            <AppIcon name="error-outline" size={28} color="#dc2626" style={{ marginBottom: 6 }} />
+            <AppText style={{ fontSize: 15, fontWeight: '700', color: '#b91c1c' }}>Tidak Hadir (Alpa)</AppText>
+            <AppText style={{ fontSize: 12, color: '#991b1b', textAlign: 'center', marginTop: 4 }}>
+              Jam operasional kantor cabang hari ini telah berakhir ({workEndTime}). Anda tercatat tidak melakukan presensi masuk (Alpa).
             </AppText>
           </View>
         ) : (

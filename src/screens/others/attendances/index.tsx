@@ -56,6 +56,7 @@ const AttendanceScreen: React.FC = () => {
   const totalPresent = history.filter(h => h.status === 'present').length;
   const totalLate = history.filter(h => h.status === 'late').length;
   const totalLeave = history.filter(h => ['on_leave', 'sick', 'permit'].includes(h.status)).length;
+  const totalAbsent = history.filter(h => h.status === 'absent').length;
 
   const renderStatusBadge = (item: AttendanceRecord) => {
     switch (item.status) {
@@ -92,6 +93,13 @@ const AttendanceScreen: React.FC = () => {
           <View style={[styles.statusBadge, { backgroundColor: '#e0e7ff' }]}>
             <AppIcon name="beach-access" size={13} color="#4338ca" style={{ marginRight: 4 }} />
             <AppText style={[styles.statusBadgeText, { color: '#4338ca' }]}>Cuti</AppText>
+          </View>
+        );
+      case 'absent':
+        return (
+          <View style={[styles.statusBadge, { backgroundColor: '#fee2e2' }]}>
+            <AppIcon name="cancel" size={13} color="#dc2626" style={{ marginRight: 4 }} />
+            <AppText style={[styles.statusBadgeText, { color: '#dc2626' }]}>Alpa</AppText>
           </View>
         );
       default:
@@ -158,7 +166,7 @@ const AttendanceScreen: React.FC = () => {
       <View style={styles.statsRow}>
         <View style={[styles.statCard, { borderLeftColor: '#16a34a' }]}>
           <AppText style={styles.statNumber}>{totalPresent}</AppText>
-          <AppText style={styles.statLabel}>Hadir Tepat</AppText>
+          <AppText style={styles.statLabel}>Hadir</AppText>
         </View>
 
         <View style={[styles.statCard, { borderLeftColor: '#d97706' }]}>
@@ -168,7 +176,12 @@ const AttendanceScreen: React.FC = () => {
 
         <View style={[styles.statCard, { borderLeftColor: '#6366f1' }]}>
           <AppText style={styles.statNumber}>{totalLeave}</AppText>
-          <AppText style={styles.statLabel}>Cuti / Izin</AppText>
+          <AppText style={styles.statLabel}>Izin/Cuti</AppText>
+        </View>
+
+        <View style={[styles.statCard, { borderLeftColor: '#ef4444' }]}>
+          <AppText style={styles.statNumber}>{totalAbsent}</AppText>
+          <AppText style={styles.statLabel}>Alpa</AppText>
         </View>
       </View>
 
@@ -226,14 +239,15 @@ const styles = StyleSheet.create({
   },
   statsRow: {
     flexDirection: 'row',
-    gap: 10,
+    gap: 8,
     marginBottom: 20,
   },
   statCard: {
     flex: 1,
     backgroundColor: color.white,
-    borderRadius: 14,
-    padding: 12,
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 10,
     borderLeftWidth: 4,
     shadowColor: color.black,
     shadowOffset: { width: 0, height: 2 },
@@ -242,13 +256,13 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   statNumber: {
-    fontSize: 20,
+    fontSize: 17,
     fontWeight: '800',
     color: '#0f172a',
   },
   statLabel: {
-    fontSize: 11,
-    fontWeight: '500',
+    fontSize: 10,
+    fontWeight: '600',
     color: '#64748b',
     marginTop: 2,
   },
