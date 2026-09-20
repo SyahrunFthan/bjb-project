@@ -11,6 +11,7 @@ import { getTodayAttendance } from '@/api/attendance';
 import { color } from '@/assets/color';
 import AppLayout from '@/components/AppLayout';
 import { AppText } from '@/components/AppText';
+import Card from '@/components/Card';
 import AppIcon from '@/components/Icon';
 import { useAuth } from '@/contexts/AuthContext';
 import { useModal } from '@/hooks/useModal';
@@ -19,10 +20,231 @@ import { RouteParamList } from '@/types/navigation';
 
 dayjs.locale('id');
 
+/* -------------------------------------------------------------------------- */
+/*  Design tokens                                                             */
+/* -------------------------------------------------------------------------- */
+
+const ui = {
+  ink: '#0f172a',
+  body: '#475569',
+  muted: '#64748b',
+  line: '#e2e8f0',
+  surface: '#f8fafc',
+};
+
+type Tone = 'neutral' | 'info' | 'danger' | 'warning' | 'success';
+
+const TONES: Record<Tone, { bg: string; fg: string; border: string }> = {
+  neutral: { bg: '#f1f5f9', fg: '#475569', border: '#e2e8f0' },
+  info: { bg: '#eef2ff', fg: '#4338ca', border: '#c7d2fe' },
+  danger: { bg: '#fef2f2', fg: '#b91c1c', border: '#fecaca' },
+  warning: { bg: '#fffbeb', fg: '#b45309', border: '#fde68a' },
+  success: { bg: '#f0fdf4', fg: '#15803d', border: '#bbf7d0' },
+};
+
+type IconName = React.ComponentProps<typeof AppIcon>['name'];
+type FaceMode = 'register' | 'clock-in' | 'clock-out';
+
+/* -------------------------------------------------------------------------- */
+/*  Helpers                                                                   */
+/* -------------------------------------------------------------------------- */
+
+const LEAVE_BADGE_LABEL: Record<string, string> = {
+  sick: 'Izin Sakit',
+  permit: 'Izin',
+};
+
+const LEAVE_TITLE_LABEL: Record<string, string> = {
+  sick: 'Sedang Izin Sakit',
+  permit: 'Sedang Izin',
+};
+
+const getGreeting = (hour: number) => {
+  if (hour < 11) return 'Selamat pagi';
+  if (hour < 15) return 'Selamat siang';
+  if (hour < 18) return 'Selamat sore';
+  return 'Selamat malam';
+};
+
+const getInitials = (name?: string | null) => {
+  if (!name) return '';
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return '';
+  const first = parts[0][0];
+  const last = parts.length > 1 ? parts[parts.length - 1][0] : '';
+  return (first + last).toUpperCase();
+};
+
+const getWorkEnd = (workEndTime: string, base: dayjs.Dayjs = dayjs()) => {
+  const [h, m] = workEndTime.split(':').map(Number);
+  return base.hour(h).minute(m).second(0).millisecond(0);
+};
+
+type StatusInfo = { tone: Tone; icon: IconName; label: string };
+
+const getStatus = (data: TodayAttendanceResponse | null): StatusInfo | null => {
+  if (!data) return null;
+
+  if (data.is_holiday) {
+    return { tone: 'neutral', icon: 'event', label: 'Libur Kantor' };
+  }
+
+  if (data.active_leave) {
+    return { tone: 'info', icon: 'beach-access', label: LEAVE_BADGE_LABEL[data.active_leave.type] ?? 'Sedang Cuti' };
+  }
+
+  const att = data.attendance;
+
+  if (att?.status === 'absent' || data.is_absent) {
+    return { tone: 'danger', icon: 'cancel', label: 'Tidak Hadir (Alpa)' };
+  }
+
+  if (!att || !att.clock_in_at) {
+    return { tone: 'warning', icon: 'schedule', label: 'Belum Presensi' };
+  }
+
+  if (att.status === 'late') {
+    return { tone: 'warning', icon: 'warning', label: 'Terlambat' };
+  }
+
+  return { tone: 'success', icon: 'check-circle', label: 'Tepat Waktu' };
+};
+
+const useNow = (intervalMs: number) => {
+  const [now, setNow] = useState(() => dayjs());
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(dayjs()), intervalMs);
+    return () => clearInterval(id);
+  }, [intervalMs]);
+
+  return now;
+};
+
+/* -------------------------------------------------------------------------- */
+/*  Small presentational components                                           */
+/* -------------------------------------------------------------------------- */
+
+// Jam berjalan dipisah supaya hanya komponen ini yang re-render tiap detik.
+const LiveClock: React.FC = () => {
+  const now = useNow(1000);
+  return <AppText style={styles.heroTime}>{now.format('HH:mm:ss')}</AppText>;
+};
+
+const StatusBadge: React.FC<StatusInfo> = ({ tone, icon, label }) => {
+  const t = TONES[tone];
+  return (
+    <View style={[styles.badge, { backgroundColor: t.bg }]}>
+      <AppIcon name={icon} size={14} color={t.fg} style={{ marginRight: 4 }} />
+      <AppText style={[styles.badgeText, { color: t.fg }]}>{label}</AppText>
+    </View>
+  );
+};
+
+type StatePanelProps = {
+  tone: Tone;
+  icon: IconName;
+  title: string;
+  message: string;
+  note?: string;
+};
+
+const StatePanel: React.FC<StatePanelProps> = ({ tone, icon, title, message, note }) => {
+  const t = TONES[tone];
+  return (
+    <View style={[styles.statePanel, { backgroundColor: t.bg, borderColor: t.border }]}>
+      <View style={[styles.statePanelIcon, { backgroundColor: color.white }]}>
+        <AppIcon name={icon} size={22} color={t.fg} />
+      </View>
+      <View style={styles.statePanelBody}>
+        <AppText style={[styles.statePanelTitle, { color: t.fg }]}>{title}</AppText>
+        <AppText style={[styles.statePanelMessage, { color: t.fg }]}>{message}</AppText>
+        {note ? <AppText style={[styles.statePanelNote, { color: t.fg }]}>{note}</AppText> : null}
+      </View>
+    </View>
+  );
+};
+
+type FaceBannerProps = {
+  tone: Tone;
+  icon: IconName;
+  title: string;
+  message: string;
+  actionLabel: string;
+  onPress: () => void;
+};
+
+const FaceBanner: React.FC<FaceBannerProps> = ({ tone, icon, title, message, actionLabel, onPress }) => {
+  const t = TONES[tone];
+  return (
+    <View style={[styles.banner, { backgroundColor: t.bg, borderColor: t.border }]}>
+      <View style={[styles.bannerIcon, { backgroundColor: color.white }]}>
+        <AppIcon name={icon} size={22} color={t.fg} />
+      </View>
+      <View style={styles.bannerContent}>
+        <AppText style={[styles.bannerTitle, { color: t.fg }]}>{title}</AppText>
+        <AppText style={[styles.bannerMessage, { color: ui.body }]}>{message}</AppText>
+        <TouchableOpacity style={[styles.bannerButton, { backgroundColor: t.fg }]} onPress={onPress} activeOpacity={0.85} accessibilityRole="button">
+          <AppText style={styles.bannerButtonText}>{actionLabel}</AppText>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+};
+
+type TimeCellProps = {
+  icon: IconName;
+  tint: string;
+  label: string;
+  time: string;
+  extra?: string | null;
+};
+
+const TimeCell: React.FC<TimeCellProps> = ({ icon, tint, label, time, extra }) => (
+  <View style={styles.timeCell}>
+    <View style={styles.timeCellHeader}>
+      <AppIcon name={icon} size={16} color={tint} />
+      <AppText style={styles.timeCellLabel}>{label}</AppText>
+    </View>
+    <AppText style={styles.timeCellValue}>{time}</AppText>
+    {extra ? <AppText style={styles.timeCellExtra}>{extra}</AppText> : null}
+  </View>
+);
+
+type MenuTileProps = {
+  icon: IconName;
+  tint: string;
+  background: string;
+  title: string;
+  subtitle: string;
+  onPress: () => void;
+};
+
+const MenuTile: React.FC<MenuTileProps> = ({ icon, tint, background, title, subtitle, onPress }) => (
+  <TouchableOpacity style={styles.menuTile} onPress={onPress} activeOpacity={0.8} accessibilityRole="button" accessibilityLabel={title}>
+    <View style={[styles.menuIcon, { backgroundColor: background }]}>
+      <AppIcon name={icon} size={22} color={tint} />
+    </View>
+    <View style={styles.menuText}>
+      <AppText style={styles.menuTitle} numberOfLines={1}>
+        {title}
+      </AppText>
+      <AppText style={styles.menuSubtitle} numberOfLines={1}>
+        {subtitle}
+      </AppText>
+    </View>
+  </TouchableOpacity>
+);
+
+/* -------------------------------------------------------------------------- */
+/*  Screen                                                                    */
+/* -------------------------------------------------------------------------- */
+
 const OtherDashboardScreen: React.FC = () => {
   const { auth } = useAuth();
   const navigation = useNavigation<NativeStackNavigationProp<RouteParamList>>();
   const modal = useModal();
+  const now = useNow(30000);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [todayData, setTodayData] = useState<TodayAttendanceResponse | null>(null);
@@ -49,14 +271,19 @@ const OtherDashboardScreen: React.FC = () => {
     return unsubscribe;
   }, [fetchTodayData, navigation]);
 
+  const workStartTime = todayData?.branch?.work_start_time || '08:00';
   const workEndTime = todayData?.branch?.work_end_time || '17:00';
-  const isClockOutAllowed = (() => {
-    const [endH, endM] = workEndTime.split(':').map(Number);
-    const minTime = dayjs().hour(endH).minute(endM).second(0);
-    return dayjs().isAfter(minTime) || dayjs().isSame(minTime);
-  })();
+  const gracePeriod = todayData?.branch?.grace_period_minutes;
+  const isClockOutAllowed = !now.isBefore(getWorkEnd(workEndTime, now));
 
-  const handleFaceAction = (mode: 'register' | 'clock-in' | 'clock-out') => {
+  const openFaceCamera = (mode: FaceMode) => {
+    navigation.navigate('FaceCamera', {
+      mode,
+      onSuccess: () => fetchTodayData(),
+    });
+  };
+
+  const handleFaceAction = (mode: FaceMode) => {
     if (mode === 'register') {
       if (todayData?.is_face_registered && !todayData?.can_update_face) {
         modal.result.error(
@@ -70,12 +297,7 @@ const OtherDashboardScreen: React.FC = () => {
         modal.confirm.show(
           'Izin Ubah Wajah Aktif',
           'Admin telah memberikan izin untuk memperbarui wajah master. Anda memiliki kesempatan 1 kali untuk memindai wajah baru. Lanjutkan pemindaian sekarang?',
-          () => {
-            navigation.navigate('FaceCamera', {
-              mode: 'register',
-              onSuccess: () => fetchTodayData(),
-            });
-          },
+          () => openFaceCamera('register'),
         );
         return;
       }
@@ -85,315 +307,250 @@ const OtherDashboardScreen: React.FC = () => {
       modal.confirm.show(
         'Wajah Belum Terdaftar',
         'Anda harus mendaftarkan master wajah terlebih dahulu sebelum melakukan presensi. Apakah Anda ingin mendaftarkan wajah sekarang?',
-        () => {
-          navigation.navigate('FaceCamera', {
-            mode: 'register',
-            onSuccess: () => fetchTodayData(),
-          });
-        },
+        () => openFaceCamera('register'),
       );
       return;
     }
 
-    if (mode === 'clock-in') {
-      const [endH, endM] = workEndTime.split(':').map(Number);
-      const minTime = dayjs().hour(endH).minute(endM).second(0);
-      if (dayjs().isAfter(minTime)) {
-        modal.result.error(
-          'Jam Masuk Berakhir',
-          `Waktu presensi masuk telah berakhir karena jam pulang operasional kantor cabang Anda adalah pukul ${workEndTime}. Anda tercatat Tidak Hadir (Alpa).`,
-        );
-        fetchTodayData();
-        return;
-      }
+    if (mode === 'clock-in' && dayjs().isAfter(getWorkEnd(workEndTime))) {
+      modal.result.error(
+        'Jam Masuk Berakhir',
+        `Waktu presensi masuk telah berakhir karena jam pulang operasional kantor cabang Anda adalah pukul ${workEndTime}. Anda tercatat Tidak Hadir (Alpa).`,
+      );
+      fetchTodayData();
+      return;
     }
 
-    if (mode === 'clock-out') {
-      const [endH, endM] = workEndTime.split(':').map(Number);
-      const minTime = dayjs().hour(endH).minute(endM).second(0);
-      if (dayjs().isBefore(minTime)) {
-        modal.result.error(
-          'Belum Jam Pulang',
-          `Presensi pulang belum dibuka. Jam pulang operasional kantor cabang Anda adalah pukul ${workEndTime}.`,
-        );
-        return;
-      }
+    if (mode === 'clock-out' && dayjs().isBefore(getWorkEnd(workEndTime))) {
+      modal.result.error('Belum Jam Pulang', `Presensi pulang belum dibuka. Jam pulang operasional kantor cabang Anda adalah pukul ${workEndTime}.`);
+      return;
     }
 
-    navigation.navigate('FaceCamera', {
-      mode,
-      onSuccess: () => fetchTodayData(),
-    });
+    openFaceCamera(mode);
   };
 
-  const getStatusBadge = () => {
-    if (!todayData) return null;
+  const status = getStatus(todayData);
+  const attendance = todayData?.attendance;
+  const leave = todayData?.active_leave;
+  const showAbsent = todayData?.is_absent || attendance?.status === 'absent' || (!attendance?.clock_in_at && isClockOutAllowed);
+  const initials = getInitials(auth?.full_name);
 
-    if (todayData.is_holiday) {
+  const renderAttendanceBody = () => {
+    if (loading && !refreshing) {
       return (
-        <View style={[styles.badgeContainer, { backgroundColor: '#f1f5f9' }]}>
-          <AppIcon name="event" size={16} color="#64748b" style={{ marginRight: 4 }} />
-          <AppText style={[styles.badgeText, { color: '#64748b' }]}>Libur Kantor</AppText>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="small" color={color.primary} />
         </View>
       );
     }
 
-    if (todayData.active_leave) {
-      const typeLabel = todayData.active_leave.type === 'sick' ? 'Izin Sakit' : todayData.active_leave.type === 'permit' ? 'Izin' : 'Sedang Cuti';
+    if (todayData?.is_holiday) {
       return (
-        <View style={[styles.badgeContainer, { backgroundColor: '#e0e7ff' }]}>
-          <AppIcon name="beach-access" size={16} color="#4338ca" style={{ marginRight: 4 }} />
-          <AppText style={[styles.badgeText, { color: '#4338ca' }]}>{typeLabel}</AppText>
-        </View>
+        <StatePanel
+          tone="neutral"
+          icon="celebration"
+          title={todayData.holiday_name ? `Libur (${todayData.holiday_name})` : 'Hari Libur Kantor'}
+          message="Hari ini kantor operasional libur. Anda tidak memiliki kewajiban presensi hari ini."
+        />
       );
     }
 
-    const att = todayData.attendance;
-    if (att?.status === 'absent' || todayData.is_absent) {
+    if (leave) {
       return (
-        <View style={[styles.badgeContainer, { backgroundColor: '#fee2e2' }]}>
-          <AppIcon name="cancel" size={16} color="#dc2626" style={{ marginRight: 4 }} />
-          <AppText style={[styles.badgeText, { color: '#dc2626' }]}>Tidak Hadir (Alpa)</AppText>
-        </View>
+        <StatePanel
+          tone="info"
+          icon="beach-access"
+          title={LEAVE_TITLE_LABEL[leave.type] ?? 'Sedang Cuti Kerja'}
+          message={`Alasan: ${leave.reason}`}
+          note={`Periode: ${dayjs(leave.start_date).format('DD MMM')} - ${dayjs(leave.end_date).format('DD MMM YYYY')}`}
+        />
       );
     }
 
-    if (!att || !att.clock_in_at) {
+    if (showAbsent) {
       return (
-        <View style={[styles.badgeContainer, { backgroundColor: '#fef3c7' }]}>
-          <AppIcon name="schedule" size={16} color="#b45309" style={{ marginRight: 4 }} />
-          <AppText style={[styles.badgeText, { color: '#b45309' }]}>Belum Presensi</AppText>
-        </View>
-      );
-    }
-
-    if (att.status === 'late') {
-      return (
-        <View style={[styles.badgeContainer, { backgroundColor: '#fef3c7' }]}>
-          <AppIcon name="warning" size={16} color="#b45309" style={{ marginRight: 4 }} />
-          <AppText style={[styles.badgeText, { color: '#b45309' }]}>Terlambat</AppText>
-        </View>
+        <StatePanel
+          tone="danger"
+          icon="error-outline"
+          title="Tidak Hadir (Alpa)"
+          message={`Jam operasional kantor cabang hari ini telah berakhir (${workEndTime}). Anda tercatat tidak melakukan presensi masuk (Alpa).`}
+        />
       );
     }
 
     return (
-      <View style={[styles.badgeContainer, { backgroundColor: '#dcfce7' }]}>
-        <AppIcon name="check-circle" size={16} color="#15803d" style={{ marginRight: 4 }} />
-        <AppText style={[styles.badgeText, { color: '#15803d' }]}>Tepat Waktu</AppText>
-      </View>
+      <>
+        <View style={styles.timesRow}>
+          <TimeCell
+            icon="login"
+            tint="#16a34a"
+            label="Jam Masuk"
+            time={attendance?.clock_in_at ? dayjs(attendance.clock_in_at).format('HH:mm') : '--:--'}
+            extra={attendance?.similarity_score ? `Kecocokan ${Math.round(attendance.similarity_score * 100)}%` : null}
+          />
+          <View style={styles.timesDivider} />
+          <TimeCell
+            icon="logout"
+            tint="#dc2626"
+            label="Jam Pulang"
+            time={attendance?.clock_out_at ? dayjs(attendance.clock_out_at).format('HH:mm') : '--:--'}
+          />
+        </View>
+
+        {!attendance?.clock_in_at ? (
+          <TouchableOpacity
+            style={[styles.actionButton, { backgroundColor: color.primary }]}
+            onPress={() => handleFaceAction('clock-in')}
+            activeOpacity={0.85}
+            accessibilityRole="button">
+            <AppIcon name="photo-camera" size={20} color={color.white} />
+            <AppText style={styles.actionButtonText}>Presensi Masuk</AppText>
+          </TouchableOpacity>
+        ) : !attendance?.clock_out_at ? (
+          <TouchableOpacity
+            style={[styles.actionButton, { backgroundColor: isClockOutAllowed ? '#ea580c' : '#94a3b8' }]}
+            onPress={() => handleFaceAction('clock-out')}
+            activeOpacity={0.85}
+            accessibilityRole="button">
+            <AppIcon name={isClockOutAllowed ? 'photo-camera' : 'schedule'} size={20} color={color.white} />
+            <AppText style={styles.actionButtonText}>{isClockOutAllowed ? 'Presensi Pulang' : `Presensi Pulang (${workEndTime})`}</AppText>
+          </TouchableOpacity>
+        ) : (
+          <View style={styles.completedBox}>
+            <AppIcon name="verified" size={20} color="#16a34a" style={{ marginRight: 8 }} />
+            <AppText style={styles.completedText}>Presensi Hari Ini Lengkap</AppText>
+          </View>
+        )}
+      </>
     );
   };
+
+  const menuItems: MenuTileProps[] = [
+    {
+      icon: 'add-circle-outline',
+      tint: '#0284c7',
+      background: '#e0f2fe',
+      title: 'Ajukan Cuti',
+      subtitle: 'Buat pengajuan baru',
+      onPress: () => navigation.navigate('LeaveRequestCreate'),
+    },
+    {
+      icon: 'event-note',
+      tint: '#d97706',
+      background: '#fef3c7',
+      title: 'Daftar Cuti',
+      subtitle: 'Pantau status',
+      onPress: () => navigation.navigate('LeaveRequestList'),
+    },
+    {
+      icon: 'history',
+      tint: '#16a34a',
+      background: '#dcfce7',
+      title: 'Riwayat Absen',
+      subtitle: 'Lihat kehadiran',
+      onPress: () => navigation.navigate('Attendance'),
+    },
+    {
+      icon: 'face',
+      tint: '#7c3aed',
+      background: '#f3e8ff',
+      title: 'Master Wajah',
+      subtitle: 'Kelola biometrik',
+      onPress: () => handleFaceAction('register'),
+    },
+  ];
 
   return (
     <AppLayout
       scrollable={true}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => fetchTodayData(true)} colors={[color.primary]} />}>
-      {/* Greeting Header */}
-      <View style={styles.userCard}>
-        <View style={styles.userAvatar}>
-          <AppIcon name="person" size={32} color={color.primary} />
-        </View>
-        <View style={styles.userInfo}>
-          <AppText style={styles.greetingText}>Selamat Bekerja,</AppText>
-          <AppText style={styles.userName}>{auth?.full_name || 'Karyawan'}</AppText>
-          <View style={styles.branchTag}>
-            <AppIcon name="business" size={14} color={color.primary} style={{ marginRight: 4 }} />
-            <AppText style={styles.branchTagText}>{todayData?.branch?.name || 'Kantor Cabang'}</AppText>
+      {/* Header */}
+      <Card style={{ marginBottom: 16 }}>
+        <View style={styles.header}>
+          <View style={styles.avatar}>
+            {initials ? <AppText style={styles.avatarText}>{initials}</AppText> : <AppIcon name="person" size={26} color={color.primary} />}
           </View>
-        </View>
-      </View>
-
-      {/* Unregistered Face Alert Banner */}
-      {todayData && !todayData.is_face_registered && (
-        <View style={styles.alertBanner}>
-          <View style={styles.alertIconBox}>
-            <AppIcon name="face" size={24} color="#ea580c" />
-          </View>
-          <View style={styles.alertContent}>
-            <AppText style={styles.alertTitle}>Biometrik Wajah Belum Terdaftar</AppText>
-            <AppText style={styles.alertSubtitle}>Daftarkan foto wajah master Anda untuk mengaktifkan fitur presensi.</AppText>
-            <TouchableOpacity style={styles.registerFaceButton} onPress={() => handleFaceAction('register')}>
-              <AppText style={styles.registerFaceButtonText}>Daftarkan Wajah Sekarang</AppText>
-            </TouchableOpacity>
-          </View>
-        </View>
-      )}
-
-      {/* Face Update Permission Banner */}
-      {todayData && todayData.is_face_registered && todayData.can_update_face && (
-        <View style={[styles.alertBanner, { backgroundColor: '#eff6ff', borderColor: '#bfdbfe' }]}>
-          <View style={[styles.alertIconBox, { backgroundColor: '#dbeafe' }]}>
-            <AppIcon name="lock-open" size={24} color="#2563eb" />
-          </View>
-          <View style={styles.alertContent}>
-            <AppText style={[styles.alertTitle, { color: '#1e40af' }]}>Izin Ubah Wajah Diberikan</AppText>
-            <AppText style={[styles.alertSubtitle, { color: '#3b82f6' }]}>
-              Admin telah memberikan akses untuk memperbarui master wajah Anda (1 kali).
+          <View style={styles.headerInfo}>
+            <AppText style={styles.greeting}>{getGreeting(now.hour())}</AppText>
+            <AppText style={styles.userName} numberOfLines={1}>
+              {auth?.full_name || 'Karyawan'}
             </AppText>
-            <TouchableOpacity style={[styles.registerFaceButton, { backgroundColor: '#2563eb' }]} onPress={() => handleFaceAction('register')}>
-              <AppText style={styles.registerFaceButtonText}>Perbarui Wajah Sekarang</AppText>
-            </TouchableOpacity>
+            <View style={styles.branchRow}>
+              <AppIcon name="business" size={13} color={ui.muted} style={{ marginRight: 4 }} />
+              <AppText style={styles.branchText} numberOfLines={1}>
+                {todayData?.branch?.name || 'Kantor Cabang'}
+              </AppText>
+            </View>
           </View>
         </View>
+      </Card>
+
+      {/* Face registration banners */}
+      {todayData && !todayData.is_face_registered && (
+        <FaceBanner
+          tone="warning"
+          icon="face"
+          title="Biometrik Wajah Belum Terdaftar"
+          message="Daftarkan foto wajah master Anda untuk mengaktifkan fitur presensi."
+          actionLabel="Daftarkan Wajah Sekarang"
+          onPress={() => handleFaceAction('register')}
+        />
       )}
 
-      {/* Branch Operational Hours Card */}
-      <View style={styles.card}>
-        <View style={styles.cardHeader}>
-          <View style={styles.cardHeaderLeft}>
-            <AppIcon name="storefront" size={20} color={color.primary} style={{ marginRight: 8 }} />
-            <AppText style={styles.cardTitle}>Jam Operasional Cabang</AppText>
+      {todayData && todayData.is_face_registered && todayData.can_update_face && (
+        <FaceBanner
+          tone="info"
+          icon="lock-open"
+          title="Izin Ubah Wajah Diberikan"
+          message="Admin telah memberikan akses untuk memperbarui master wajah Anda (1 kali)."
+          actionLabel="Perbarui Wajah Sekarang"
+          onPress={() => handleFaceAction('register')}
+        />
+      )}
+
+      {/* Hero: tanggal, jam berjalan, dan jadwal cabang */}
+      <View style={styles.hero}>
+        <AppText style={styles.heroDate}>{now.format('dddd, DD MMMM YYYY')}</AppText>
+        <LiveClock />
+
+        <View style={styles.heroSchedule}>
+          <View style={styles.heroScheduleItem}>
+            <AppText style={styles.heroScheduleLabel}>Jadwal Masuk</AppText>
+            <AppText style={styles.heroScheduleValue}>{workStartTime}</AppText>
           </View>
-          {todayData?.branch?.grace_period_minutes ? (
-            <View style={styles.toleranceBadge}>
-              <AppText style={styles.toleranceBadgeText}>Toleransi {todayData.branch.grace_period_minutes}m</AppText>
-            </View>
+          <View style={styles.heroDivider} />
+          <View style={styles.heroScheduleItem}>
+            <AppText style={styles.heroScheduleLabel}>Jadwal Pulang</AppText>
+            <AppText style={styles.heroScheduleValue}>{workEndTime}</AppText>
+          </View>
+          {gracePeriod ? (
+            <>
+              <View style={styles.heroDivider} />
+              <View style={styles.heroScheduleItem}>
+                <AppText style={styles.heroScheduleLabel}>Toleransi</AppText>
+                <AppText style={styles.heroScheduleValue}>{gracePeriod} menit</AppText>
+              </View>
+            </>
           ) : null}
         </View>
-
-        <View style={styles.scheduleRow}>
-          <View style={styles.scheduleItem}>
-            <AppText style={styles.scheduleLabel}>Jam Masuk</AppText>
-            <AppText style={styles.scheduleValue}>{todayData?.branch?.work_start_time || '08:00'}</AppText>
-          </View>
-          <View style={styles.scheduleDivider} />
-          <View style={styles.scheduleItem}>
-            <AppText style={styles.scheduleLabel}>Jam Pulang</AppText>
-            <AppText style={styles.scheduleValue}>{todayData?.branch?.work_end_time || '17:00'}</AppText>
-          </View>
-        </View>
       </View>
 
-      {/* Today's Attendance Card */}
+      {/* Presensi hari ini */}
       <View style={styles.card}>
         <View style={styles.cardHeader}>
-          <View>
-            <AppText style={styles.cardTitle}>Presensi Hari Ini</AppText>
-            <AppText style={styles.cardDateText}>{dayjs().format('dddd, DD MMMM YYYY')}</AppText>
-          </View>
-          {getStatusBadge()}
+          <AppText style={styles.cardTitle}>Presensi Hari Ini</AppText>
+          {status ? <StatusBadge {...status} /> : null}
         </View>
-
-        {loading && !refreshing ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="small" color={color.primary} />
-          </View>
-        ) : todayData?.is_holiday ? (
-          <View style={{ backgroundColor: '#f8fafc', borderRadius: 12, padding: 14, borderWidth: 1, borderColor: '#e2e8f0', alignItems: 'center' }}>
-            <AppIcon name="celebration" size={28} color="#64748b" style={{ marginBottom: 6 }} />
-            <AppText style={{ fontSize: 15, fontWeight: '700', color: '#334155' }}>
-              {todayData.holiday_name ? `Libur (${todayData.holiday_name})` : 'Hari Libur Kantor'}
-            </AppText>
-            <AppText style={{ fontSize: 12, color: '#64748b', textAlign: 'center', marginTop: 4 }}>
-              Hari ini kantor operasional libur. Anda tidak memiliki kewajiban presensi hari ini.
-            </AppText>
-          </View>
-        ) : todayData?.active_leave ? (
-          <View style={styles.leaveNotice}>
-            <AppText style={styles.leaveNoticeTitle}>
-              {todayData.active_leave.type === 'sick'
-                ? 'Sedang Izin Sakit'
-                : todayData.active_leave.type === 'permit'
-                ? 'Sedang Izin'
-                : 'Sedang Cuti Kerja'}
-            </AppText>
-            <AppText style={styles.leaveNoticeSubtitle}>Alasan: {todayData.active_leave.reason}</AppText>
-            <AppText style={styles.leaveNoticeDate}>
-              Periode: {dayjs(todayData.active_leave.start_date).format('DD MMM')} - {dayjs(todayData.active_leave.end_date).format('DD MMM YYYY')}
-            </AppText>
-          </View>
-        ) : todayData?.is_absent || todayData?.attendance?.status === 'absent' || (!todayData?.attendance?.clock_in_at && isClockOutAllowed) ? (
-          <View style={{ backgroundColor: '#fef2f2', borderRadius: 12, padding: 14, borderWidth: 1, borderColor: '#fecaca', alignItems: 'center' }}>
-            <AppIcon name="error-outline" size={28} color="#dc2626" style={{ marginBottom: 6 }} />
-            <AppText style={{ fontSize: 15, fontWeight: '700', color: '#b91c1c' }}>Tidak Hadir (Alpa)</AppText>
-            <AppText style={{ fontSize: 12, color: '#991b1b', textAlign: 'center', marginTop: 4 }}>
-              Jam operasional kantor cabang hari ini telah berakhir ({workEndTime}). Anda tercatat tidak melakukan presensi masuk (Alpa).
-            </AppText>
-          </View>
-        ) : (
-          <>
-            <View style={styles.clockGrid}>
-              <View style={styles.clockBox}>
-                <View style={styles.clockBoxHeader}>
-                  <AppIcon name="login" size={16} color="#16a34a" />
-                  <AppText style={styles.clockBoxLabel}>Jam Masuk</AppText>
-                </View>
-                <AppText style={styles.clockBoxTime}>
-                  {todayData?.attendance?.clock_in_at ? dayjs(todayData.attendance.clock_in_at).format('HH:mm') : '--:--'}
-                </AppText>
-                {todayData?.attendance?.similarity_score ? (
-                  <AppText style={styles.scoreText}>Kecocokan: {Math.round(todayData.attendance.similarity_score * 100)}%</AppText>
-                ) : null}
-              </View>
-
-              <View style={styles.clockBox}>
-                <View style={styles.clockBoxHeader}>
-                  <AppIcon name="logout" size={16} color="#dc2626" />
-                  <AppText style={styles.clockBoxLabel}>Jam Pulang</AppText>
-                </View>
-                <AppText style={styles.clockBoxTime}>
-                  {todayData?.attendance?.clock_out_at ? dayjs(todayData.attendance.clock_out_at).format('HH:mm') : '--:--'}
-                </AppText>
-              </View>
-            </View>
-
-            {/* Action Buttons */}
-            <View style={styles.attendanceActionRow}>
-              {!todayData?.attendance?.clock_in_at ? (
-                <TouchableOpacity style={[styles.primaryActionBtn, { backgroundColor: color.primary }]} onPress={() => handleFaceAction('clock-in')}>
-                  <AppIcon name="photo-camera" size={20} color={color.white} />
-                  <AppText style={styles.primaryActionBtnText}>Presensi Masuk</AppText>
-                </TouchableOpacity>
-              ) : !todayData?.attendance?.clock_out_at ? (
-                <TouchableOpacity
-                  style={[styles.primaryActionBtn, { backgroundColor: isClockOutAllowed ? '#ea580c' : '#64748b' }]}
-                  onPress={() => handleFaceAction('clock-out')}
-                  activeOpacity={0.8}>
-                  <AppIcon name={isClockOutAllowed ? 'photo-camera' : 'schedule'} size={20} color={color.white} />
-                  <AppText style={styles.primaryActionBtnText}>{isClockOutAllowed ? 'Presensi Pulang' : `Presensi Pulang (${workEndTime})`}</AppText>
-                </TouchableOpacity>
-              ) : (
-                <View style={styles.completedBox}>
-                  <AppIcon name="verified" size={20} color="#16a34a" style={{ marginRight: 6 }} />
-                  <AppText style={styles.completedText}>Presensi Hari Ini Lengkap</AppText>
-                </View>
-              )}
-            </View>
-          </>
-        )}
+        {renderAttendanceBody()}
       </View>
 
-      {/* Quick Menu */}
-      <View style={styles.quickSection}>
+      {/* Menu */}
+      <View style={styles.menuSection}>
         <AppText style={styles.sectionHeading}>Menu & Layanan</AppText>
         <View style={styles.menuGrid}>
-          <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('LeaveRequestCreate')}>
-            <View style={[styles.menuIconContainer, { backgroundColor: '#e0f2fe' }]}>
-              <AppIcon name="add-circle-outline" size={26} color="#0284c7" />
-            </View>
-            <AppText style={styles.menuTitle}>Ajukan Cuti</AppText>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('LeaveRequestList')}>
-            <View style={[styles.menuIconContainer, { backgroundColor: '#fef3c7' }]}>
-              <AppIcon name="event-note" size={26} color="#d97706" />
-            </View>
-            <AppText style={styles.menuTitle}>Daftar Cuti</AppText>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('Attendance')}>
-            <View style={[styles.menuIconContainer, { backgroundColor: '#dcfce7' }]}>
-              <AppIcon name="history" size={26} color="#16a34a" />
-            </View>
-            <AppText style={styles.menuTitle}>Riwayat Absen</AppText>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.menuItem} onPress={() => handleFaceAction('register')}>
-            <View style={[styles.menuIconContainer, { backgroundColor: '#f3e8ff' }]}>
-              <AppIcon name="face" size={26} color="#7c3aed" />
-            </View>
-            <AppText style={styles.menuTitle}>Master Wajah</AppText>
-          </TouchableOpacity>
+          {menuItems.map(item => (
+            <MenuTile key={item.title} {...item} />
+          ))}
         </View>
       </View>
     </AppLayout>
@@ -402,301 +559,344 @@ const OtherDashboardScreen: React.FC = () => {
 
 export default OtherDashboardScreen;
 
+/* -------------------------------------------------------------------------- */
+/*  Styles                                                                    */
+/* -------------------------------------------------------------------------- */
+
 const styles = StyleSheet.create({
-  userCard: {
+  /* Header */
+  header: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: color.white,
-    padding: 16,
-    borderRadius: 20,
-    marginBottom: 16,
-    shadowColor: color.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
+    marginBottom: 20,
   },
-  userAvatar: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: color.primary + '15',
+  avatar: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: color.primary + '1A',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 14,
   },
-  userInfo: {
+  avatarText: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: color.primary,
+  },
+  headerInfo: {
     flex: 1,
   },
-  greetingText: {
-    fontSize: 12,
-    color: '#64748b',
+  greeting: {
+    fontSize: 13,
+    color: ui.muted,
     fontWeight: '500',
   },
   userName: {
-    fontSize: 16,
+    fontSize: 19,
     fontWeight: '700',
-    color: '#1e293b',
-    marginTop: 2,
+    color: ui.ink,
+    marginTop: 1,
   },
-  branchTag: {
+  branchRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 4,
+    marginTop: 3,
   },
-  branchTagText: {
+  branchText: {
+    flexShrink: 1,
     fontSize: 12,
-    color: color.primary,
-    fontWeight: '600',
+    color: ui.muted,
+    fontWeight: '500',
   },
-  alertBanner: {
+
+  /* Hero */
+  hero: {
+    backgroundColor: color.primary,
+    borderRadius: 24,
+    padding: 20,
+    marginBottom: 16,
+    shadowColor: color.primary,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.25,
+    shadowRadius: 14,
+    elevation: 5,
+  },
+  heroDate: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: 'rgba(255,255,255,0.8)',
+  },
+  heroTime: {
+    fontSize: 44,
+    lineHeight: 52,
+    fontWeight: '700',
+    letterSpacing: -1,
+    color: color.white,
+    marginTop: 4,
+    fontVariant: ['tabular-nums'],
+  },
+  heroSchedule: {
     flexDirection: 'row',
-    backgroundColor: '#fff7ed',
-    borderColor: '#ffedd5',
-    borderWidth: 1,
-    padding: 14,
+    alignItems: 'center',
+    marginTop: 16,
+    paddingVertical: 12,
     borderRadius: 16,
+    backgroundColor: 'rgba(255,255,255,0.14)',
+  },
+  heroScheduleItem: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  heroScheduleLabel: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: 'rgba(255,255,255,0.75)',
+  },
+  heroScheduleValue: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: color.white,
+    marginTop: 2,
+  },
+  heroDivider: {
+    width: 1,
+    height: 28,
+    backgroundColor: 'rgba(255,255,255,0.25)',
+  },
+
+  /* Face banners */
+  banner: {
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderRadius: 16,
+    padding: 14,
     marginBottom: 16,
   },
-  alertIconBox: {
+  bannerIcon: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#fed7aa',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
   },
-  alertContent: {
+  bannerContent: {
     flex: 1,
   },
-  alertTitle: {
+  bannerTitle: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#9a3412',
   },
-  alertSubtitle: {
+  bannerMessage: {
     fontSize: 12,
-    color: '#c2410c',
+    lineHeight: 17,
     marginTop: 2,
-    lineHeight: 16,
   },
-  registerFaceButton: {
-    marginTop: 8,
+  bannerButton: {
     alignSelf: 'flex-start',
-    backgroundColor: '#ea580c',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
+    marginTop: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 10,
   },
-  registerFaceButtonText: {
-    color: color.white,
-    fontSize: 11,
+  bannerButtonText: {
+    fontSize: 12,
     fontWeight: '700',
+    color: color.white,
   },
+
+  /* Attendance card */
   card: {
     backgroundColor: color.white,
-    borderRadius: 20,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: ui.line,
     padding: 16,
-    marginBottom: 16,
-    shadowColor: color.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
+    marginBottom: 20,
   },
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
-  },
-  cardHeaderLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    marginBottom: 14,
   },
   cardTitle: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '700',
-    color: '#1e293b',
+    color: ui.ink,
   },
-  cardDateText: {
-    fontSize: 11,
-    color: '#64748b',
-    marginTop: 2,
-  },
-  toleranceBadge: {
-    backgroundColor: '#fef3c7',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
-  },
-  toleranceBadgeText: {
-    fontSize: 11,
-    color: '#b45309',
-    fontWeight: '600',
-  },
-  scheduleRow: {
-    flexDirection: 'row',
-    backgroundColor: '#f8fafc',
-    borderRadius: 14,
-    padding: 12,
-    alignItems: 'center',
-  },
-  scheduleItem: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  scheduleDivider: {
-    width: 1,
-    height: 32,
-    backgroundColor: '#cbd5e1',
-  },
-  scheduleLabel: {
-    fontSize: 11,
-    color: '#64748b',
-    fontWeight: '500',
-  },
-  scheduleValue: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#0f172a',
-    marginTop: 2,
-  },
-  badgeContainer: {
+  badge: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
+    paddingVertical: 5,
+    borderRadius: 999,
   },
   badgeText: {
     fontSize: 11,
     fontWeight: '700',
   },
   loadingContainer: {
-    paddingVertical: 24,
+    paddingVertical: 28,
     alignItems: 'center',
   },
-  leaveNotice: {
-    backgroundColor: '#eef2ff',
-    padding: 14,
+
+  /* State panel (libur / cuti / alpa) */
+  statePanel: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    borderWidth: 1,
     borderRadius: 14,
-    marginTop: 6,
+    padding: 14,
   },
-  leaveNoticeTitle: {
+  statePanelIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  statePanelBody: {
+    flex: 1,
+  },
+  statePanelTitle: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#3730a3',
   },
-  leaveNoticeSubtitle: {
+  statePanelMessage: {
     fontSize: 12,
-    color: '#4338ca',
-    marginTop: 4,
+    lineHeight: 17,
+    marginTop: 3,
+    opacity: 0.9,
   },
-  leaveNoticeDate: {
+  statePanelNote: {
     fontSize: 11,
-    color: '#6366f1',
-    marginTop: 2,
+    fontWeight: '600',
+    marginTop: 6,
   },
-  clockGrid: {
+
+  /* Clock in / out */
+  timesRow: {
     flexDirection: 'row',
-    gap: 12,
-    marginBottom: 16,
-    marginTop: 4,
-  },
-  clockBox: {
-    flex: 1,
-    backgroundColor: '#f8fafc',
-    borderRadius: 14,
-    padding: 12,
     alignItems: 'center',
+    backgroundColor: ui.surface,
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: ui.line,
+    paddingVertical: 14,
+    marginBottom: 14,
   },
-  clockBoxHeader: {
+  timesDivider: {
+    width: 1,
+    alignSelf: 'stretch',
+    backgroundColor: ui.line,
+  },
+  timeCell: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  timeCellHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    marginBottom: 4,
   },
-  clockBoxLabel: {
+  timeCellLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: ui.muted,
+  },
+  timeCellValue: {
+    fontSize: 24,
+    lineHeight: 30,
+    fontWeight: '700',
+    color: ui.ink,
+    marginTop: 4,
+    fontVariant: ['tabular-nums'],
+  },
+  timeCellExtra: {
     fontSize: 11,
-    color: '#64748b',
     fontWeight: '600',
-  },
-  clockBoxTime: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: '#0f172a',
-  },
-  scoreText: {
-    fontSize: 10,
     color: '#16a34a',
-    fontWeight: '600',
     marginTop: 2,
   },
-  attendanceActionRow: {
-    width: '100%',
-  },
-  primaryActionBtn: {
+
+  /* Action */
+  actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 14,
-    borderRadius: 14,
     gap: 8,
-    elevation: 2,
+    minHeight: 52,
+    borderRadius: 14,
   },
-  primaryActionBtnText: {
-    color: color.white,
-    fontSize: 14,
+  actionButtonText: {
+    fontSize: 15,
     fontWeight: '700',
+    color: color.white,
   },
   completedBox: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
+    minHeight: 52,
+    borderRadius: 14,
     backgroundColor: '#f0fdf4',
-    borderRadius: 12,
     borderWidth: 1,
     borderColor: '#bbf7d0',
   },
   completedText: {
-    color: '#16a34a',
-    fontWeight: '700',
-    fontSize: 13,
-  },
-  quickSection: {
-    marginBottom: 20,
-  },
-  sectionHeading: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#1e293b',
+    color: '#15803d',
+  },
+
+  /* Menu */
+  menuSection: {
+    marginBottom: 12,
+  },
+  sectionHeading: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: ui.ink,
     marginBottom: 12,
   },
   menuGrid: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
+    rowGap: 12,
   },
-  menuItem: {
+  menuTile: {
+    width: '48.5%',
+    flexDirection: 'row',
     alignItems: 'center',
-    width: '23%',
+    backgroundColor: color.white,
+    borderWidth: 1,
+    borderColor: ui.line,
+    borderRadius: 16,
+    padding: 12,
   },
-  menuIconContainer: {
-    width: 54,
-    height: 54,
-    borderRadius: 18,
+  menuIcon: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 6,
+    marginRight: 10,
+  },
+  menuText: {
+    flex: 1,
   },
   menuTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: ui.ink,
+  },
+  menuSubtitle: {
     fontSize: 11,
-    fontWeight: '600',
-    color: '#334155',
-    textAlign: 'center',
+    color: ui.muted,
+    marginTop: 2,
   },
 });
