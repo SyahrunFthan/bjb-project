@@ -40,14 +40,14 @@ export const authLogin = async ({ modal, setProcessing, values, resetForm, setEr
         onSuccess?.();
 
         if (!userData.registration_at) {
-          navigation.replace('Boarding');
+          navigation.reset({ index: 0, routes: [{ name: 'Boarding' }] });
         } else {
           if (userData.role_level == 3) {
-            navigation.replace('Courier');
+            navigation.reset({ index: 0, routes: [{ name: 'Courier' }] });
           } else if (userData.role_level == 4) {
-            navigation.replace('Customer');
+            navigation.reset({ index: 0, routes: [{ name: 'Customer' }] });
           } else {
-            navigation.replace('Other');
+            navigation.reset({ index: 0, routes: [{ name: 'Other' }] });
           }
         }
       });
@@ -102,13 +102,13 @@ export const authLoginWithBiometric = async ({ modal, navigation, setAuth, setPr
         processFinish(modal);
         setProcessing(false);
         if (!userData.registration_at) {
-          navigation.replace('Boarding');
+          navigation.reset({ index: 0, routes: [{ name: 'Boarding' }] });
         } else if (userData.role_level === 3) {
-          navigation.replace('Courier');
+          navigation.reset({ index: 0, routes: [{ name: 'Courier' }] });
         } else if (userData.role_level === 4) {
-          navigation.replace('Customer');
+          navigation.reset({ index: 0, routes: [{ name: 'Customer' }] });
         } else {
-          navigation.replace('Other');
+          navigation.reset({ index: 0, routes: [{ name: 'Other' }] });
         }
       });
     }
@@ -156,11 +156,11 @@ export const authChangePasswordBoarding = async ({ modal, values, userId, setPro
 
         const role = storeAuth?.role_level ?? storeAuth?.user?.role_level;
         if (role === 3) {
-          navigation.replace('Courier');
+          navigation.reset({ index: 0, routes: [{ name: 'Courier' }] });
         } else if (role === 4) {
-          navigation.replace('Customer');
+          navigation.reset({ index: 0, routes: [{ name: 'Customer' }] });
         } else {
-          navigation.replace('Other');
+          navigation.reset({ index: 0, routes: [{ name: 'Other' }] });
         }
       });
     }
