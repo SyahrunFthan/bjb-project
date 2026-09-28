@@ -12,19 +12,7 @@ interface Props extends TextInputProps {
   inputContainerStyle?: ViewStyle;
 }
 
-const Input = ({
-  label,
-  error,
-  leftIcon,
-  rightIcon,
-  containerStyle,
-  inputContainerStyle,
-  onFocus,
-  onBlur,
-  style,
-  multiline,
-  ...rest
-}: Props) => {
+const Input = ({ label, error, leftIcon, rightIcon, containerStyle, inputContainerStyle, onFocus, onBlur, style, multiline, ...rest }: Props) => {
   const [isFocused, setIsFocused] = useState(false);
 
   const handleFocus = (e: Parameters<NonNullable<TextInputProps['onFocus']>>[0]) => {

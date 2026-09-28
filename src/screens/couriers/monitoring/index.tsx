@@ -14,17 +14,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import dayjs from 'dayjs';
 import 'dayjs/locale/id';
 import React, { useCallback, useEffect, useState } from 'react';
-import {
-  ActivityIndicator,
-  FlatList,
-  Linking,
-  RefreshControl,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { ActivityIndicator, FlatList, Linking, RefreshControl, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 dayjs.locale('id');
 
@@ -177,10 +167,7 @@ const MonitoringScreen = () => {
       : 'N';
 
     return (
-      <TouchableOpacity
-        style={styles.card}
-        activeOpacity={0.85}
-        onPress={() => handleOpenCollection(item.loan_id)}>
+      <TouchableOpacity style={styles.card} activeOpacity={0.85} onPress={() => handleOpenCollection(item.loan_id)}>
         {/* Card Header: Avatar, Nama, No Anggota & Status Badge Hari Ini */}
         <View style={styles.cardHeader}>
           <View style={styles.avatarContainer}>
@@ -191,28 +178,12 @@ const MonitoringScreen = () => {
             <Text style={styles.customerName} numberOfLines={1}>
               {item.customer.full_name}
             </Text>
-            <Text style={styles.memberNumber}>
-              No. Anggota: {item.customer.member_number}
-            </Text>
+            <Text style={styles.memberNumber}>No. Anggota: {item.customer.member_number}</Text>
           </View>
 
-          <View
-            style={[
-              styles.statusBadge,
-              { backgroundColor: isPaid ? '#DCFCE7' : '#FEE2E2' },
-            ]}>
-            <AppIcon
-              name={isPaid ? 'check-circle' : 'schedule'}
-              size={14}
-              color={isPaid ? '#15803D' : '#B91C1C'}
-            />
-            <Text
-              style={[
-                styles.statusBadgeText,
-                { color: isPaid ? '#15803D' : '#B91C1C' },
-              ]}>
-              {isPaid ? 'Sudah Bayar' : 'Belum Bayar'}
-            </Text>
+          <View style={[styles.statusBadge, { backgroundColor: isPaid ? '#DCFCE7' : '#FEE2E2' }]}>
+            <AppIcon name={isPaid ? 'check-circle' : 'schedule'} size={14} color={isPaid ? '#15803D' : '#B91C1C'} />
+            <Text style={[styles.statusBadgeText, { color: isPaid ? '#15803D' : '#B91C1C' }]}>{isPaid ? 'Sudah Bayar' : 'Belum Bayar'}</Text>
           </View>
         </View>
 
@@ -223,9 +194,7 @@ const MonitoringScreen = () => {
           {/* Target Hari Ini */}
           <View style={styles.infoCol}>
             <Text style={styles.infoLabel}>Target Hari Ini</Text>
-            <Text style={styles.targetValue}>
-              Rp {formatCurrency(item.today_status.target_amount)}
-            </Text>
+            <Text style={styles.targetValue}>Rp {formatCurrency(item.today_status.target_amount)}</Text>
             <Text style={styles.infoSubtext}>
               {isPaid
                 ? `Telah disetor: Rp ${formatCurrency(item.today_status.paid_amount)}`
@@ -238,34 +207,20 @@ const MonitoringScreen = () => {
           {/* Sisa Saldo Pinjaman */}
           <View style={[styles.infoCol, styles.infoColRight]}>
             <Text style={styles.infoLabel}>Sisa Saldo</Text>
-            <Text
-              style={[
-                styles.balanceValue,
-                item.remaining_amount <= 0 && styles.balanceLunas,
-              ]}>
-              {item.remaining_amount <= 0
-                ? 'LUNAS'
-                : `Rp ${formatCurrency(item.remaining_amount)}`}
+            <Text style={[styles.balanceValue, item.remaining_amount <= 0 && styles.balanceLunas]}>
+              {item.remaining_amount <= 0 ? 'LUNAS' : `Rp ${formatCurrency(item.remaining_amount)}`}
             </Text>
-            <Text style={styles.infoSubtext}>
-              Total: Rp {formatCurrency(item.total_amount)}
-            </Text>
+            <Text style={styles.infoSubtext}>Total: Rp {formatCurrency(item.total_amount)}</Text>
           </View>
         </View>
 
         {/* Monthly Progress Section */}
         <View style={styles.monthlyProgressContainer}>
           <View style={styles.progressTextRow}>
-            <Text style={styles.progressLabel}>
-              Setoran Bulan Ini ({item.month_progress.month}):
-            </Text>
+            <Text style={styles.progressLabel}>Setoran Bulan Ini ({item.month_progress.month}):</Text>
             <Text style={styles.progressValue}>
-              <Text style={styles.progressHighlight}>
-                {item.month_progress.days_paid}
-              </Text>
-              /{item.month_progress.total_days} Hari
-              {item.month_progress.total_paid > 0 &&
-                ` • Rp ${formatCurrency(item.month_progress.total_paid)}`}
+              <Text style={styles.progressHighlight}>{item.month_progress.days_paid}</Text>/{item.month_progress.total_days} Hari
+              {item.month_progress.total_paid > 0 && ` • Rp ${formatCurrency(item.month_progress.total_paid)}`}
             </Text>
           </View>
 
@@ -276,22 +231,16 @@ const MonitoringScreen = () => {
                 styles.progressBarFill,
                 {
                   width: `${Math.min(100, Math.max(0, item.overall_progress.percentage))}%`,
-                  backgroundColor:
-                    item.overall_progress.percentage >= 100
-                      ? '#15803D'
-                      : color.primary,
+                  backgroundColor: item.overall_progress.percentage >= 100 ? '#15803D' : color.primary,
                 },
               ]}
             />
           </View>
           <View style={styles.progressBarCaptionRow}>
             <Text style={styles.progressCaption}>
-              Progress cicilan: {item.overall_progress.paid_installments} dari{' '}
-              {item.overall_progress.total_installments} cicilan lunas
+              Progress cicilan: {item.overall_progress.paid_installments} dari {item.overall_progress.total_installments} cicilan lunas
             </Text>
-            <Text style={styles.progressPercentage}>
-              {item.overall_progress.percentage}%
-            </Text>
+            <Text style={styles.progressPercentage}>{item.overall_progress.percentage}%</Text>
           </View>
         </View>
 
@@ -333,9 +282,7 @@ const MonitoringScreen = () => {
         <View style={styles.header}>
           <View>
             <Text style={styles.title}>Monitoring Tagihan</Text>
-            <Text style={styles.subtitle}>
-              Pantau sisa saldo & status setoran harian nasabah
-            </Text>
+            <Text style={styles.subtitle}>Pantau sisa saldo & status setoran harian nasabah</Text>
           </View>
         </View>
 
@@ -347,9 +294,7 @@ const MonitoringScreen = () => {
 
           <View style={styles.monthTitleWrapper}>
             <AppIcon name="calendar-today" size={16} color={color.primary} />
-            <Text style={styles.monthTitle}>
-              {dayjs(selectedMonth, 'YYYY-MM').format('MMMM YYYY')}
-            </Text>
+            <Text style={styles.monthTitle}>{dayjs(selectedMonth, 'YYYY-MM').format('MMMM YYYY')}</Text>
           </View>
 
           <TouchableOpacity style={styles.monthButton} onPress={handleNextMonth}>
@@ -367,25 +312,19 @@ const MonitoringScreen = () => {
               </View>
               <View style={[styles.kpiCol, styles.kpiColBorder]}>
                 <Text style={styles.kpiLabel}>Terkumpul Hari Ini</Text>
-                <Text style={[styles.kpiValueBig, { color: '#15803D' }]}>
-                  Rp {formatCurrency(summary.total_collected_today)}
-                </Text>
+                <Text style={[styles.kpiValueBig, { color: '#15803D' }]}>Rp {formatCurrency(summary.total_collected_today)}</Text>
               </View>
             </View>
 
             <View style={styles.kpiStatusRow}>
               <View style={[styles.kpiPill, { backgroundColor: '#FEE2E2' }]}>
                 <AppIcon name="schedule" size={14} color="#B91C1C" />
-                <Text style={[styles.kpiPillText, { color: '#B91C1C' }]}>
-                  Belum Bayar: {summary.unpaid_today_count}
-                </Text>
+                <Text style={[styles.kpiPillText, { color: '#B91C1C' }]}>Belum Bayar: {summary.unpaid_today_count}</Text>
               </View>
 
               <View style={[styles.kpiPill, { backgroundColor: '#DCFCE7' }]}>
                 <AppIcon name="check-circle" size={14} color="#15803D" />
-                <Text style={[styles.kpiPillText, { color: '#15803D' }]}>
-                  Sudah Bayar: {summary.paid_today_count}
-                </Text>
+                <Text style={[styles.kpiPillText, { color: '#15803D' }]}>Sudah Bayar: {summary.paid_today_count}</Text>
               </View>
             </View>
           </View>
@@ -403,9 +342,7 @@ const MonitoringScreen = () => {
             returnKeyType="search"
           />
           {search.length > 0 && (
-            <TouchableOpacity
-              onPress={() => setSearch('')}
-              style={styles.clearSearchBtn}>
+            <TouchableOpacity onPress={() => setSearch('')} style={styles.clearSearchBtn}>
               <AppIcon name="close" size={18} color={color.neutral} />
             </TouchableOpacity>
           )}
@@ -413,47 +350,24 @@ const MonitoringScreen = () => {
 
         {/* Filter Tabs (Semua, Belum Bayar, Sudah Bayar) */}
         <View style={styles.filterContainer}>
-          <TouchableOpacity
-            style={[
-              styles.filterChip,
-              selectedStatus === 'ALL' && styles.filterChipActive,
-            ]}
-            onPress={() => setSelectedStatus('ALL')}>
-            <Text
-              style={[
-                styles.filterChipText,
-                selectedStatus === 'ALL' && styles.filterChipTextActive,
-              ]}>
+          <TouchableOpacity style={[styles.filterChip, selectedStatus === 'ALL' && styles.filterChipActive]} onPress={() => setSelectedStatus('ALL')}>
+            <Text style={[styles.filterChipText, selectedStatus === 'ALL' && styles.filterChipTextActive]}>
               Semua {summary ? `(${summary.total_customers})` : ''}
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[
-              styles.filterChip,
-              selectedStatus === 'UNPAID' && styles.filterChipActiveAlert,
-            ]}
+            style={[styles.filterChip, selectedStatus === 'UNPAID' && styles.filterChipActiveAlert]}
             onPress={() => setSelectedStatus('UNPAID')}>
-            <Text
-              style={[
-                styles.filterChipText,
-                selectedStatus === 'UNPAID' && styles.filterChipTextActive,
-              ]}>
+            <Text style={[styles.filterChipText, selectedStatus === 'UNPAID' && styles.filterChipTextActive]}>
               Belum Bayar {summary ? `(${summary.unpaid_today_count})` : ''}
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[
-              styles.filterChip,
-              selectedStatus === 'PAID' && styles.filterChipActiveSuccess,
-            ]}
+            style={[styles.filterChip, selectedStatus === 'PAID' && styles.filterChipActiveSuccess]}
             onPress={() => setSelectedStatus('PAID')}>
-            <Text
-              style={[
-                styles.filterChipText,
-                selectedStatus === 'PAID' && styles.filterChipTextActive,
-              ]}>
+            <Text style={[styles.filterChipText, selectedStatus === 'PAID' && styles.filterChipTextActive]}>
               Sudah Bayar {summary ? `(${summary.paid_today_count})` : ''}
             </Text>
           </TouchableOpacity>
@@ -469,22 +383,12 @@ const MonitoringScreen = () => {
         ) : (
           <FlatList
             data={dataList}
-            keyExtractor={(item) => item.loan_id}
+            keyExtractor={item => item.loan_id}
             renderItem={renderCard}
             contentContainerStyle={styles.listContainer}
-            refreshControl={
-              <RefreshControl
-                refreshing={refreshing}
-                onRefresh={onRefresh}
-                colors={[color.primary]}
-                tintColor={color.primary}
-              />
-            }
+            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[color.primary]} tintColor={color.primary} />}
             ListEmptyComponent={
-              <EmptyData
-                title="Tidak Ada Nasabah"
-                description="Tidak ada data nasabah yang sesuai kriteria pencarian atau filter"
-              />
+              <EmptyData title="Tidak Ada Nasabah" description="Tidak ada data nasabah yang sesuai kriteria pencarian atau filter" />
             }
             showsVerticalScrollIndicator={false}
             onEndReached={handleLoadMore}

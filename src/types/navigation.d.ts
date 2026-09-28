@@ -13,6 +13,7 @@ export type CourierRouteParamList = {
   CustomerCourier: undefined;
   Profile: undefined;
   Monitoring: undefined;
+  CourierDisbursement: undefined;
 };
 
 export type OtherRouteParamList = {
@@ -67,6 +68,7 @@ export type RouteParamList = {
   LeaveRequestDetail: {
     id: string;
   };
+  CourierDisbursement: undefined;
 };
 
 declare global {

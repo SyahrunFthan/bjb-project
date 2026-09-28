@@ -19,7 +19,9 @@ const TermsScreen = ({ navigation }: Props) => {
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()} activeOpacity={0.7}>
           <AppIcon name="arrow-back" size={20} color={color.black} />
         </TouchableOpacity>
-        <AppText style={styles.headerTitle} variant="semiBold">Syarat & Kebijakan</AppText>
+        <AppText style={styles.headerTitle} variant="semiBold">
+          Syarat & Kebijakan
+        </AppText>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
@@ -33,7 +35,9 @@ const TermsScreen = ({ navigation }: Props) => {
               Pernyataan Kepatuhan Layanan Keuangan
             </AppText>
             <AppText style={styles.complianceDesc}>
-              Aplikasi Koperasi Pinjaman PT. Bare Jaya Berdikari adalah portal administrasi internal dan monitoring real-time yang ditujukan <AppText variant="bold">HANYA untuk anggota resmi</AppText> Koperasi Pinjaman PT. Bare Jaya Berdikari. Aplikasi ini mematuhi Peraturan Kementerian Koperasi & UKM RI, Otoritas Jasa Keuangan (OJK), dan Kebijakan Layanan Keuangan Google Play Store.
+              Aplikasi Koperasi Pinjaman PT. Bare Jaya Berdikari adalah portal administrasi internal dan monitoring real-time yang ditujukan{' '}
+              <AppText variant="bold">HANYA untuk anggota resmi</AppText> Koperasi Pinjaman PT. Bare Jaya Berdikari. Aplikasi ini mematuhi Peraturan
+              Kementerian Koperasi & UKM RI, Otoritas Jasa Keuangan (OJK), dan Kebijakan Layanan Keuangan Google Play Store.
             </AppText>
           </View>
         </View>
@@ -44,24 +48,29 @@ const TermsScreen = ({ navigation }: Props) => {
             1. Ketentuan Umum & Keanggotaan
           </AppText>
           <AppText style={styles.paragraph}>
-            Dengan mengunduh, memasang, dan/atau menggunakan aplikasi Koperasi Pinjaman PT. Bare Jaya Berdikari ("Aplikasi"), Anda menyatakan bahwa Anda telah membaca, memahami, dan menyetujui seluruh ketentuan dalam Syarat dan Ketentuan Layanan ini. Jika Anda tidak menyetujui ketentuan ini, mohon untuk tidak melanjutkan penggunaan Aplikasi.
+            Dengan mengunduh, memasang, dan/atau menggunakan aplikasi Koperasi Pinjaman PT. Bare Jaya Berdikari ("Aplikasi"), Anda menyatakan bahwa
+            Anda telah membaca, memahami, dan menyetujui seluruh ketentuan dalam Syarat dan Ketentuan Layanan ini. Jika Anda tidak menyetujui
+            ketentuan ini, mohon untuk tidak melanjutkan penggunaan Aplikasi.
           </AppText>
           <View style={styles.bulletItem}>
             <AppText style={styles.bulletSymbol}>•</AppText>
             <AppText style={styles.bulletText}>
-              <AppText variant="bold">Pembatasan Anggota:</AppText> Layanan ini ditujukan secara eksklusif kepada Anggota Resmi Koperasi Pinjaman PT. Bare Jaya Berdikari yang memiliki Nomor Baku Anggota (NBA).
+              <AppText variant="bold">Pembatasan Anggota:</AppText> Layanan ini ditujukan secara eksklusif kepada Anggota Resmi Koperasi Pinjaman PT.
+              Bare Jaya Berdikari yang memiliki Nomor Baku Anggota (NBA).
             </AppText>
           </View>
           <View style={styles.bulletItem}>
             <AppText style={styles.bulletSymbol}>•</AppText>
             <AppText style={styles.bulletText}>
-              <AppText variant="bold">Kelayakan Usia:</AppText> Pengguna harus berusia minimal 21 tahun atau telah menikah, dan secara hukum cakap untuk mengikatkan diri dalam perjanjian pinjaman berdasarkan hukum Indonesia.
+              <AppText variant="bold">Kelayakan Usia:</AppText> Pengguna harus berusia minimal 21 tahun atau telah menikah, dan secara hukum cakap
+              untuk mengikatkan diri dalam perjanjian pinjaman berdasarkan hukum Indonesia.
             </AppText>
           </View>
           <View style={styles.bulletItem}>
             <AppText style={styles.bulletSymbol}>•</AppText>
             <AppText style={styles.bulletText}>
-              <AppText variant="bold">Modifikasi Syarat:</AppText> Kami berhak untuk mengubah Syarat dan Ketentuan ini sewaktu-waktu demi mematuhi pembaruan kebijakan regulasi pemerintah atau pembaruan fitur Aplikasi. Perubahan akan diumumkan melalui notifikasi Aplikasi.
+              <AppText variant="bold">Modifikasi Syarat:</AppText> Kami berhak untuk mengubah Syarat dan Ketentuan ini sewaktu-waktu demi mematuhi
+              pembaruan kebijakan regulasi pemerintah atau pembaruan fitur Aplikasi. Perubahan akan diumumkan melalui notifikasi Aplikasi.
             </AppText>
           </View>
         </View>
@@ -72,24 +81,28 @@ const TermsScreen = ({ navigation }: Props) => {
             2. Pendaftaran Akun & Keamanan
           </AppText>
           <AppText style={styles.paragraph}>
-            Proses pembuatan akun dan pendaftaran data Anggota/Nasabah dilakukan sepenuhnya secara luring (offline) oleh Petugas Lapangan resmi Koperasi Pinjaman PT. Bare Jaya Berdikari.
+            Proses pembuatan akun dan pendaftaran data Anggota/Nasabah dilakukan sepenuhnya secara luring (offline) oleh Petugas Lapangan resmi
+            Koperasi Pinjaman PT. Bare Jaya Berdikari.
           </AppText>
           <View style={styles.bulletItem}>
             <AppText style={styles.bulletSymbol}>•</AppText>
             <AppText style={styles.bulletText}>
-              <AppText variant="bold">Pembuatan Akun oleh Petugas:</AppText> Akun Anda akan dibuat secara langsung oleh petugas setelah data keanggotaan Anda diverifikasi di lapangan. Aplikasi ini tidak menyediakan pendaftaran mandiri (self-registration) untuk umum.
+              <AppText variant="bold">Pembuatan Akun oleh Petugas:</AppText> Akun Anda akan dibuat secara langsung oleh petugas setelah data
+              keanggotaan Anda diverifikasi di lapangan. Aplikasi ini tidak menyediakan pendaftaran mandiri (self-registration) untuk umum.
             </AppText>
           </View>
           <View style={styles.bulletItem}>
             <AppText style={styles.bulletSymbol}>•</AppText>
             <AppText style={styles.bulletText}>
-              <AppText variant="bold">Aktivasi Kredensial:</AppText> Anda akan menerima informasi login (email dan kata sandi sementara) secara langsung dari petugas lapangan untuk melakukan login pertama kali.
+              <AppText variant="bold">Aktivasi Kredensial:</AppText> Anda akan menerima informasi login (email dan kata sandi sementara) secara
+              langsung dari petugas lapangan untuk melakukan login pertama kali.
             </AppText>
           </View>
           <View style={styles.bulletItem}>
             <AppText style={styles.bulletSymbol}>•</AppText>
             <AppText style={styles.bulletText}>
-              <AppText variant="bold">Kerahasiaan Akun:</AppText> Anda sepenuhnya bertanggung jawab atas kata sandi dan keamanan akun Anda. Jangan membagikan detail login Anda kepada siapa pun, termasuk petugas lapangan kami.
+              <AppText variant="bold">Kerahasiaan Akun:</AppText> Anda sepenuhnya bertanggung jawab atas kata sandi dan keamanan akun Anda. Jangan
+              membagikan detail login Anda kepada siapa pun, termasuk petugas lapangan kami.
             </AppText>
           </View>
         </View>
@@ -105,19 +118,22 @@ const TermsScreen = ({ navigation }: Props) => {
           <View style={styles.bulletItem}>
             <AppText style={styles.bulletSymbol}>•</AppText>
             <AppText style={styles.bulletText}>
-              <AppText variant="bold">Monitoring Terbatas:</AppText> Nasabah/Anggota hanya diberikan akses khusus untuk memantau data tagihan, sisa kewajiban, dan invoice masing-masing yang terdaftar atas nama mereka sendiri.
+              <AppText variant="bold">Monitoring Terbatas:</AppText> Nasabah/Anggota hanya diberikan akses khusus untuk memantau data tagihan, sisa
+              kewajiban, dan invoice masing-masing yang terdaftar atas nama mereka sendiri.
             </AppText>
           </View>
           <View style={styles.bulletItem}>
             <AppText style={styles.bulletSymbol}>•</AppText>
             <AppText style={styles.bulletText}>
-              <AppText variant="bold">Invoice Digital:</AppText> Aplikasi secara otomatis menerbitkan dan menyajikan rincian invoice tagihan digital secara berkala sebagai bukti kewajiban pembayaran yang transparan.
+              <AppText variant="bold">Invoice Digital:</AppText> Aplikasi secara otomatis menerbitkan dan menyajikan rincian invoice tagihan digital
+              secara berkala sebagai bukti kewajiban pembayaran yang transparan.
             </AppText>
           </View>
           <View style={styles.bulletItem}>
             <AppText style={styles.bulletSymbol}>•</AppText>
             <AppText style={styles.bulletText}>
-              <AppText variant="bold">Metode Pembayaran:</AppText> Pembayaran cicilan hanya dapat dilakukan dengan pembayaran tunai yang diambil/dijemput langsung secara luring oleh petugas lapangan Koperasi yang dilengkapi identitas resmi dan tanda terima digital.
+              <AppText variant="bold">Metode Pembayaran:</AppText> Pembayaran cicilan hanya dapat dilakukan dengan pembayaran tunai yang
+              diambil/dijemput langsung secara luring oleh petugas lapangan Koperasi yang dilengkapi identitas resmi dan tanda terima digital.
             </AppText>
           </View>
         </View>
@@ -128,13 +144,16 @@ const TermsScreen = ({ navigation }: Props) => {
             4. Tenor, Suku Bunga & Ketentuan Pinjaman
           </AppText>
           <AppText style={styles.paragraph}>
-            Produk pinjaman yang disediakan oleh PT. Bare Jaya Berdikari memiliki pilihan jangka waktu (tenor) sesuai dengan kebijakan perusahaan dan kesepakatan yang tercantum dalam perjanjian pinjaman.
+            Produk pinjaman yang disediakan oleh PT. Bare Jaya Berdikari memiliki pilihan jangka waktu (tenor) sesuai dengan kebijakan perusahaan dan
+            kesepakatan yang tercantum dalam perjanjian pinjaman.
           </AppText>
           <AppText style={styles.paragraph}>
-            Besaran suku bunga, biaya administrasi, jumlah angsuran, serta total kewajiban pembayaran akan diinformasikan secara transparan kepada Anggota sebelum pinjaman disetujui dan dicantumkan dalam perjanjian pinjaman yang ditandatangani oleh kedua belah pihak.
+            Besaran suku bunga, biaya administrasi, jumlah angsuran, serta total kewajiban pembayaran akan diinformasikan secara transparan kepada
+            Anggota sebelum pinjaman disetujui dan dicantumkan dalam perjanjian pinjaman yang ditandatangani oleh kedua belah pihak.
           </AppText>
           <AppText style={styles.paragraph}>
-            Anggota menyatakan telah membaca, memahami, dan menyetujui seluruh rincian pinjaman yang telah disepakati bersama sebelum proses pencairan dilakukan.
+            Anggota menyatakan telah membaca, memahami, dan menyetujui seluruh rincian pinjaman yang telah disepakati bersama sebelum proses pencairan
+            dilakukan.
           </AppText>
         </View>
 
@@ -144,24 +163,28 @@ const TermsScreen = ({ navigation }: Props) => {
             5. Pengumpulan & Penggunaan Data
           </AppText>
           <AppText style={styles.paragraph}>
-            Privasi data Anda adalah prioritas kami. Seluruh informasi data pribadi yang dikumpulkan melalui Aplikasi diatur dalam Kebijakan Privasi Koperasi Pinjaman PT. Bare Jaya Berdikari.
+            Privasi data Anda adalah prioritas kami. Seluruh informasi data pribadi yang dikumpulkan melalui Aplikasi diatur dalam Kebijakan Privasi
+            Koperasi Pinjaman PT. Bare Jaya Berdikari.
           </AppText>
           <View style={styles.bulletItem}>
             <AppText style={styles.bulletSymbol}>•</AppText>
             <AppText style={styles.bulletText}>
-              <AppText variant="bold">Tujuan Pengumpulan:</AppText> Data KTP, Informasi Keuangan, dan NBA dikumpulkan secara khusus untuk verifikasi status keanggotaan koperasi dan kepatuhan prinsip Mengenal Nasabah (Know Your Customer - KYC).
+              <AppText variant="bold">Tujuan Pengumpulan:</AppText> Data KTP, Informasi Keuangan, dan NBA dikumpulkan secara khusus untuk verifikasi
+              status keanggotaan koperasi dan kepatuhan prinsip Mengenal Nasabah (Know Your Customer - KYC).
             </AppText>
           </View>
           <View style={styles.bulletItem}>
             <AppText style={styles.bulletSymbol}>•</AppText>
             <AppText style={styles.bulletText}>
-              <AppText variant="bold">Enkripsi Data:</AppText> Semua transmisi data pribadi dan transaksi finansial dienkripsi dengan aman menggunakan teknologi SSL/HTTPS berkekuatan tinggi guna mencegah penyadapan data.
+              <AppText variant="bold">Enkripsi Data:</AppText> Semua transmisi data pribadi dan transaksi finansial dienkripsi dengan aman menggunakan
+              teknologi SSL/HTTPS berkekuatan tinggi guna mencegah penyadapan data.
             </AppText>
           </View>
           <View style={styles.bulletItem}>
             <AppText style={styles.bulletSymbol}>•</AppText>
             <AppText style={styles.bulletText}>
-              <AppText variant="bold">Pihak Ketiga:</AppText> Kami tidak pernah menjual atau membagikan data pribadi Anda kepada pihak eksternal, kecuali diwajibkan oleh hukum atau putusan pengadilan Indonesia.
+              <AppText variant="bold">Pihak Ketiga:</AppText> Kami tidak pernah menjual atau membagikan data pribadi Anda kepada pihak eksternal,
+              kecuali diwajibkan oleh hukum atau putusan pengadilan Indonesia.
             </AppText>
           </View>
         </View>
@@ -172,18 +195,21 @@ const TermsScreen = ({ navigation }: Props) => {
             6. Batasan Tanggung Jawab
           </AppText>
           <AppText style={styles.paragraph}>
-            Koperasi Pinjaman PT. Bare Jaya Berdikari berupaya semaksimal mungkin menyediakan sistem teknologi yang andal, aman, dan tanpa kendala. Namun:
+            Koperasi Pinjaman PT. Bare Jaya Berdikari berupaya semaksimal mungkin menyediakan sistem teknologi yang andal, aman, dan tanpa kendala.
+            Namun:
           </AppText>
           <View style={styles.bulletItem}>
             <AppText style={styles.bulletSymbol}>•</AppText>
             <AppText style={styles.bulletText}>
-              Kami tidak bertanggung jawab atas kerugian finansial atau kerugian lainnya yang diakibatkan oleh kelalaian Anggota (e.g., kebocoran OTP/PIN, ponsel hilang, perangkat lunak berbahaya/malware di perangkat Anggota).
+              Kami tidak bertanggung jawab atas kerugian finansial atau kerugian lainnya yang diakibatkan oleh kelalaian Anggota (e.g., kebocoran
+              OTP/PIN, ponsel hilang, perangkat lunak berbahaya/malware di perangkat Anggota).
             </AppText>
           </View>
           <View style={styles.bulletItem}>
             <AppText style={styles.bulletSymbol}>•</AppText>
             <AppText style={styles.bulletText}>
-              Kami tidak bertanggung jawab atas gangguan layanan Aplikasi yang terjadi di luar kendali wajar kami (Force Majeure), seperti bencana alam, pemadaman listrik massal, atau gangguan jaringan internet nasional.
+              Kami tidak bertanggung jawab atas gangguan layanan Aplikasi yang terjadi di luar kendali wajar kami (Force Majeure), seperti bencana
+              alam, pemadaman listrik massal, atau gangguan jaringan internet nasional.
             </AppText>
           </View>
         </View>
@@ -197,7 +223,9 @@ const TermsScreen = ({ navigation }: Props) => {
             Syarat & Ketentuan Layanan ini dibuat, ditafsirkan, dan dilaksanakan berdasarkan hukum Negara Kesatuan Republik Indonesia.
           </AppText>
           <AppText style={styles.paragraph}>
-            Setiap perselisihan atau pertikaian yang timbul dari atau berkaitan dengan penggunaan Aplikasi ini akan diselesaikan secara musyawarah mufakat. Apabila kesepakatan tidak tercapai, perselisihan akan diselesaikan melalui jalur hukum resmi di Pengadilan Negeri yang disepakati bersama oleh kedua belah pihak.
+            Setiap perselisihan atau pertikaian yang timbul dari atau berkaitan dengan penggunaan Aplikasi ini akan diselesaikan secara musyawarah
+            mufakat. Apabila kesepakatan tidak tercapai, perselisihan akan diselesaikan melalui jalur hukum resmi di Pengadilan Negeri yang disepakati
+            bersama oleh kedua belah pihak.
           </AppText>
         </View>
 
@@ -207,7 +235,8 @@ const TermsScreen = ({ navigation }: Props) => {
             8. Hubungi Kami
           </AppText>
           <AppText style={styles.paragraph}>
-            Jika Anda memiliki pertanyaan, keluhan, kendala transaksi, atau memerlukan klarifikasi terkait dokumen Syarat & Ketentuan Layanan ini, silakan hubungi kami melalui saluran resmi berikut:
+            Jika Anda memiliki pertanyaan, keluhan, kendala transaksi, atau memerlukan klarifikasi terkait dokumen Syarat & Ketentuan Layanan ini,
+            silakan hubungi kami melalui saluran resmi berikut:
           </AppText>
 
           {/* Contact Details */}
@@ -217,7 +246,9 @@ const TermsScreen = ({ navigation }: Props) => {
                 <AppIcon name="location-on" size={16} color={color.primary} />
               </View>
               <View style={styles.contactTextContainer}>
-                <AppText variant="semiBold" style={styles.contactLabel}>Alamat Kantor</AppText>
+                <AppText variant="semiBold" style={styles.contactLabel}>
+                  Alamat Kantor
+                </AppText>
                 <AppText style={styles.contactValue}>Jl. Sis-Aljufrie, Kab. Tojo Una Una, Kec. Ampana Kota Sulawesi Tengah</AppText>
               </View>
             </View>
@@ -227,7 +258,9 @@ const TermsScreen = ({ navigation }: Props) => {
                 <AppIcon name="phone" size={16} color={color.primary} />
               </View>
               <View style={styles.contactTextContainer}>
-                <AppText variant="semiBold" style={styles.contactLabel}>Telepon</AppText>
+                <AppText variant="semiBold" style={styles.contactLabel}>
+                  Telepon
+                </AppText>
                 <AppText style={styles.contactValue}>082151077894 (Senin - Jumat | 08:00 - 16:00 WITA)</AppText>
               </View>
             </View>
@@ -237,7 +270,9 @@ const TermsScreen = ({ navigation }: Props) => {
                 <AppIcon name="email" size={16} color={color.primary} />
               </View>
               <View style={styles.contactTextContainer}>
-                <AppText variant="semiBold" style={styles.contactLabel}>Email Support</AppText>
+                <AppText variant="semiBold" style={styles.contactLabel}>
+                  Email Support
+                </AppText>
                 <AppText style={styles.contactValue}>bjb@barejaya.id</AppText>
               </View>
             </View>
@@ -246,9 +281,7 @@ const TermsScreen = ({ navigation }: Props) => {
 
         {/* Footer Branding */}
         <View style={styles.footer}>
-          <AppText style={styles.footerText}>
-            &copy; {new Date().getFullYear()} PT. Bare Jaya Berdikari. Hak Cipta Dilindungi Undang-Undang.
-          </AppText>
+          <AppText style={styles.footerText}>&copy; {new Date().getFullYear()} PT. Bare Jaya Berdikari. Hak Cipta Dilindungi Undang-Undang.</AppText>
         </View>
       </ScrollView>
     </SafeAreaView>

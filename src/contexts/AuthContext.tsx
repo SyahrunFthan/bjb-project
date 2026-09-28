@@ -65,16 +65,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
   }, [modal]);
 
-  const value = useMemo(() => ({
-    auth,
-    setAuth,
-    hasUnreadNotification,
-    setHasUnreadNotification,
-    refreshUnreadStatus,
-  }), [auth, hasUnreadNotification]);
+  const value = useMemo(
+    () => ({
+      auth,
+      setAuth,
+      hasUnreadNotification,
+      setHasUnreadNotification,
+      refreshUnreadStatus,
+    }),
+    [auth, hasUnreadNotification],
+  );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => useContext(AuthContext);
-

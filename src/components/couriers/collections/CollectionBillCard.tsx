@@ -31,8 +31,7 @@ const CollectionBillCard = ({ item, loading, onPay, onViewReceipt, processing }:
   const instAmount = Number(item.amount || 0);
   const instPaidAmount = Number(item.paid_amount || 0);
   const remaining = Math.max(0, Math.round(instAmount - instPaidAmount));
-  const isFullyPaid =
-    item.status === 'paid' || (instAmount > 0 && (remaining < 1 || instPaidAmount >= instAmount));
+  const isFullyPaid = item.status === 'paid' || (instAmount > 0 && (remaining < 1 || instPaidAmount >= instAmount));
 
   // Check overdue
   const today = dayjs().startOf('day');
@@ -88,9 +87,7 @@ const CollectionBillCard = ({ item, loading, onPay, onViewReceipt, processing }:
       {/* Body: Amounts & Actions */}
       <View style={styles.cardBody}>
         <View style={styles.amountsColumn}>
-          <AppText style={styles.amountLabel}>
-            {isFullyPaid ? 'Nominal Lunas' : 'Sisa yang Harus Dibayar'}
-          </AppText>
+          <AppText style={styles.amountLabel}>{isFullyPaid ? 'Nominal Lunas' : 'Sisa yang Harus Dibayar'}</AppText>
           <AppText variant="bold" style={[styles.amountVal, isFullyPaid ? styles.amountValPaid : styles.amountValPending]}>
             Rp {formatCurrency(isFullyPaid ? instAmount : remaining)}
           </AppText>
@@ -107,21 +104,11 @@ const CollectionBillCard = ({ item, loading, onPay, onViewReceipt, processing }:
 
         <View style={styles.actionColumn}>
           {!isFullyPaid && (
-            <Button
-              disabled={processing}
-              title="Catat Bayar"
-              type="default"
-              size="small"
-              onPress={() => onPay(item)}
-              style={styles.payBtn}
-            />
+            <Button disabled={processing} title="Catat Bayar" type="default" size="small" onPress={() => onPay(item)} style={styles.payBtn} />
           )}
 
           {hasPayments && onViewReceipt && latestPayment && (
-            <TouchableOpacity
-              activeOpacity={0.7}
-              style={styles.receiptBtn}
-              onPress={() => onViewReceipt(latestPayment.id)}>
+            <TouchableOpacity activeOpacity={0.7} style={styles.receiptBtn} onPress={() => onViewReceipt(latestPayment.id)}>
               <AppIcon name="receipt" size={14} color={color.primary} />
               <AppText variant="semiBold" style={styles.receiptBtnText}>
                 Struk
@@ -134,33 +121,19 @@ const CollectionBillCard = ({ item, loading, onPay, onViewReceipt, processing }:
       {/* Payment History Toggle & Details */}
       {hasPayments && (
         <View style={styles.historyContainer}>
-          <TouchableOpacity
-            activeOpacity={0.7}
-            style={styles.historyToggleRow}
-            onPress={() => setShowHistory(!showHistory)}>
+          <TouchableOpacity activeOpacity={0.7} style={styles.historyToggleRow} onPress={() => setShowHistory(!showHistory)}>
             <View style={styles.historyToggleLeft}>
               <AppIcon name="history" size={14} color={color.neutral} />
-              <AppText style={styles.historyToggleText}>
-                {payments.length} Riwayat Setoran
-              </AppText>
+              <AppText style={styles.historyToggleText}>{payments.length} Riwayat Setoran</AppText>
             </View>
-            <AppIcon
-              name={showHistory ? 'expand-less' : 'expand-more'}
-              size={18}
-              color={color.neutral}
-            />
+            <AppIcon name={showHistory ? 'expand-less' : 'expand-more'} size={18} color={color.neutral} />
           </TouchableOpacity>
 
           {showHistory && (
             <View style={styles.historyList}>
               {payments.map((p: any, idx: number) => {
-                const pDate = dayjs(p.payment_date).isValid()
-                  ? dayjs(p.payment_date).format('DD MMM YYYY, HH:mm')
-                  : '-';
-                const isCash =
-                  !p.payment_method ||
-                  p.payment_method.toLowerCase() === 'cash' ||
-                  p.payment_method.toLowerCase() === 'courier';
+                const pDate = dayjs(p.payment_date).isValid() ? dayjs(p.payment_date).format('DD MMM YYYY, HH:mm') : '-';
+                const isCash = !p.payment_method || p.payment_method.toLowerCase() === 'cash' || p.payment_method.toLowerCase() === 'courier';
 
                 return (
                   <View key={p.id || idx} style={styles.historyItemRow}>
@@ -178,10 +151,7 @@ const CollectionBillCard = ({ item, loading, onPay, onViewReceipt, processing }:
                         +Rp {formatCurrency(p.amount)}
                       </AppText>
                       {onViewReceipt && (
-                        <TouchableOpacity
-                          activeOpacity={0.7}
-                          onPress={() => onViewReceipt(p.id)}
-                          style={styles.historyReceiptIcon}>
+                        <TouchableOpacity activeOpacity={0.7} onPress={() => onViewReceipt(p.id)} style={styles.historyReceiptIcon}>
                           <AppIcon name="receipt" size={16} color={color.primary} />
                         </TouchableOpacity>
                       )}

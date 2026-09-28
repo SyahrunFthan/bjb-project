@@ -27,13 +27,7 @@ const Select = ({ label, placeholder = 'Pilih salah satu', value, onValueChange,
   };
 
   const renderItem = useCallback(
-    ({ item }: { item: Option }) => (
-      <OptionItem
-        item={item}
-        isSelected={item.value === value}
-        onPress={handleSelect}
-      />
-    ),
+    ({ item }: { item: Option }) => <OptionItem item={item} isSelected={item.value === value} onPress={handleSelect} />,
     [value, handleSelect],
   );
 
@@ -86,15 +80,12 @@ interface OptionItemProps {
 
 const OptionItem = React.memo(({ item, isSelected, onPress }: OptionItemProps) => {
   return (
-    <TouchableOpacity
-      style={[styles.optionItem, isSelected && styles.optionSelected]}
-      onPress={() => onPress(item)}>
+    <TouchableOpacity style={[styles.optionItem, isSelected && styles.optionSelected]} onPress={() => onPress(item)}>
       <Text style={[styles.optionText, isSelected && styles.optionTextSelected]}>{item.label}</Text>
       {isSelected && <AppIcon name="check" size={20} color={color.primary} />}
     </TouchableOpacity>
   );
 });
-
 
 export default Select;
 

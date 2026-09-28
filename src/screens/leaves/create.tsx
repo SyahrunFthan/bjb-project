@@ -306,9 +306,7 @@ const LeaveRequestCreateScreen = ({ navigation }: Props) => {
                       </View>
                     )}
                   </View>
-                  <AppText style={[styles.ruleDescText, isSick ? { color: '#991B1B' } : null]}>
-                    {currentRule.description}
-                  </AppText>
+                  <AppText style={[styles.ruleDescText, isSick ? { color: '#991B1B' } : null]}>{currentRule.description}</AppText>
                 </View>
               </View>
             )}
@@ -325,10 +323,7 @@ const LeaveRequestCreateScreen = ({ navigation }: Props) => {
             {isSick ? (
               <View>
                 {/* Opsi khusus sakit: default tanpa tanggal */}
-                <TouchableOpacity
-                  style={styles.toggleCustomDatesBox}
-                  onPress={() => setCustomDatesForSick(!customDatesForSick)}
-                  activeOpacity={0.7}>
+                <TouchableOpacity style={styles.toggleCustomDatesBox} onPress={() => setCustomDatesForSick(!customDatesForSick)} activeOpacity={0.7}>
                   <AppIcon
                     name={customDatesForSick ? 'check-box' : 'check-box-outline-blank'}
                     size={22}
@@ -338,9 +333,7 @@ const LeaveRequestCreateScreen = ({ navigation }: Props) => {
                     <AppText variant="semiBold" style={styles.toggleCustomDatesTitle}>
                       Tentukan rentang tanggal istirahat
                     </AppText>
-                    <AppText style={styles.toggleCustomDatesSub}>
-                      Centang jika surat dokter memuat rentang istirahat lebih dari 1 hari.
-                    </AppText>
+                    <AppText style={styles.toggleCustomDatesSub}>Centang jika surat dokter memuat rentang istirahat lebih dari 1 hari.</AppText>
                   </View>
                 </TouchableOpacity>
 

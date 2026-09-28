@@ -6,16 +6,10 @@ interface AppTextProps extends TextProps {
   variant?: 'regular' | 'medium' | 'semiBold' | 'bold';
 }
 
-export const AppText: React.FC<AppTextProps> = ({
-  style,
-  variant = 'regular',
-  ...props
-}) => {
+export const AppText: React.FC<AppTextProps> = ({ style, variant = 'regular', ...props }) => {
   const fontFamily = fonts[variant];
 
-  return (
-    <Text style={[{ fontFamily }, styles.defaultText, style]} {...props} />
-  );
+  return <Text style={[{ fontFamily }, styles.defaultText, style]} {...props} />;
 };
 
 const styles = StyleSheet.create({

@@ -1,12 +1,5 @@
 import React, { useEffect } from 'react';
-import {
-  BackHandler,
-  Linking,
-  Modal,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { BackHandler, Linking, Modal, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { color } from '@/assets/color';
 import { AppText } from '@/components/AppText';
 import AppIcon from '@/components/Icon';
@@ -22,16 +15,7 @@ interface UpdateModalProps {
   onClose?: () => void;
 }
 
-const UpdateModal: React.FC<UpdateModalProps> = ({
-  visible,
-  forceUpdate,
-  title,
-  message,
-  latestVersionName,
-  notes = [],
-  updateUrl,
-  onClose,
-}) => {
+const UpdateModal: React.FC<UpdateModalProps> = ({ visible, forceUpdate, title, message, latestVersionName, notes = [], updateUrl, onClose }) => {
   // Cegah tombol back hardware Android jika update bersifat wajib (force update)
   useEffect(() => {
     if (!visible || !forceUpdate) return;
@@ -111,19 +95,13 @@ const UpdateModal: React.FC<UpdateModalProps> = ({
 
           {/* Action Buttons */}
           <View style={styles.buttonStack}>
-            <TouchableOpacity
-              style={[styles.primaryButton, { backgroundColor: color.primary }]}
-              onPress={handleOpenStore}
-              activeOpacity={0.85}>
+            <TouchableOpacity style={[styles.primaryButton, { backgroundColor: color.primary }]} onPress={handleOpenStore} activeOpacity={0.85}>
               <AppIcon name="launch" size={18} color={color.white} style={{ marginRight: 8 }} />
               <AppText style={styles.primaryButtonText}>Perbarui Sekarang</AppText>
             </TouchableOpacity>
 
             {!forceUpdate && onClose ? (
-              <TouchableOpacity
-                style={styles.secondaryButton}
-                onPress={onClose}
-                activeOpacity={0.7}>
+              <TouchableOpacity style={styles.secondaryButton} onPress={onClose} activeOpacity={0.7}>
                 <AppText style={styles.secondaryButtonText}>Nanti Saja</AppText>
               </TouchableOpacity>
             ) : null}

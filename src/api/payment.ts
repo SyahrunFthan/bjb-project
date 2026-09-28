@@ -2,7 +2,7 @@ import { ModalProps } from '@/contexts/ModalContext';
 import api from '@/lib/api';
 import { processFail } from '@/lib/process';
 import { RecentPayment } from '@/model/dashboard';
-import { CustomerMonitoringItem, Installment, MonitoringSummary } from '@/model/loan';
+import { CustomerMonitoringItem, MonitoringSummary } from '@/model/loan';
 import { AxiosError } from 'axios';
 import { Dispatch, SetStateAction } from 'react';
 
@@ -23,7 +23,15 @@ interface PaymentActivityProps {
   setRefreshing: Dispatch<SetStateAction<boolean>>;
 }
 
-export const recentPaymentGet = async ({ modal, search, page = 1, limit = 20, setLoading, setRecentPayments, setRefreshing }: PaymentActivityProps) => {
+export const recentPaymentGet = async ({
+  modal,
+  search,
+  page = 1,
+  limit = 20,
+  setLoading,
+  setRecentPayments,
+  setRefreshing,
+}: PaymentActivityProps) => {
   try {
     setLoading(true);
     const response = await api.get(`/mobile/payments/activity`, {
@@ -54,7 +62,7 @@ interface PaymentMonitoringProps {
   setDataList: (
     list: CustomerMonitoringItem[],
     meta?: { total?: number; page?: number; limit?: number; has_more?: boolean },
-    summary?: MonitoringSummary
+    summary?: MonitoringSummary,
   ) => void;
   setSummary?: (summary: MonitoringSummary) => void;
   setLoading?: Dispatch<SetStateAction<boolean>>;

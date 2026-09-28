@@ -10,11 +10,26 @@ interface Props {
   onDateChange: (date: Date) => void;
   error?: string;
   containerStyle?: ViewStyle;
+  visible?: boolean;
+  onClose?: () => void;
+  showInput?: boolean;
 }
 
-const DatePicker = ({ label, placeholder = 'Pilih Tanggal', value, onDateChange, error, containerStyle }: Props) => {
-  const [modalVisible, setModalVisible] = useState(false);
-  
+const DatePicker = ({
+  label,
+  placeholder = 'Pilih Tanggal',
+  value,
+  onDateChange,
+  error,
+  containerStyle,
+  visible,
+  onClose,
+  showInput = true,
+}: Props) => {
+  const [internalModalVisible, setInternalModalVisible] = useState(false);
+  const isControlled = typeof visible === 'boolean';
+  const modalVisible = isControlled ? visible : internalModalVisible;
+
   const [selectedDay, setSelectedDay] = useState(1);
   const [selectedMonth, setSelectedMonth] = useState(0);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
@@ -36,6 +51,15 @@ const DatePicker = ({ label, placeholder = 'Pilih Tanggal', value, onDateChange,
 
   const currentYear = new Date().getFullYear();
   const yearsData = Array.from({ length: currentYear - 1930 + 6 }, (_, i) => currentYear + 5 - i);
+
+  useEffect(() => {
+    if (modalVisible) {
+      const initialDate = value || new Date();
+      setSelectedDay(initialDate.getDate());
+      setSelectedMonth(initialDate.getMonth());
+      setSelectedYear(initialDate.getFullYear());
+    }
+  }, [modalVisible, value]);
 
   useEffect(() => {
     if (modalVisible) {
@@ -71,7 +95,7 @@ const DatePicker = ({ label, placeholder = 'Pilih Tanggal', value, onDateChange,
     setSelectedDay(initialDate.getDate());
     setSelectedMonth(initialDate.getMonth());
     setSelectedYear(initialDate.getFullYear());
-    setModalVisible(true);
+    setInternalModalVisible(true);
   };
 
   const handleConfirm = () => {
@@ -79,70 +103,73 @@ const DatePicker = ({ label, placeholder = 'Pilih Tanggal', value, onDateChange,
     const day = Math.min(selectedDay, daysInSelected);
     const date = new Date(selectedYear, selectedMonth, day);
     onDateChange(date);
-    setModalVisible(false);
+    if (isControlled) {
+      onClose?.();
+    } else {
+      setInternalModalVisible(false);
+    }
   };
 
   const handleCancel = () => {
-    setModalVisible(false);
+    if (isControlled) {
+      onClose?.();
+    } else {
+      setInternalModalVisible(false);
+    }
   };
 
   const formatDate = (date: Date) => {
     return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
   };
 
-  const renderDayItem = useCallback(({ item }: { item: number }) => (
-    <PickerItem
-      label={item}
-      isSelected={selectedDay === item}
-      onPress={() => setSelectedDay(item)}
-    />
-  ), [selectedDay]);
+  const renderDayItem = useCallback(
+    ({ item }: { item: number }) => <PickerItem label={item} isSelected={selectedDay === item} onPress={() => setSelectedDay(item)} />,
+    [selectedDay],
+  );
 
-  const renderMonthItem = useCallback(({ item }: { item: { label: string; value: number } }) => (
-    <PickerItem
-      label={item.label}
-      isSelected={selectedMonth === item.value}
-      onPress={() => setSelectedMonth(item.value)}
-    />
-  ), [selectedMonth]);
+  const renderMonthItem = useCallback(
+    ({ item }: { item: { label: string; value: number } }) => (
+      <PickerItem label={item.label} isSelected={selectedMonth === item.value} onPress={() => setSelectedMonth(item.value)} />
+    ),
+    [selectedMonth],
+  );
 
-  const renderYearItem = useCallback(({ item }: { item: number }) => (
-    <PickerItem
-      label={item}
-      isSelected={selectedYear === item}
-      onPress={() => setSelectedYear(item)}
-    />
-  ), [selectedYear]);
+  const renderYearItem = useCallback(
+    ({ item }: { item: number }) => <PickerItem label={item} isSelected={selectedYear === item} onPress={() => setSelectedYear(item)} />,
+    [selectedYear],
+  );
 
   return (
-    <View style={[styles.container, containerStyle]}>
-      {label && <Text style={styles.label}>{label}</Text>}
+    <View style={showInput ? [styles.container, containerStyle] : undefined}>
+      {showInput && (
+        <>
+          {label && <Text style={styles.label}>{label}</Text>}
 
-      <TouchableOpacity activeOpacity={0.7} onPress={handleOpen} style={[styles.selectorContainer, error ? styles.inputError : null]}>
-        <Text style={[styles.valueText, !value && styles.placeholderText]}>{value ? formatDate(value) : placeholder}</Text>
-        <AppIcon name="calendar-today" size={20} color={color.neutral} />
-      </TouchableOpacity>
+          <TouchableOpacity activeOpacity={0.7} onPress={handleOpen} style={[styles.selectorContainer, error ? styles.inputError : null]}>
+            <Text style={[styles.valueText, !value && styles.placeholderText]}>{value ? formatDate(value) : placeholder}</Text>
+            <AppIcon name="calendar-today" size={20} color={color.neutral} />
+          </TouchableOpacity>
 
-      {error && <Text style={styles.errorText}>{error}</Text>}
+          {error && <Text style={styles.errorText}>{error}</Text>}
+        </>
+      )}
 
       <Modal visible={modalVisible} transparent={true} animationType="slide" onRequestClose={handleCancel}>
         <TouchableOpacity style={styles.modalBackdrop} activeOpacity={1} onPress={handleCancel}>
           <TouchableOpacity activeOpacity={1} style={styles.modalContent}>
-            
             <View style={styles.header}>
               <TouchableOpacity onPress={handleCancel} style={styles.headerButton}>
                 <Text style={styles.cancelText}>Batal</Text>
               </TouchableOpacity>
-              
+
               <Text style={styles.headerTitle}>{label || 'Pilih Tanggal'}</Text>
-              
+
               <TouchableOpacity onPress={handleConfirm} style={styles.headerButton}>
                 <Text style={styles.confirmText}>Selesai</Text>
               </TouchableOpacity>
             </View>
 
             <View style={styles.pickersContainer}>
-              
               <View style={styles.pickerColumn}>
                 <Text style={styles.columnLabel}>Tanggal</Text>
                 <FlatList
@@ -190,9 +217,7 @@ const DatePicker = ({ label, placeholder = 'Pilih Tanggal', value, onDateChange,
                   renderItem={renderYearItem}
                 />
               </View>
-
             </View>
-
           </TouchableOpacity>
         </TouchableOpacity>
       </Modal>
@@ -208,17 +233,13 @@ interface PickerItemProps {
 
 const PickerItem = React.memo(({ label, isSelected, onPress }: PickerItemProps) => {
   return (
-    <TouchableOpacity
-      activeOpacity={0.7}
-      style={[styles.pickerItem, isSelected && styles.selectedPickerItem]}
-      onPress={onPress}>
+    <TouchableOpacity activeOpacity={0.7} style={[styles.pickerItem, isSelected && styles.selectedPickerItem]} onPress={onPress}>
       <Text style={[styles.pickerItemText, isSelected && styles.selectedPickerItemText]}>{label}</Text>
     </TouchableOpacity>
   );
 });
 
 export default DatePicker;
-
 
 const styles = StyleSheet.create({
   container: {

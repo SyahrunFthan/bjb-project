@@ -66,20 +66,11 @@ export const AddressTab = ({ profile, onSuccess }: Props) => {
     });
   };
 
-  const getRegencyOptions = useCallback(
-    (query: string) => fetchRegencies(provinceId, query),
-    [provinceId],
-  );
+  const getRegencyOptions = useCallback((query: string) => fetchRegencies(provinceId, query), [provinceId]);
 
-  const getDistrictOptions = useCallback(
-    (query: string) => fetchDistricts(regencyId, query),
-    [regencyId],
-  );
+  const getDistrictOptions = useCallback((query: string) => fetchDistricts(regencyId, query), [regencyId]);
 
-  const getSubDistrictOptions = useCallback(
-    (query: string) => fetchSubDistricts(districtId, query),
-    [districtId],
-  );
+  const getSubDistrictOptions = useCallback((query: string) => fetchSubDistricts(districtId, query), [districtId]);
 
   return (
     <View style={styles.card}>
@@ -132,20 +123,10 @@ export const AddressTab = ({ profile, onSuccess }: Props) => {
 
       <View style={{ flexDirection: 'row', gap: 12 }}>
         <View style={{ flex: 1 }}>
-          <Input 
-            label="RT" 
-            placeholder="RT" 
-            value={neighborhoodUnit} 
-            onChangeText={setNeighborhoodUnit} 
-          />
+          <Input label="RT" placeholder="RT" value={neighborhoodUnit} onChangeText={setNeighborhoodUnit} />
         </View>
         <View style={{ flex: 1 }}>
-          <Input 
-            label="RW" 
-            placeholder="RW" 
-            value={communityUnit} 
-            onChangeText={setCommunityUnit} 
-          />
+          <Input label="RW" placeholder="RW" value={communityUnit} onChangeText={setCommunityUnit} />
         </View>
       </View>
 
@@ -158,21 +139,9 @@ export const AddressTab = ({ profile, onSuccess }: Props) => {
         maxLength={5}
       />
 
-      <Input
-        label="Alamat Lengkap"
-        placeholder="Jalan, Blok, No. Rumah"
-        value={address}
-        onChangeText={setAddress}
-        multiline
-        numberOfLines={3}
-      />
+      <Input label="Alamat Lengkap" placeholder="Jalan, Blok, No. Rumah" value={address} onChangeText={setAddress} multiline numberOfLines={3} />
 
-      <Button 
-        title="Perbarui Alamat" 
-        onPress={handleUpdateAddress} 
-        disabled={processing} 
-        style={styles.actionBtn} 
-      />
+      <Button title="Perbarui Alamat" onPress={handleUpdateAddress} disabled={processing} style={styles.actionBtn} />
     </View>
   );
 };

@@ -46,16 +46,7 @@ export const PersonalTab = ({ profile, onSuccess, isEmployee = false }: Props) =
 
   const handleUpdateProfile = () => {
     const isMaritalRequired = !isEmployee;
-    if (
-      !fullName ||
-      !placeOfBirth ||
-      !dateOfBirth ||
-      !gender ||
-      (isMaritalRequired && !maritalStatus) ||
-      !religion ||
-      !email ||
-      !phoneNumber
-    ) {
+    if (!fullName || !placeOfBirth || !dateOfBirth || !gender || (isMaritalRequired && !maritalStatus) || !religion || !email || !phoneNumber) {
       Alert.alert('Form Belum Lengkap', 'Silakan lengkapi semua bidang wajib data pribadi.');
       return;
     }
@@ -102,30 +93,15 @@ export const PersonalTab = ({ profile, onSuccess, isEmployee = false }: Props) =
 
   return (
     <View style={styles.card}>
-      <Input 
-        label="Nama Lengkap" 
-        placeholder="Masukkan nama lengkap" 
-        value={fullName} 
-        onChangeText={setFullName} 
-      />
-      <Input 
-        label="Tempat Lahir" 
-        placeholder="Kota tempat lahir" 
-        value={placeOfBirth} 
-        onChangeText={setPlaceOfBirth} 
-      />
-      <DatePicker 
-        label="Tanggal Lahir" 
-        placeholder="Pilih Tanggal Lahir" 
-        value={dateOfBirth} 
-        onDateChange={setDateOfBirth} 
-      />
-      <Select 
-        label="Jenis Kelamin" 
-        placeholder="Pilih jenis kelamin" 
-        value={gender} 
-        onValueChange={val => setGender(String(val))} 
-        options={genderOptions} 
+      <Input label="Nama Lengkap" placeholder="Masukkan nama lengkap" value={fullName} onChangeText={setFullName} />
+      <Input label="Tempat Lahir" placeholder="Kota tempat lahir" value={placeOfBirth} onChangeText={setPlaceOfBirth} />
+      <DatePicker label="Tanggal Lahir" placeholder="Pilih Tanggal Lahir" value={dateOfBirth} onDateChange={setDateOfBirth} />
+      <Select
+        label="Jenis Kelamin"
+        placeholder="Pilih jenis kelamin"
+        value={gender}
+        onValueChange={val => setGender(String(val))}
+        options={genderOptions}
       />
       {!isEmployee && (
         <Select
@@ -136,21 +112,8 @@ export const PersonalTab = ({ profile, onSuccess, isEmployee = false }: Props) =
           options={maritalStatusOptions}
         />
       )}
-      <Select 
-        label="Agama" 
-        placeholder="Pilih agama" 
-        value={religion} 
-        onValueChange={val => setReligion(String(val))} 
-        options={religionOptions} 
-      />
-      <Input
-        label="Email"
-        placeholder="email@example.com"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-        autoCapitalize="none"
-      />
+      <Select label="Agama" placeholder="Pilih agama" value={religion} onValueChange={val => setReligion(String(val))} options={religionOptions} />
+      <Input label="Email" placeholder="email@example.com" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
       <Input
         label="Nomor Telepon"
         placeholder="08xxxxxxxxxx"
@@ -160,12 +123,7 @@ export const PersonalTab = ({ profile, onSuccess, isEmployee = false }: Props) =
         maxLength={15}
       />
 
-      <Button 
-        title="Perbarui Data Pribadi" 
-        onPress={handleUpdateProfile} 
-        disabled={processing} 
-        style={styles.actionBtn} 
-      />
+      <Button title="Perbarui Data Pribadi" onPress={handleUpdateProfile} disabled={processing} style={styles.actionBtn} />
     </View>
   );
 };

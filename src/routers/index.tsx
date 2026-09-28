@@ -3,6 +3,7 @@ import BoardingScreen from '@/screens/boarding';
 import ActivityScreen from '@/screens/couriers/activities';
 import CourierCollectionScreen from '@/screens/couriers/collection';
 import CourierCollectionDetailScreen from '@/screens/couriers/collection/detail';
+import CourierDisbursementScreen from '@/screens/couriers/disbursements';
 import CustomerCreateScreen from '@/screens/couriers/customers/create';
 import CustomerEditScreen from '@/screens/couriers/customers/edit';
 import CourierLoanCreateScreen from '@/screens/couriers/loans/create';
@@ -51,6 +52,7 @@ const Routes = () => {
       <Stack.Screen name="CourierLoanEdit" component={CourierLoanEditScreen} />
       <Stack.Screen name="CourierCollection" component={CourierCollectionScreen} />
       <Stack.Screen name="CourierCollectionDetail" component={CourierCollectionDetailScreen} />
+      <Stack.Screen name="CourierDisbursement" component={CourierDisbursementScreen} />
       <Stack.Screen name="Boarding" component={BoardingScreen} />
       <Stack.Screen name="Terms" component={TermsScreen} />
       <Stack.Screen name="Help" component={HelpScreen} />

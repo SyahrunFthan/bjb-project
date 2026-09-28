@@ -178,7 +178,7 @@ const DashboardContent = ({ dashboardData, loading, navigation }: Props) => {
         <View style={styles.section}>
           <SkeletonText lines={1} style={{ width: 120, height: 16, marginBottom: 12 }} />
           <View style={styles.quickGrid}>
-            {[0, 2, 4].map(startIndex => (
+            {[0, 2, 4, 6, 8].map(startIndex => (
               <View key={startIndex} style={styles.quickGridRow}>
                 {[0, 1].map(offset => (
                   <Card key={startIndex + offset} style={styles.quickGridItem}>
@@ -572,6 +572,31 @@ const DashboardContent = ({ dashboardData, loading, navigation }: Props) => {
                 Master Wajah
               </AppText>
               <AppText style={styles.quickGridSubtitle}>Biometrik</AppText>
+            </TouchableOpacity>
+          </View>
+
+          {/* Baris 5 */}
+          <View style={styles.quickGridRow}>
+            {/* Action 9: Pencairan Nasabah */}
+            <TouchableOpacity activeOpacity={0.8} style={styles.quickGridItem} onPress={() => navigation.navigate('CourierDisbursement')}>
+              <View style={[styles.quickIconCircle, { backgroundColor: '#ECFDF5' }]}>
+                <AppIcon name="payments" size={22} color="#059669" />
+              </View>
+              <AppText variant="semiBold" style={styles.quickGridTitle}>
+                Pencairan
+              </AppText>
+              <AppText style={styles.quickGridSubtitle}>Dropping Dana</AppText>
+            </TouchableOpacity>
+
+            {/* Action 10: Data Pinjaman */}
+            <TouchableOpacity activeOpacity={0.8} style={styles.quickGridItem} onPress={() => (navigation as any).navigate('CourierLoan')}>
+              <View style={[styles.quickIconCircle, { backgroundColor: '#EFF6FF' }]}>
+                <AppIcon name="assignment" size={22} color="#2563EB" />
+              </View>
+              <AppText variant="semiBold" style={styles.quickGridTitle}>
+                Data Pinjaman
+              </AppText>
+              <AppText style={styles.quickGridSubtitle}>Semua Pengajuan</AppText>
             </TouchableOpacity>
           </View>
         </View>

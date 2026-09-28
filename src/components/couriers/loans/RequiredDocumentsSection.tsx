@@ -18,14 +18,7 @@ interface Props {
   modal: ModalProps;
 }
 
-const RequiredDocumentsSection = ({
-  customerId,
-  requirementDocs,
-  uploadedDocs,
-  setUploadedDocs,
-  loadingDocs,
-  modal,
-}: Props) => {
+const RequiredDocumentsSection = ({ customerId, requirementDocs, uploadedDocs, setUploadedDocs, loadingDocs, modal }: Props) => {
   const [uploadModalVisible, setUploadModalVisible] = useState<boolean>(false);
   const [activeReqDoc, setActiveReqDoc] = useState<RequirementDocument | null>(null);
 
@@ -74,9 +67,7 @@ const RequiredDocumentsSection = ({
                       </View>
                       {doc.document_type === 'pdf' && (
                         <View style={[styles.badge, styles.badgePdf]}>
-                          <AppText style={[styles.badgeText, styles.badgePdfText]}>
-                            PDF
-                          </AppText>
+                          <AppText style={[styles.badgeText, styles.badgePdfText]}>PDF</AppText>
                         </View>
                       )}
                     </View>

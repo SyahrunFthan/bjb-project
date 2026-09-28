@@ -73,10 +73,7 @@ export const fetchLeaveRequestDetail = async (
   }
 };
 
-export const fetchColleagues = async (
-  setColleagues: Dispatch<SetStateAction<Colleague[]>>,
-  modal: ModalProps,
-): Promise<void> => {
+export const fetchColleagues = async (setColleagues: Dispatch<SetStateAction<Colleague[]>>, modal: ModalProps): Promise<void> => {
   try {
     const response = await api.get('/mobile/leave-requests/colleagues');
     const list = (response.data || []) as Colleague[];
@@ -118,14 +115,11 @@ export const createLeaveRequest = async ({
     }
 
     if (params.file) {
-      formData.append(
-        'file',
-        {
-          uri: params.file.uri,
-          name: params.file.name,
-          type: params.file.type,
-        } as unknown as Blob,
-      );
+      formData.append('file', {
+        uri: params.file.uri,
+        name: params.file.name,
+        type: params.file.type,
+      } as unknown as Blob);
     }
 
     const response = await api.post('/mobile/leave-requests', formData, {
@@ -135,14 +129,9 @@ export const createLeaveRequest = async ({
     });
 
     if (response.status === 201 || response.status === 200) {
-      processSuccess(
-        modal,
-        'Berhasil',
-        response.data?.message || 'Permohonan cuti/izin berhasil dikirim dan menunggu persetujuan.',
-        () => {
-          onSuccess();
-        },
-      );
+      processSuccess(modal, 'Berhasil', response.data?.message || 'Permohonan cuti/izin berhasil dikirim dan menunggu persetujuan.', () => {
+        onSuccess();
+      });
     } else {
       processFail(modal, 'Gagal', response.data?.message || 'Gagal mengirim pengajuan.');
     }
@@ -175,14 +164,9 @@ export const cancelLeaveRequest = async ({
     const response = await api.put(`/mobile/leave-requests/${id}/cancel`);
 
     if (response.status === 200) {
-      processSuccess(
-        modal,
-        'Berhasil',
-        response.data?.message || 'Permohonan berhasil dibatalkan.',
-        () => {
-          onSuccess();
-        },
-      );
+      processSuccess(modal, 'Berhasil', response.data?.message || 'Permohonan berhasil dibatalkan.', () => {
+        onSuccess();
+      });
     } else {
       processFail(modal, 'Gagal', response.data?.message || 'Gagal membatalkan pengajuan.');
     }

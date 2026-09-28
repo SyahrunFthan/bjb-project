@@ -3,7 +3,7 @@ import api from '@/lib/api';
 import { processFail, processFinish, processStart, processSuccess } from '@/lib/process';
 import { Customer } from '@/model/customer';
 import { CustomerDocument } from '@/model/customerDocument';
-import { Loan } from '@/model/loan';
+import { DisbursementSummary, Loan } from '@/model/loan';
 import { RequirementDocument } from '@/model/requirementDocument';
 import { TenorModel } from '@/model/tenor';
 import { AxiosError } from 'axios';
@@ -326,6 +326,69 @@ export const fetchLoans = async ({
   } catch (error) {
     const axiosError = error as AxiosError<ErrorResponse>;
     processFail(modal, 'Gagal', axiosError.response?.data?.message || 'Gagal mengambil data pengajuan.');
+  } finally {
+    processFinish(modal, () => {
+      setLoading?.(false);
+      setRefreshing?.(false);
+    });
+  }
+};
+
+interface FetchDisbursementsProps {
+  modal: ModalProps;
+  month?: string;
+  date?: string;
+  search?: string;
+  page?: number;
+  limit?: number;
+  delegation_type?: string;
+  setDataList: (list: Loan[], meta?: { total?: number; page?: number; limit?: number; has_more?: boolean }) => void;
+  setSummary?: (summary: DisbursementSummary) => void;
+  setLoading?: Dispatch<SetStateAction<boolean>>;
+  setRefreshing?: Dispatch<SetStateAction<boolean>>;
+}
+
+export const fetchDisbursements = async ({
+  modal,
+  month,
+  date,
+  search,
+  page = 1,
+  limit = 20,
+  delegation_type,
+  setDataList,
+  setSummary,
+  setLoading,
+  setRefreshing,
+}: FetchDisbursementsProps): Promise<void> => {
+  try {
+    const params = new URLSearchParams();
+    if (month) params.set('month', month);
+    if (date) params.set('date', date);
+    if (search) params.set('search', search);
+    if (delegation_type) params.set('delegation_type', delegation_type);
+    params.set('page', String(page));
+    params.set('page_size', String(limit));
+
+    const response = await api.get(`/mobile/loans/disbursements?${params.toString()}`);
+    const loanData = (response.data?.data || []) as Loan[];
+    const meta = response.data?.meta
+      ? {
+          total: response.data.meta.total,
+          page: response.data.meta.page,
+          limit: response.data.meta.page_size,
+          has_more: response.data.meta.page < response.data.meta.total_pages,
+        }
+      : undefined;
+
+    if (response.data?.summary && setSummary) {
+      setSummary(response.data.summary as DisbursementSummary);
+    }
+
+    setDataList(loanData, meta);
+  } catch (error) {
+    const axiosError = error as AxiosError<ErrorResponse>;
+    processFail(modal, 'Gagal', axiosError.response?.data?.message || 'Gagal mengambil data pencairan pinjaman.');
   } finally {
     processFinish(modal, () => {
       setLoading?.(false);

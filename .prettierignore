@@ -1,0 +1,11 @@
+node_modules/
+android/
+ios/
+vendor/
+.bundle/
+coverage/
+build/
+*.lock
+package-lock.json
+Gemfile.lock
+.env

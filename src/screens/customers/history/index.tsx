@@ -162,10 +162,7 @@ const HistoryScreen = () => {
     const statusColor = getPaymentStatusColor(item.payment_status);
 
     return (
-      <TouchableOpacity
-        style={styles.card}
-        activeOpacity={0.7}
-        onPress={() => navigation.navigate('PaymentReceipt', { paymentId: item.id })}>
+      <TouchableOpacity style={styles.card} activeOpacity={0.7} onPress={() => navigation.navigate('PaymentReceipt', { paymentId: item.id })}>
         <View style={styles.cardHeader}>
           <View style={styles.paymentBox}>
             <View style={styles.iconCircle}>

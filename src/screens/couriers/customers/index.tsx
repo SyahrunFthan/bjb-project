@@ -113,11 +113,8 @@ const CustomerScreen = ({ navigation }: { navigation: NativeStackNavigationProp<
                   key={d.key}
                   style={[styles.delegationTab, delegationFilter === d.key && styles.delegationTabActive]}
                   onPress={() => setDelegationFilter(d.key)}
-                  activeOpacity={0.7}
-                >
-                  <AppText style={[styles.delegationTabText, delegationFilter === d.key && styles.delegationTabTextActive]}>
-                    {d.label}
-                  </AppText>
+                  activeOpacity={0.7}>
+                  <AppText style={[styles.delegationTabText, delegationFilter === d.key && styles.delegationTabTextActive]}>{d.label}</AppText>
                 </TouchableOpacity>
               ))}
             </View>

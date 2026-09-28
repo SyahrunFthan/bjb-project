@@ -14,17 +14,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import dayjs from 'dayjs';
 import 'dayjs/locale/id';
 import React, { useCallback, useEffect, useState } from 'react';
-import {
-  FlatList,
-  Linking,
-  Modal,
-  RefreshControl,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { FlatList, Linking, Modal, RefreshControl, ScrollView, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 dayjs.locale('id');
@@ -38,11 +28,7 @@ const FILTER_OPTIONS: { key: FilterType; label: string }[] = [
   { key: 'paid', label: 'Lunas' },
 ];
 
-const CourierCollectionDetailScreen = ({
-  navigation,
-}: {
-  navigation: NativeStackNavigationProp<RouteParamList, 'CourierCollectionDetail'>;
-}) => {
+const CourierCollectionDetailScreen = ({ navigation }: { navigation: NativeStackNavigationProp<RouteParamList, 'CourierCollectionDetail'> }) => {
   const route = useRoute();
   const { loanId } = route.params as { loanId: string };
   const modal = useModal();
@@ -105,9 +91,7 @@ const CourierCollectionDetailScreen = ({
   const handleWhatsApp = () => {
     if (!loan?.customer?.phone_number) return;
     const cleanPhone = loan.customer.phone_number.replace(/^0/, '62').replace(/[^0-9]/g, '');
-    const message = encodeURIComponent(
-      `Halo Ibu/Bapak ${loan.customer.full_name || ''}, kami dari Koperasi menginfokan terkait pinjaman Anda.`,
-    );
+    const message = encodeURIComponent(`Halo Ibu/Bapak ${loan.customer.full_name || ''}, kami dari Koperasi menginfokan terkait pinjaman Anda.`);
     Linking.openURL(`https://wa.me/${cleanPhone}?text=${message}`);
   };
 
@@ -160,9 +144,7 @@ const CourierCollectionDetailScreen = ({
   const filteredInstallments = installments.filter(item => {
     const instAmount = Number(item.amount || 0);
     const instPaidAmount = Number(item.paid_amount || 0);
-    const isFullyPaid =
-      item.status === 'paid' ||
-      (instAmount > 0 && (instAmount - instPaidAmount < 1.0 || instPaidAmount >= instAmount));
+    const isFullyPaid = item.status === 'paid' || (instAmount > 0 && (instAmount - instPaidAmount < 1.0 || instPaidAmount >= instAmount));
 
     if (activeFilter === 'paid') return isFullyPaid;
     if (activeFilter === 'partially_paid') return !isFullyPaid && instPaidAmount > 0;
@@ -208,12 +190,7 @@ const CourierCollectionDetailScreen = ({
                       style={[
                         styles.statusChip,
                         {
-                          backgroundColor:
-                            loan.loan_status === 'done'
-                              ? '#DCFCE7'
-                              : loan.loan_status === 'closed'
-                              ? '#FEE2E2'
-                              : '#DBEAFE',
+                          backgroundColor: loan.loan_status === 'done' ? '#DCFCE7' : loan.loan_status === 'closed' ? '#FEE2E2' : '#DBEAFE',
                         },
                       ]}>
                       <AppText
@@ -221,19 +198,10 @@ const CourierCollectionDetailScreen = ({
                         style={[
                           styles.statusChipText,
                           {
-                            color:
-                              loan.loan_status === 'done'
-                                ? '#15803D'
-                                : loan.loan_status === 'closed'
-                                ? '#B91C1C'
-                                : '#1D4ED8',
+                            color: loan.loan_status === 'done' ? '#15803D' : loan.loan_status === 'closed' ? '#B91C1C' : '#1D4ED8',
                           },
                         ]}>
-                        {loan.loan_status === 'done'
-                          ? 'LUNAS'
-                          : loan.loan_status === 'closed'
-                          ? 'DITUTUP'
-                          : 'AKTIF BERJALAN'}
+                        {loan.loan_status === 'done' ? 'LUNAS' : loan.loan_status === 'closed' ? 'DITUTUP' : 'AKTIF BERJALAN'}
                       </AppText>
                     </View>
                   </View>
@@ -249,9 +217,7 @@ const CourierCollectionDetailScreen = ({
                       {loan.customer?.full_name || 'Nasabah'}
                     </AppText>
                     <View style={styles.customerMetaRow}>
-                      <AppText style={styles.customerMetaText}>
-                        No. Anggota: {loan.customer?.member_number || '-'}
-                      </AppText>
+                      <AppText style={styles.customerMetaText}>No. Anggota: {loan.customer?.member_number || '-'}</AppText>
                       {loan.customer?.national_id ? (
                         <>
                           <AppText style={styles.metaDot}>•</AppText>
@@ -335,13 +301,19 @@ const CourierCollectionDetailScreen = ({
                   <View style={styles.contractItem}>
                     <AppIcon name="payments" size={14} color="#64748B" />
                     <AppText style={styles.contractText}>
-                      Cicilan: <AppText variant="semiBold" style={{ color: '#0F172A' }}>Rp {formatCurrency(loan.installment_amount)}/hari</AppText>
+                      Cicilan:{' '}
+                      <AppText variant="semiBold" style={{ color: '#0F172A' }}>
+                        Rp {formatCurrency(loan.installment_amount)}/hari
+                      </AppText>
                     </AppText>
                   </View>
                   <View style={styles.contractItem}>
                     <AppIcon name="timelapse" size={14} color="#64748B" />
                     <AppText style={styles.contractText}>
-                      Tenor: <AppText variant="semiBold" style={{ color: '#0F172A' }}>{loan.tenor?.name || `${loan.tenor?.duration_day || 24} Hari`}</AppText>
+                      Tenor:{' '}
+                      <AppText variant="semiBold" style={{ color: '#0F172A' }}>
+                        {loan.tenor?.name || `${loan.tenor?.duration_day || 24} Hari`}
+                      </AppText>
                     </AppText>
                   </View>
                 </View>
@@ -370,13 +342,7 @@ const CourierCollectionDetailScreen = ({
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterRow}>
                   {FILTER_OPTIONS.map(f => {
                     const countBadge =
-                      f.key === 'all'
-                        ? totalCount
-                        : f.key === 'paid'
-                        ? paidCount
-                        : f.key === 'partially_paid'
-                        ? partiallyPaidCount
-                        : unpaidCount;
+                      f.key === 'all' ? totalCount : f.key === 'paid' ? paidCount : f.key === 'partially_paid' ? partiallyPaidCount : unpaidCount;
 
                     return (
                       <TouchableOpacity
@@ -428,9 +394,7 @@ const CourierCollectionDetailScreen = ({
             <View style={styles.modalInfoContainer}>
               <View style={styles.modalInfoRow}>
                 <AppText style={styles.modalInfoLabel}>Total Tagihan:</AppText>
-                <AppText style={styles.modalInfoVal}>
-                  {selectedInstallment ? `Rp ${formatCurrency(selectedInstallment.amount)}` : 'Rp 0'}
-                </AppText>
+                <AppText style={styles.modalInfoVal}>{selectedInstallment ? `Rp ${formatCurrency(selectedInstallment.amount)}` : 'Rp 0'}</AppText>
               </View>
               {selectedInstallment && selectedInstallment.paid_amount && selectedInstallment.paid_amount > 0 ? (
                 <View style={styles.modalInfoRow}>
@@ -479,17 +443,13 @@ const CourierCollectionDetailScreen = ({
                   style={[styles.dateChip, payMethod === 'courier' && styles.dateChipActive]}
                   onPress={() => setPayMethod('courier')}
                   activeOpacity={0.7}>
-                  <AppText style={[styles.dateChipText, payMethod === 'courier' && styles.dateChipTextActive]}>
-                    Tunai (Petugas)
-                  </AppText>
+                  <AppText style={[styles.dateChipText, payMethod === 'courier' && styles.dateChipTextActive]}>Tunai (Petugas)</AppText>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.dateChip, payMethod === 'transfer' && styles.dateChipActive]}
                   onPress={() => setPayMethod('transfer')}
                   activeOpacity={0.7}>
-                  <AppText style={[styles.dateChipText, payMethod === 'transfer' && styles.dateChipTextActive]}>
-                    Transfer Bank
-                  </AppText>
+                  <AppText style={[styles.dateChipText, payMethod === 'transfer' && styles.dateChipTextActive]}>Transfer Bank</AppText>
                 </TouchableOpacity>
               </View>
             </View>
@@ -507,10 +467,7 @@ const CourierCollectionDetailScreen = ({
             />
 
             <View style={styles.modalActions}>
-              <TouchableOpacity
-                style={[styles.modalBtn, styles.modalBtnCancel]}
-                onPress={() => setPayModalVisible(false)}
-                activeOpacity={0.7}>
+              <TouchableOpacity style={[styles.modalBtn, styles.modalBtnCancel]} onPress={() => setPayModalVisible(false)} activeOpacity={0.7}>
                 <AppText style={styles.modalBtnCancelText}>Batal</AppText>
               </TouchableOpacity>
 

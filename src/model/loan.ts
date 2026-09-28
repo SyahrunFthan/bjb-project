@@ -61,6 +61,8 @@ export interface LoanModel {
   savings_balance?: number;
   submission_status: 'draft' | 'pending' | 'approved' | 'rejected';
   loan_status: 'active' | 'closed' | 'done';
+  disbursement_date?: string | null;
+  effective_disbursement_date?: string;
   start_date: string;
   end_date: string;
   createdAt: string;
@@ -122,3 +124,9 @@ export interface MonitoringSummary {
   total_remaining_receivable: number;
 }
 
+export interface DisbursementSummary {
+  total_disbursement_amount: number;
+  total_disbursement_count: number;
+  today_disbursement_amount: number;
+  today_disbursement_count: number;
+}

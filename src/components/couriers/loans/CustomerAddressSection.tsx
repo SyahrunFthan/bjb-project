@@ -4,12 +4,7 @@ import { useFormContext } from '@/contexts/FormContext';
 import SectionCard from '@/components/ui/SectionCard';
 import DebounceSelect from '@/components/DebounceSelect';
 import Input from '@/components/Input';
-import {
-  fetchProvinces,
-  fetchRegencies,
-  fetchDistricts,
-  fetchSubDistricts,
-} from '@/api/loan';
+import { fetchProvinces, fetchRegencies, fetchDistricts, fetchSubDistricts } from '@/api/loan';
 
 const CustomerAddressSection = () => {
   const { errors, setValue, getValue } = useFormContext();
@@ -18,20 +13,11 @@ const CustomerAddressSection = () => {
   const regencyId = (getValue('address.regency_id') as string) || '';
   const districtId = (getValue('address.district_id') as string) || '';
 
-  const getRegencyOptions = useCallback(
-    (query: string) => fetchRegencies(provinceId, query),
-    [provinceId],
-  );
+  const getRegencyOptions = useCallback((query: string) => fetchRegencies(provinceId, query), [provinceId]);
 
-  const getDistrictOptions = useCallback(
-    (query: string) => fetchDistricts(regencyId, query),
-    [regencyId],
-  );
+  const getDistrictOptions = useCallback((query: string) => fetchDistricts(regencyId, query), [regencyId]);
 
-  const getSubDistrictOptions = useCallback(
-    (query: string) => fetchSubDistricts(districtId, query),
-    [districtId],
-  );
+  const getSubDistrictOptions = useCallback((query: string) => fetchSubDistricts(districtId, query), [districtId]);
 
   return (
     <SectionCard icon="home" iconBg="#FEE2E2" iconColor="#EF4444" title="Lengkapi Alamat Nasabah">

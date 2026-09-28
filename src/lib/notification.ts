@@ -16,9 +16,7 @@ export const createNotificationChannel = async (): Promise<void> => {
     // For Android 13+ (API 33), request POST_NOTIFICATIONS permission
     // Without this, notifications will be silently blocked
     if (Platform.Version >= 33) {
-      const granted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
-      );
+      const granted = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
       console.log('[Notification] POST_NOTIFICATIONS permission:', granted);
     }
 
@@ -34,9 +32,7 @@ export const createNotificationChannel = async (): Promise<void> => {
 export const requestUserPermission = async (): Promise<boolean> => {
   try {
     const authStatus = await messaging().requestPermission();
-    const enabled =
-      authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-      authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+    const enabled = authStatus === messaging.AuthorizationStatus.AUTHORIZED || authStatus === messaging.AuthorizationStatus.PROVISIONAL;
 
     console.log('[Notification] Authorization status:', authStatus);
     return enabled;
@@ -114,10 +110,10 @@ export const setupNotificationListeners = (
   // 1. Foreground message handler
   const unsubscribeForeground = messaging().onMessage(async remoteMessage => {
     console.log('[Notification] Message received in foreground:', remoteMessage);
-    
+
     const title = remoteMessage.notification?.title || 'Notifikasi Baru';
     const body = remoteMessage.notification?.body || '';
-    
+
     if (onNotificationReceivedForeground) {
       onNotificationReceivedForeground(title, body, remoteMessage.data);
     } else {

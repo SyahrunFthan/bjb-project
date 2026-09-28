@@ -80,9 +80,7 @@ const ProfileScreen = () => {
           </AppText>
 
           <View style={styles.menuContainer}>
-            <TouchableOpacity
-              onPress={() => navigation.navigate('Attendance')}
-              style={styles.menuItem}>
+            <TouchableOpacity onPress={() => navigation.navigate('Attendance')} style={styles.menuItem}>
               <View style={styles.menuLeft}>
                 <View style={styles.iconPrimaryContainer}>
                   <AppIcon name="photo-camera" color={color.primary} size={20} />
@@ -96,9 +94,7 @@ const ProfileScreen = () => {
               <AppIcon name="chevron-right" size={24} color={color.primary} />
             </TouchableOpacity>
 
-            <TouchableOpacity
-              onPress={() => navigation.navigate('LeaveRequestList')}
-              style={styles.menuItemNoBorder}>
+            <TouchableOpacity onPress={() => navigation.navigate('LeaveRequestList')} style={styles.menuItemNoBorder}>
               <View style={styles.menuLeft}>
                 <View style={styles.iconPrimaryContainer}>
                   <AppIcon name="event-note" color={color.primary} size={20} />

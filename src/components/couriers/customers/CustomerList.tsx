@@ -56,9 +56,7 @@ const CustomerList = ({ item, index, loading, onEdit }: Props) => {
           {item.is_delegated && (
             <View style={styles.delegatedBadge}>
               <AppIcon name="swap-horiz" size={10} color="#0369a1" />
-              <AppText style={styles.delegatedBadgeText}>
-                Titipan: {item.original_employee?.full_name || 'Cuti'}
-              </AppText>
+              <AppText style={styles.delegatedBadgeText}>Titipan: {item.original_employee?.full_name || 'Cuti'}</AppText>
             </View>
           )}
         </View>

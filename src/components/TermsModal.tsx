@@ -144,13 +144,16 @@ const TermsModal = ({ visible, onAccept, onClose }: TermsModalProps) => {
                 4. Tenor, Suku Bunga & Ketentuan Pinjaman
               </AppText>
               <AppText style={styles.paragraph}>
-                Produk pinjaman yang disediakan oleh PT. Bare Jaya Berdikari memiliki pilihan jangka waktu (tenor) sesuai dengan kebijakan perusahaan dan kesepakatan yang tercantum dalam perjanjian pinjaman.
+                Produk pinjaman yang disediakan oleh PT. Bare Jaya Berdikari memiliki pilihan jangka waktu (tenor) sesuai dengan kebijakan perusahaan
+                dan kesepakatan yang tercantum dalam perjanjian pinjaman.
               </AppText>
               <AppText style={styles.paragraph}>
-                Besaran suku bunga, biaya administrasi, jumlah angsuran, serta total kewajiban pembayaran akan diinformasikan secara transparan kepada Anggota sebelum pinjaman disetujui dan dicantumkan dalam perjanjian pinjaman yang ditandatangani oleh kedua belah pihak.
+                Besaran suku bunga, biaya administrasi, jumlah angsuran, serta total kewajiban pembayaran akan diinformasikan secara transparan kepada
+                Anggota sebelum pinjaman disetujui dan dicantumkan dalam perjanjian pinjaman yang ditandatangani oleh kedua belah pihak.
               </AppText>
               <AppText style={styles.paragraph}>
-                Anggota menyatakan telah membaca, memahami, dan menyetujui seluruh rincian pinjaman yang telah disepakati bersama sebelum proses pencairan dilakukan.
+                Anggota menyatakan telah membaca, memahami, dan menyetujui seluruh rincian pinjaman yang telah disepakati bersama sebelum proses
+                pencairan dilakukan.
               </AppText>
             </View>
 

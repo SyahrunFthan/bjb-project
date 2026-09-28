@@ -13,6 +13,6 @@ export function reset(name: string, params?: object) {
     CommonActions.reset({
       index: 0,
       routes: [{ name, params }],
-    })
+    }),
   );
 }
