@@ -14,7 +14,7 @@ import { SkeletonCircle, SkeletonText } from '@/components/ui/Skeleton';
 import { useModal } from '@/hooks/useModal';
 import { formatActivityDate, formatCurrency } from '@/lib/formatter';
 import { TodayAttendanceResponse } from '@/model/attendance';
-import { CourierDashboard } from '@/model/dashboard';
+import { CourierDashboard, RecentPayment } from '@/model/dashboard';
 import { RouteParamList } from '@/types/navigation';
 import 'dayjs/locale/id';
 
@@ -156,6 +156,33 @@ const DashboardContent = ({ dashboardData, loading, navigation }: Props) => {
           </View>
         </Card>
 
+        {/* Skeleton Saldo Akhir Card */}
+        <Card style={styles.balanceCard}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <SkeletonCircle size={36} />
+              <View style={{ gap: 4 }}>
+                <SkeletonText lines={1} style={{ width: 120, height: 14 }} />
+                <SkeletonText lines={1} style={{ width: 160, height: 10 }} />
+              </View>
+            </View>
+            <SkeletonText lines={1} style={{ width: 65, height: 20, borderRadius: 10 }} />
+          </View>
+          <View
+            style={{
+              marginTop: 14,
+              paddingTop: 10,
+              borderTopWidth: 1,
+              borderTopColor: '#F1F5F9',
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}>
+            <SkeletonText lines={1} style={{ width: 160, height: 22 }} />
+            <SkeletonText lines={1} style={{ width: 75, height: 24, borderRadius: 8 }} />
+          </View>
+        </Card>
+
         {/* Skeleton Monthly Card */}
         <Card style={styles.monthCard}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -229,6 +256,8 @@ const DashboardContent = ({ dashboardData, loading, navigation }: Props) => {
   const monthlyPaid = Number(stats?.totalMonthlyBillPaid || 0);
   const monthlyTarget = Number(stats?.totalMonthlyBill || 0);
   const monthlyProgress = monthlyTarget > 0 ? Math.min(100, Math.round((monthlyPaid / monthlyTarget) * 100)) : monthlyPaid > 0 ? 100 : 0;
+
+  const endingBalance = Number(stats?.totalRemainingAmount ?? stats?.totalEndingBalance ?? 0);
 
   const todayFormatted = dayjs().locale('id').format('dddd, D MMM YYYY');
   const monthFormatted = dayjs().locale('id').format('MMMM YYYY');
@@ -343,7 +372,41 @@ const DashboardContent = ({ dashboardData, loading, navigation }: Props) => {
         </View>
       </View>
 
-      {/* 📊 2. MONTHLY TARGET OVERVIEW */}
+      {/* 💼 2. SALDO AKHIR PINJAMAN CARD */}
+      <Card style={styles.balanceCard} variant="elevated" onPress={() => navigation.navigate('Monitoring')}>
+        <View style={styles.balanceHeader}>
+          <View style={styles.balanceIconWrapper}>
+            <AppIcon name="account-balance-wallet" size={20} color="#0D9488" />
+          </View>
+          <View style={styles.balanceTitleWrapper}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <AppText variant="semiBold" style={styles.balanceTitle}>
+                Saldo Akhir Pinjaman
+              </AppText>
+              <View style={styles.balanceBadge}>
+                <AppText variant="bold" style={styles.balanceBadgeText}>
+                  {stats?.activeLoansCount?.toLocaleString('id-ID') ?? '0'} Aktif
+                </AppText>
+              </View>
+            </View>
+            <AppText style={styles.balanceSubtitle}>Total sisa piutang berjalan di lapangan</AppText>
+          </View>
+        </View>
+
+        <View style={styles.balanceContentRow}>
+          <AppText variant="bold" style={styles.balanceAmount}>
+            Rp {formatCurrency(endingBalance)}
+          </AppText>
+          <TouchableOpacity style={styles.balanceActionBtn} activeOpacity={0.7} onPress={() => navigation.navigate('Monitoring')}>
+            <AppText variant="semiBold" style={styles.balanceActionText}>
+              Monitoring
+            </AppText>
+            <AppIcon name="chevron-right" size={14} color="#0D9488" />
+          </TouchableOpacity>
+        </View>
+      </Card>
+
+      {/* 📊 3. MONTHLY TARGET OVERVIEW */}
       <Card style={styles.monthCard} variant="elevated">
         <View style={styles.monthHeader}>
           <View style={styles.monthIconWrapper}>
@@ -489,7 +552,7 @@ const DashboardContent = ({ dashboardData, loading, navigation }: Props) => {
             </TouchableOpacity>
 
             {/* Action 2: Monitoring Setoran */}
-            <TouchableOpacity activeOpacity={0.8} style={styles.quickGridItem} onPress={() => (navigation as any).navigate('Monitoring')}>
+            <TouchableOpacity activeOpacity={0.8} style={styles.quickGridItem} onPress={() => navigation.navigate('Monitoring')}>
               <View style={[styles.quickIconCircle, { backgroundColor: '#EFF6FF' }]}>
                 <AppIcon name="insights" size={22} color="#2563EB" />
               </View>
@@ -589,7 +652,7 @@ const DashboardContent = ({ dashboardData, loading, navigation }: Props) => {
             </TouchableOpacity>
 
             {/* Action 10: Data Pinjaman */}
-            <TouchableOpacity activeOpacity={0.8} style={styles.quickGridItem} onPress={() => (navigation as any).navigate('CourierLoan')}>
+            <TouchableOpacity activeOpacity={0.8} style={styles.quickGridItem} onPress={() => navigation.navigate('CourierLoan')}>
               <View style={[styles.quickIconCircle, { backgroundColor: '#EFF6FF' }]}>
                 <AppIcon name="assignment" size={22} color="#2563EB" />
               </View>
@@ -629,7 +692,7 @@ const DashboardContent = ({ dashboardData, loading, navigation }: Props) => {
             <AppText style={styles.emptySubtitle}>Transaksi pembayaran angsuran dari nasabah akan langsung tercatat di sini.</AppText>
           </View>
         ) : (
-          recentPayments.map((item: any) => {
+          recentPayments.map((item: RecentPayment) => {
             const isCash = !item.paymentMethod || item.paymentMethod.toLowerCase() === 'cash' || item.paymentMethod.toLowerCase() === 'courier';
             return (
               <View key={item.id} style={styles.activityItem}>
@@ -804,6 +867,76 @@ const styles = StyleSheet.create({
     width: 1,
     height: 24,
     backgroundColor: 'rgba(255, 255, 255, 0.15)',
+  },
+
+  /* 💼 SALDO AKHIR CARD */
+  balanceCard: {
+    marginBottom: 16,
+    borderRadius: 16,
+    borderLeftWidth: 4,
+    borderLeftColor: '#0D9488',
+  },
+  balanceHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  balanceIconWrapper: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    backgroundColor: '#F0FDFA',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  balanceTitleWrapper: {
+    flex: 1,
+    marginLeft: 10,
+  },
+  balanceTitle: {
+    fontSize: 14,
+    color: '#0F172A',
+  },
+  balanceSubtitle: {
+    fontSize: 11,
+    color: color.neutral,
+    marginTop: 1,
+  },
+  balanceBadge: {
+    backgroundColor: '#CCFBF1',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+  },
+  balanceBadgeText: {
+    color: '#0F766E',
+    fontSize: 10,
+  },
+  balanceContentRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 12,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
+  },
+  balanceAmount: {
+    fontSize: 20,
+    color: '#0D9488',
+    letterSpacing: -0.3,
+  },
+  balanceActionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F0FDFA',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+    gap: 2,
+  },
+  balanceActionText: {
+    color: '#0D9488',
+    fontSize: 11,
   },
 
   /* 📊 MONTH CARD */

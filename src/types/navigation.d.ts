@@ -49,6 +49,8 @@ export type RouteParamList = {
   CourierCollectionDetail: {
     loanId: string;
   };
+  Monitoring: undefined;
+  CourierLoan: undefined;
   Terms: undefined;
   Help: undefined;
   DeleteAccount: undefined;

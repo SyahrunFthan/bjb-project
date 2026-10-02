@@ -25,6 +25,7 @@
     "@sbaiahmed1/react-native-biometrics": "^0.15.0",
     "axios": "^1.16.1",
     "dayjs": "^1.11.23",
+    "jail-monkey": "^3.0.0",
     "react": "19.2.3",
     "react-native": "0.85.3",
     "react-native-camera-kit": "^18.0.1",

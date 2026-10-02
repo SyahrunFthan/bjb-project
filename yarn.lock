@@ -6966,6 +6966,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"jail-monkey@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "jail-monkey@npm:3.0.0"
+  checksum: 10c0/53a9999914d147ef2532cf5154e481bb0614d5f50d8ba522aebefa0904ff41a9062ae10a8b84101a24eae909d259ec3d6eb5ec53418426a62bd5ee6716a30019
+  languageName: node
+  linkType: hard
+
 "jest-changed-files@npm:^29.7.0":
   version: 29.7.0
   resolution: "jest-changed-files@npm:29.7.0"
@@ -7591,6 +7598,7 @@ __metadata:
     eslint-import-resolver-typescript: "npm:^4.4.4"
     eslint-plugin-import: "npm:^2.32.0"
     eslint-plugin-unused-imports: "npm:^4.4.1"
+    jail-monkey: "npm:^3.0.0"
     jest: "npm:^29.6.3"
     prettier: "npm:2.8.8"
     react: "npm:19.2.3"

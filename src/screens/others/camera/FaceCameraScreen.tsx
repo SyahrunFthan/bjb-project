@@ -17,6 +17,7 @@ import {
 import Geolocation from '@react-native-community/geolocation';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AxiosError } from 'axios';
+import JailMonkey from 'jail-monkey';
 import { Camera, CameraApi, CameraType } from 'react-native-camera-kit';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -48,9 +49,10 @@ const FaceCameraScreen: React.FC<Props> = ({ navigation, route }) => {
   const [processing, setProcessing] = useState<boolean>(false);
   const [cameraReady, setCameraReady] = useState<boolean>(false);
 
-  // GPS Geolocation state
+  // GPS Geolocation state & Anti-Fake GPS
   const [coords, setCoords] = useState<{ latitude: number; longitude: number } | null>(null);
-  const [locationStatus, setLocationStatus] = useState<'searching' | 'ready' | 'denied' | 'error'>('searching');
+  const [locationStatus, setLocationStatus] = useState<'searching' | 'ready' | 'denied' | 'error' | 'mocked'>('searching');
+  const [isMockLocation, setIsMockLocation] = useState(false);
 
   // Animation values
   const scanAnim = useRef(new Animated.Value(0)).current;
@@ -200,6 +202,35 @@ const FaceCameraScreen: React.FC<Props> = ({ navigation, route }) => {
   const requestLocation = useCallback(async () => {
     if (mode === 'register') return;
 
+    // Cara 2: Deteksi fitur Mock Location (Lokasi Tiruan) atau Root melalui JailMonkey
+    if (!isSimulated && Platform.OS === 'android') {
+      try {
+        if (JailMonkey.canMockLocation()) {
+          setIsMockLocation(true);
+          setLocationStatus('mocked');
+          setCoords(null);
+          modal.result.error(
+            'Fake GPS Terdeteksi',
+            'Sistem mendeteksi fitur Mock Location (Lokasi Tiruan) atau aplikasi Fake GPS aktif di perangkat Anda. Harap matikan aplikasi pemalsu lokasi dan nonaktifkan opsi Mock Location di Opsi Pengembang (Developer Options).',
+          );
+          return;
+        }
+
+        if (JailMonkey.isJailBroken()) {
+          setIsMockLocation(true);
+          setLocationStatus('mocked');
+          setCoords(null);
+          modal.result.error(
+            'Perangkat Tidak Aman',
+            'Perangkat Anda terdeteksi dalam kondisi Root / Modifikasi Sistem. Presensi tidak diizinkan pada sistem yang dimodifikasi.',
+          );
+          return;
+        }
+      } catch (err) {
+        console.warn('JailMonkey security check error:', err);
+      }
+    }
+
     if (Platform.OS === 'android') {
       try {
         const granted = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION, {
@@ -222,6 +253,20 @@ const FaceCameraScreen: React.FC<Props> = ({ navigation, route }) => {
     setLocationStatus('searching');
     Geolocation.getCurrentPosition(
       pos => {
+        // Cara 1: Deteksi flag mocked bawaan Android Geolocation
+        const isMocked = (pos as any).mocked === true;
+        if (!isSimulated && isMocked) {
+          setIsMockLocation(true);
+          setLocationStatus('mocked');
+          setCoords(null);
+          modal.result.error(
+            'Lokasi Palsu Terdeteksi',
+            'Koordinat GPS perangkat Anda terdeteksi menggunakan aplikasi Fake GPS (Mock Provider). Harap matikan aplikasi pemalsu lokasi untuk melanjutkan presensi.',
+          );
+          return;
+        }
+
+        setIsMockLocation(false);
         setCoords({
           latitude: pos.coords.latitude,
           longitude: pos.coords.longitude,
@@ -232,6 +277,19 @@ const FaceCameraScreen: React.FC<Props> = ({ navigation, route }) => {
         console.warn('Geolocation high accuracy error, trying fallback:', err);
         Geolocation.getCurrentPosition(
           fallbackPos => {
+            const isMockedFallback = (fallbackPos as any).mocked === true;
+            if (!isSimulated && isMockedFallback) {
+              setIsMockLocation(true);
+              setLocationStatus('mocked');
+              setCoords(null);
+              modal.result.error(
+                'Lokasi Palsu Terdeteksi',
+                'Koordinat GPS perangkat Anda terdeteksi menggunakan aplikasi Fake GPS (Mock Provider). Harap matikan aplikasi pemalsu lokasi untuk melanjutkan presensi.',
+              );
+              return;
+            }
+
+            setIsMockLocation(false);
             setCoords({
               latitude: fallbackPos.coords.latitude,
               longitude: fallbackPos.coords.longitude,
@@ -247,7 +305,7 @@ const FaceCameraScreen: React.FC<Props> = ({ navigation, route }) => {
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 },
     );
-  }, [mode]);
+  }, [mode, isSimulated, modal]);
 
   useEffect(() => {
     requestLocation();
@@ -317,6 +375,20 @@ const FaceCameraScreen: React.FC<Props> = ({ navigation, route }) => {
     if (!capturedUri) return;
 
     if (mode !== 'register') {
+      if (
+        !isSimulated &&
+        (isMockLocation || locationStatus === 'mocked' || (Platform.OS === 'android' && JailMonkey.canMockLocation()))
+      ) {
+        modal.result.error(
+          'Presensi Ditolak',
+          'Sistem mendeteksi Anda menggunakan Fake GPS atau fitur Mock Location. Anda wajib mematikan aplikasi pemalsu lokasi dan menggunakan GPS asli untuk melakukan presensi.',
+          () => {
+            setCapturedUri(null);
+          },
+        );
+        return;
+      }
+
       if (locationStatus === 'denied') {
         modal.result.error(
           'Izin Lokasi Diperlukan',
@@ -343,13 +415,13 @@ const FaceCameraScreen: React.FC<Props> = ({ navigation, route }) => {
           navigation.goBack();
         });
       } else if (mode === 'clock-in') {
-        const res = await clockIn(capturedUri, coords!.latitude, coords!.longitude, isSimulated);
+        const res = await clockIn(capturedUri, coords!.latitude, coords!.longitude, isSimulated, isMockLocation);
         modal.result.success('Presensi Berhasil', res.message || 'Presensi masuk berhasil dicatat.', () => {
           onSuccess?.();
           navigation.goBack();
         });
       } else if (mode === 'clock-out') {
-        const res = await clockOut(capturedUri, coords!.latitude, coords!.longitude, isSimulated);
+        const res = await clockOut(capturedUri, coords!.latitude, coords!.longitude, isSimulated, isMockLocation);
         modal.result.success('Presensi Berhasil', res.message || 'Presensi pulang berhasil dicatat.', () => {
           onSuccess?.();
           navigation.goBack();
@@ -376,14 +448,30 @@ const FaceCameraScreen: React.FC<Props> = ({ navigation, route }) => {
       <TouchableOpacity
         style={[
           styles.gpsBadge,
-          locationStatus === 'ready' ? styles.gpsBadgeSuccess : locationStatus === 'searching' ? styles.gpsBadgeWarning : styles.gpsBadgeDanger,
+          locationStatus === 'ready'
+            ? styles.gpsBadgeSuccess
+            : locationStatus === 'searching'
+            ? styles.gpsBadgeWarning
+            : styles.gpsBadgeDanger,
         ]}
         onPress={requestLocation}
         activeOpacity={0.8}>
         <AppIcon
-          name={locationStatus === 'ready' ? 'location-on' : locationStatus === 'searching' ? 'gps-fixed' : 'location-off'}
+          name={
+            locationStatus === 'ready'
+              ? 'location-on'
+              : locationStatus === 'searching'
+              ? 'gps-fixed'
+              : 'location-off'
+          }
           size={13}
-          color={locationStatus === 'ready' ? '#22c55e' : locationStatus === 'searching' ? '#f59e0b' : '#ef4444'}
+          color={
+            locationStatus === 'ready'
+              ? '#22c55e'
+              : locationStatus === 'searching'
+              ? '#f59e0b'
+              : '#ef4444'
+          }
           style={{ marginRight: 4 }}
         />
         <AppText style={styles.gpsBadgeText}>
@@ -391,6 +479,8 @@ const FaceCameraScreen: React.FC<Props> = ({ navigation, route }) => {
             ? `GPS Terkunci (${coords.latitude.toFixed(4)}, ${coords.longitude.toFixed(4)})`
             : locationStatus === 'searching'
             ? 'Mencari koordinat GPS...'
+            : locationStatus === 'mocked'
+            ? 'Fake GPS Terdeteksi (Dilarang)'
             : 'GPS Tidak Aktif (Ketuk untuk Ulangi)'}
         </AppText>
       </TouchableOpacity>

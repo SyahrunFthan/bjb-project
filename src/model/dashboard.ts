@@ -7,6 +7,8 @@ export interface DashboardStats {
   totalDailyBillUnpaid: number;
   totalMonthlyBill?: number;
   totalMonthlyBillPaid?: number;
+  totalRemainingAmount?: number;
+  totalEndingBalance?: number;
 }
 
 export interface RecentPayment {
