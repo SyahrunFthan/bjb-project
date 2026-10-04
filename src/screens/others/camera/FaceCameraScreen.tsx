@@ -375,10 +375,7 @@ const FaceCameraScreen: React.FC<Props> = ({ navigation, route }) => {
     if (!capturedUri) return;
 
     if (mode !== 'register') {
-      if (
-        !isSimulated &&
-        (isMockLocation || locationStatus === 'mocked' || (Platform.OS === 'android' && JailMonkey.canMockLocation()))
-      ) {
+      if (!isSimulated && (isMockLocation || locationStatus === 'mocked' || (Platform.OS === 'android' && JailMonkey.canMockLocation()))) {
         modal.result.error(
           'Presensi Ditolak',
           'Sistem mendeteksi Anda menggunakan Fake GPS atau fitur Mock Location. Anda wajib mematikan aplikasi pemalsu lokasi dan menggunakan GPS asli untuk melakukan presensi.',
@@ -448,30 +445,14 @@ const FaceCameraScreen: React.FC<Props> = ({ navigation, route }) => {
       <TouchableOpacity
         style={[
           styles.gpsBadge,
-          locationStatus === 'ready'
-            ? styles.gpsBadgeSuccess
-            : locationStatus === 'searching'
-            ? styles.gpsBadgeWarning
-            : styles.gpsBadgeDanger,
+          locationStatus === 'ready' ? styles.gpsBadgeSuccess : locationStatus === 'searching' ? styles.gpsBadgeWarning : styles.gpsBadgeDanger,
         ]}
         onPress={requestLocation}
         activeOpacity={0.8}>
         <AppIcon
-          name={
-            locationStatus === 'ready'
-              ? 'location-on'
-              : locationStatus === 'searching'
-              ? 'gps-fixed'
-              : 'location-off'
-          }
+          name={locationStatus === 'ready' ? 'location-on' : locationStatus === 'searching' ? 'gps-fixed' : 'location-off'}
           size={13}
-          color={
-            locationStatus === 'ready'
-              ? '#22c55e'
-              : locationStatus === 'searching'
-              ? '#f59e0b'
-              : '#ef4444'
-          }
+          color={locationStatus === 'ready' ? '#22c55e' : locationStatus === 'searching' ? '#f59e0b' : '#ef4444'}
           style={{ marginRight: 4 }}
         />
         <AppText style={styles.gpsBadgeText}>

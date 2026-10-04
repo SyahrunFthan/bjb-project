@@ -1,4 +1,4 @@
 export const APP_VERSION = {
-  name: '2.4',
-  code: 12,
+  name: '2.5',
+  code: 13,
 };
